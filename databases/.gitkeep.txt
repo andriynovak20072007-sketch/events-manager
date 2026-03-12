@@ -1,26 +1,33 @@
 ------------------------------------------------------------
--- СХЕМА БАЗИ ДАНИХ EVENT MANAGER (v1.0)
+-- FINAL PRODUCTION SCHEMA: EVENT MANAGER DB
 ------------------------------------------------------------
 
--- Видаляємо старі об'єкти, щоб уникнути помилок при повторному запуску
 DROP TRIGGER IF EXISTS trigger_check_privacy ON events;
 DROP FUNCTION IF EXISTS check_event_privacy();
+DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS event_participants;
 DROP TABLE IF EXISTS invitations;
 DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS users;
 
--- 1. Таблиця Користувачів
+-- 1. Користувачі
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    role VARCHAR(20) DEFAULT 'user', -- 'user', 'organizer', 'admin'
+    role VARCHAR(20) DEFAULT 'user', 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Таблиця Подій
+-- 2. Категорії подій (для фільтрації на карті)
+CREATE TABLE categories (
+    category_id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- 3. Події
 CREATE TABLE events (
     event_id SERIAL PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
@@ -29,13 +36,31 @@ CREATE TABLE events (
     latitude DECIMAL(9, 6),
     longitude DECIMAL(9, 6),
     is_private BOOLEAN DEFAULT TRUE, 
+    category_id INTEGER REFERENCES categories(category_id) ON DELETE SET NULL,
     creator_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
-    -- Автоматична генерація секретного токена для доступу через посилання
     access_token UUID DEFAULT gen_random_uuid(), 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Таблиця Запрошень (для незареєстрованих відвідувачів)
+-- 4. Учасники
+CREATE TABLE event_participants (
+    registration_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'going', -- 'going', 'interested'
+    UNIQUE(user_id, event_id)
+);
+
+-- 5. Коментарі (щоб оживити застосунок)
+CREATE TABLE comments (
+    comment_id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Запрошення
 CREATE TABLE invitations (
     invitation_id SERIAL PRIMARY KEY,
     event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
@@ -43,22 +68,12 @@ CREATE TABLE invitations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Таблиця Учасників (реєстрація користувачів на події)
-CREATE TABLE event_participants (
-    registration_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
-    event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
-    status VARCHAR(20) DEFAULT 'interested', -- 'going', 'interested'
-    UNIQUE(user_id, event_id)
-);
-
--- 5. Захисний Тригер (бізнес-логіка)
--- Забороняє звичайним 'user' створювати публічні (is_private = FALSE) події
+-- БІЗНЕС-ЛОГІКА (ТРИГЕР)
 CREATE OR REPLACE FUNCTION check_event_privacy()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.is_private = FALSE AND (SELECT role FROM users WHERE user_id = NEW.creator_id) = 'user' THEN
-        RAISE EXCEPTION 'Помилка доступу: звичайні користувачі можуть створювати лише приватні події!';
+        RAISE EXCEPTION 'Звичайні користувачі не можуть створювати публічні події!';
     END IF;
     RETURN NEW;
 END;
@@ -69,11 +84,12 @@ BEFORE INSERT OR UPDATE ON events
 FOR EACH ROW
 EXECUTE FUNCTION check_event_privacy();
 
--- 6. Початкові тестові дані
+-- НАПОВНЕННЯ ДЛЯ ДЕМОНСТРАЦІЇ
+INSERT INTO categories (name) VALUES ('Music'), ('Sport'), ('Tech'), ('Party');
 INSERT INTO users (username, email, password_hash, role) VALUES 
-('admin_root', 'admin@event.com', 'secure_hash_admin', 'admin'),
-('user_demo', 'user@event.com', 'secure_hash_user', 'user');
+('admin', 'admin@event.com', 'hash', 'admin'),
+('student_lviv', 'user@event.com', 'hash', 'user');
 
-INSERT INTO events (title, description, event_date, is_private, creator_id) VALUES 
-('Public Concert', 'Фестиваль на площі', '2026-07-01 20:00:00', FALSE, 1),
-('Private Party', 'Приватна вечірка за посиланням', '2026-03-25 18:00:00', TRUE, 2);
+INSERT INTO events (title, description, event_date, latitude, longitude, is_private, category_id, creator_id) VALUES 
+('IT Conference', 'Global tech meet', '2026-09-10 10:00:00', 49.8397, 24.0297, FALSE, 3, 1),
+('Secret Birthday', 'Secret location', '2026-03-25 18:00:00', 49.8400, 24.0300, TRUE, 4, 2);
