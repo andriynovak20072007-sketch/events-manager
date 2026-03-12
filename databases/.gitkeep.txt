@@ -1,0 +1,79 @@
+------------------------------------------------------------
+-- СХЕМА БАЗИ ДАНИХ EVENT MANAGER (v1.0)
+------------------------------------------------------------
+
+-- Видаляємо старі об'єкти, щоб уникнути помилок при повторному запуску
+DROP TRIGGER IF EXISTS trigger_check_privacy ON events;
+DROP FUNCTION IF EXISTS check_event_privacy();
+DROP TABLE IF EXISTS event_participants;
+DROP TABLE IF EXISTS invitations;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS users;
+
+-- 1. Таблиця Користувачів
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(20) DEFAULT 'user', -- 'user', 'organizer', 'admin'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Таблиця Подій
+CREATE TABLE events (
+    event_id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    event_date TIMESTAMP NOT NULL,
+    latitude DECIMAL(9, 6),
+    longitude DECIMAL(9, 6),
+    is_private BOOLEAN DEFAULT TRUE, 
+    creator_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    -- Автоматична генерація секретного токена для доступу через посилання
+    access_token UUID DEFAULT gen_random_uuid(), 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Таблиця Запрошень (для незареєстрованих відвідувачів)
+CREATE TABLE invitations (
+    invitation_id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
+    invite_code VARCHAR(10) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Таблиця Учасників (реєстрація користувачів на події)
+CREATE TABLE event_participants (
+    registration_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'interested', -- 'going', 'interested'
+    UNIQUE(user_id, event_id)
+);
+
+-- 5. Захисний Тригер (бізнес-логіка)
+-- Забороняє звичайним 'user' створювати публічні (is_private = FALSE) події
+CREATE OR REPLACE FUNCTION check_event_privacy()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.is_private = FALSE AND (SELECT role FROM users WHERE user_id = NEW.creator_id) = 'user' THEN
+        RAISE EXCEPTION 'Помилка доступу: звичайні користувачі можуть створювати лише приватні події!';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_privacy
+BEFORE INSERT OR UPDATE ON events
+FOR EACH ROW
+EXECUTE FUNCTION check_event_privacy();
+
+-- 6. Початкові тестові дані
+INSERT INTO users (username, email, password_hash, role) VALUES 
+('admin_root', 'admin@event.com', 'secure_hash_admin', 'admin'),
+('user_demo', 'user@event.com', 'secure_hash_user', 'user');
+
+INSERT INTO events (title, description, event_date, is_private, creator_id) VALUES 
+('Public Concert', 'Фестиваль на площі', '2026-07-01 20:00:00', FALSE, 1),
+('Private Party', 'Приватна вечірка за посиланням', '2026-03-25 18:00:00', TRUE, 2);
