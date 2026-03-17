@@ -22,10 +22,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   padding: 0 40px;
   height: 70px;
-
   background: white;
   border-bottom: 1px solid #eee;
 }
@@ -44,7 +42,6 @@ body {
 .divider {
   width: 2px;
   height: 50px;
-
   background: #D9D9D9;
   border-radius: 2px;
 }
@@ -57,27 +54,21 @@ body {
 
 .language-btn {
   padding: 6px 16px;
-
   background: #E9E7F4;
   border-radius: 20px;
-
   font-size: 14px;
   font-weight: 600;
-
   cursor: pointer;
 }
 
 .icon-btn {
   width: 36px;
   height: 36px;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   background: #E9E7F4;
   border-radius: 50%;
-
   position: relative;
   cursor: pointer;
 }
@@ -90,10 +81,8 @@ body {
   position: absolute;
   top: 7px;
   right: 7px;
-
   width: 6px;
   height: 6px;
-
   background: var(--red);
   border-radius: 50%;
 }
@@ -101,21 +90,17 @@ body {
 .form-wrapper {
   display: flex;
   justify-content: center;
-
   margin-top: 60px;
 }
 
 .register-form {
   width: 350px;
   padding: 35px;
-
   display: flex;
   flex-direction: column;
   gap: 15px;
-
   background: #F7F7F7;
   border-radius: 25px;
-
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 
@@ -127,11 +112,9 @@ body {
 
 .register-form input {
   padding: 14px;
-
   background: #EAEAEA;
   border: none;
   border-radius: 12px;
-
   font-size: 14px;
   outline: none;
 }
@@ -140,24 +123,20 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-
   font-size: 14px;
   color: #555;
 }
 
 .main-btn {
   padding: 13px;
-
   border: none;
   border-radius: 20px;
-
   background: linear-gradient(90deg, var(--blue-dark), var(--blue-light));
-
   color: white;
   font-weight: 600;
-
   cursor: pointer;
   transition: 0.2s;
+  outline: none;
 }
 
 .main-btn:hover {
@@ -167,7 +146,6 @@ body {
 .or {
   text-align: center;
   color: #777;
-
   margin: 5px 0;
 }
 
@@ -176,13 +154,10 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-
   padding: 12px;
-
   background: white;
   border: 1px solid #ccc;
   border-radius: 15px;
-
   font-weight: 500;
   cursor: pointer;
 }
@@ -195,7 +170,6 @@ body {
   text-align: center;
   font-size: 14px;
   color: #666;
-
   margin-top: 5px;
 }
 
@@ -212,10 +186,8 @@ body {
 .footer {
   background: #373a3c; 
   color: white;
-
   display: flex;
   justify-content: space-between;
-
   padding: 40px;
   margin-top: 100px;
 }
@@ -224,7 +196,6 @@ body {
   display: block;
   color: white;
   text-decoration: none;
-
   margin: 5px 0;
   font-size: 14px;
 }
@@ -237,29 +208,28 @@ body {
   display: none;
   flex-direction: column;
   gap: 15px;
-
   transition: opacity 0.3s ease;
 }
 
 .form-content.active {
   display: flex;
 }
-.error{
-color:#E64949;
-font-size:12px;
-margin-top:-8px;
-margin-bottom:5px;
-display:block;
+
+/* ERRORS */
+.error {
+  color: var(--red);
+  font-size: 12px;
+  margin-top: -8px;
+  margin-bottom: 5px;
+  display: block;
 }
 
-.input-error{
-border:2px solid #E64949;
-}
 input.input-error {
-  border: 2px solid red;  
-  outline: none;       
-  box-shadow: 0 0 5px red;  
+  border: 2px solid var(--red);
+  outline: none;
+  box-shadow: 0 0 5px rgba(230, 73, 73, 0.5);
 }
+
 .checkbox-forgot {
   display: flex;
   justify-content: space-between;
@@ -286,46 +256,72 @@ input.input-error {
   text-decoration: underline;
 }
 
-.forgot-text{
-text-align:center;
-font-size:14px;
-color:#555;
-margin-bottom:10px;
+.forgot-text {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
 }
 
-.required-text{
-display:flex;
-align-items:flex-start;
-
-color:#E64949;
-font-size:12px;
-font-weight:500;
-
-margin-top:-8px;
-}
-.code-inputs{
-display:flex;
-justify-content:center;
-gap:15px;
-margin:20px 0;
+.required-text {
+  display: flex;
+  align-items: flex-start;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: -8px;
 }
 
-.code-box{
-
-width:60px;
-height:60px;
-
-background:#EAEAEA;
-border:none;
-border-radius:10px;
-
-font-size:32px;
-text-align:center;
-
-outline:none;
+.code-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
 }
 
-.code-box:focus{
-box-shadow:0 0 5px #2F80ED;
+.code-box {
+  width: 60px;
+  height: 60px;
+  background: #EAEAEA;
+  border: none;
+  border-radius: 10px;
+  font-size: 32px;
+  text-align: center;
+  outline: none;
 }
 
+.code-box:focus {
+  box-shadow: 0 0 5px #2F80ED;
+}
+
+/* ІКОНКИ ОКА (SVG) */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px; 
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  user-select: none;
+}
+
+.toggle-password svg {
+  transition: stroke 0.2s ease; 
+}
+
+.toggle-password:hover svg {
+  stroke: var(--blue-dark); 
+}
