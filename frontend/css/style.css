@@ -110,6 +110,11 @@ body {
   margin-bottom: 10px;
 }
 
+.register-form .code-box:focus {
+  box-shadow: 0 0 5px #2F80ED;
+  background: white;
+  border: 2px solid #aecbfa; 
+}
 .register-form input {
   padding: 14px;
   background: #EAEAEA;
@@ -285,16 +290,16 @@ input.input-error {
   background: #EAEAEA;
   border: none;
   border-radius: 10px;
-  font-size: 32px;
+  font-size: 70px;    
+  font-weight: 600;
   text-align: center;
-  outline: none;
+  line-height: 60px;  
 }
 
 .code-box:focus {
   box-shadow: 0 0 5px #2F80ED;
 }
 
-/* ІКОНКИ ОКА (SVG) */
 .password-wrapper {
   position: relative;
   display: flex;
