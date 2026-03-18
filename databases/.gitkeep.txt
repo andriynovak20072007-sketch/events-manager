@@ -19,7 +19,9 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL,
     role VARCHAR(20) DEFAULT 'user',
     is_active BOOLEAN DEFAULT FALSE,      
-    activation_token TEXT,                
+    activation_token TEXT,   
+    reset_token TEXT,               -- ДОДАНО ДЛЯ ВІДНОВЛЕННЯ ПАРОЛЯ
+    reset_token_expires TIMESTAMP,  -- ДОДАНО ДЛЯ ВІДНОВЛЕННЯ ПАРОЛЯ
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
