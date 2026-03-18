@@ -17,7 +17,9 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    role VARCHAR(20) DEFAULT 'user', 
+    role VARCHAR(20) DEFAULT 'user',
+    is_active BOOLEAN DEFAULT FALSE,      
+    activation_token TEXT,                
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
