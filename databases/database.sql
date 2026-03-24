@@ -1,3 +1,12 @@
+
+
+
+
+
+
+
+
+
 ------------------------------------------------------------
 -- FINAL PRODUCTION SCHEMA: EVENT MANAGER DB
 ------------------------------------------------------------
@@ -92,8 +101,14 @@ EXECUTE FUNCTION check_event_privacy();
 
 SELECT * FROM users;
 
+ALTER TABLE events ADD COLUMN region VARCHAR(100);
+
+ALTER TABLE events 
+ADD COLUMN price NUMERIC(10, 2) DEFAULT 0.00,
+ADD COLUMN currency VARCHAR(3) DEFAULT 'UAH';
+
 -- 1. Створюємо розробницького користувача з паролем
-CREATE USER event_dev WITH PASSWORD 'dev_password_123';
+ALTER USER event_dev WITH PASSWORD 'dev_password_123';
 
 -- 2. Даємо йому доступ підключатися до БД (заміни events_db на свою назву, якщо вона інша)
 GRANT CONNECT ON DATABASE "Event_Manager" TO event_dev;
