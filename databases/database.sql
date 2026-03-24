@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 ------------------------------------------------------------
 -- FINAL PRODUCTION SCHEMA: EVENT MANAGER DB
 ------------------------------------------------------------
@@ -49,7 +41,7 @@ CREATE TABLE events (
     is_private BOOLEAN DEFAULT TRUE,
     -- Зв'язки
     category_id INTEGER REFERENCES categories(category_id) ON DELETE SET NULL,
-    creator_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    creator_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE NOT NULL,
     access_token UUID DEFAULT gen_random_uuid(),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -100,3 +92,17 @@ EXECUTE FUNCTION check_event_privacy();
 
 SELECT * FROM users;
 
+-- 1. Створюємо розробницького користувача з паролем
+CREATE USER event_dev WITH PASSWORD 'dev_password_123';
+
+-- 2. Даємо йому доступ підключатися до БД (заміни events_db на свою назву, якщо вона інша)
+GRANT CONNECT ON DATABASE "Event_Manager" TO event_dev;
+
+-- 3. Даємо права працювати в стандартній схемі
+GRANT USAGE ON SCHEMA public TO event_dev;
+
+-- 4. Даємо права читати, додавати, змінювати та видаляти дані з усіх таблиць
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO event_dev;
+
+-- 5. Даємо доступ до генератора ID (щоб працював SERIAL)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO event_dev;
