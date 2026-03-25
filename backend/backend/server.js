@@ -1,8 +1,5 @@
-require('dotenv').config();
-
 const express = require('express');
 const session = require('express-session');
-
 const cors = require('cors');
 require('dotenv').config();
 
@@ -12,7 +9,6 @@ const usersRoutes = require('./routes/users');
 const eventsRoutes = require('./routes/events');
 const categoriesRoutes = require('./routes/categories');
 const commentsRoutes = require('./routes/comments');
-const infoRoutes = require('./routes/info');
 
 const app = express();
 
@@ -21,7 +17,7 @@ app.use(express.json());
 
 app.use(
     session({
-        secret: process.env.SESSION_SECRET || "fallback_secret_key",
+        secret: "secretkey",
         resave: false,
         saveUninitialized: true
     })
@@ -31,8 +27,6 @@ app.use('/users', usersRoutes);
 app.use('/events', eventsRoutes);
 app.use('/categories', categoriesRoutes);
 app.use('/comments', commentsRoutes);
-app.use('/info', infoRoutes);
-
 
 app.get('/', (req, res) => {
     res.send("Event Manager API працює 🚀");
