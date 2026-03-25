@@ -1,0 +1,167 @@
+:root {
+    --primary: #2854C5;
+    --purple: #6209DD;
+    --orange: #FF9D2B;
+    --map-fill: #B9CCFF;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0; padding: 0;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f7f7f7;
+}
+
+.header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 40px; background: white; margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.map-section {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    padding: 0 40px 40px 40px;
+    height: calc(100vh - 80px);
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-panel h3, .glass-panel h4 {
+    margin-bottom: 15px; font-weight: 600;
+}
+
+.filter-group {
+    display: flex; flex-direction: column; margin-bottom: 12px;
+}
+
+.filter-group label {
+    font-size: 12px; color: #666; margin-bottom: 4px;
+}
+
+.filter-group input, .filter-group select {
+    padding: 10px; border-radius: 10px; border: 1px solid #ddd;
+    background: white; font-family: inherit; font-size: 14px;
+}
+
+.apply-btn {
+    width: 100%; padding: 12px; background: var(--purple); color: white;
+    border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.3s; margin-top: 10px; margin-bottom: 20px;
+}
+
+.popular-list {
+    padding: 0;
+}
+
+.popular-list li {
+    display: flex; justify-content: space-between; padding: 8px 0;
+    font-size: 14px; border-bottom: 1px solid #eee; list-style: none;
+}
+
+.categories {
+    display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
+}
+
+.categories button {
+    padding: 8px 16px; border-radius: 20px; border: none; font-weight: 600; color: white; cursor: pointer;
+}
+
+.concert { background: var(--purple); }
+.festival { background: var(--orange); }
+.education { background: #2854C5; }
+.sport { background: #73C92D; }
+
+.map-wrapper {
+    position: relative; display: flex; justify-content: center;
+    align-items: center; background: white; border-radius: 30px;
+    padding: 20px; height: calc(100% - 60px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+svg {
+    width: 100%; max-height: 80vh;
+}
+
+.region {
+    fill: var(--map-fill);
+    stroke: var(--primary);
+    stroke-width: 0.8;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.region:hover {
+    fill: var(--purple);
+    filter: drop-shadow(0 0 10px rgba(98, 9, 221, 0.4));
+    transform: translateY(-2px);
+}
+
+.region.active {
+    fill: var(--orange);
+    stroke: #fff;
+    stroke-width: 1.5;
+}
+
+#tooltip {
+    position: absolute; background: rgba(0, 0, 0, 0.8); color: white;
+    padding: 5px 12px; border-radius: 8px; font-size: 13px;
+    display: none; pointer-events: none; z-index: 1000;
+}
+/* Базовий стан області */
+.region {
+  fill: #B9CCFF; /* Твій початковий світло-блакитний колір карти */
+  transition: fill 0.3s ease; /* Плавна зміна кольору */
+  cursor: pointer;
+}
+
+/* Ефект наведення мишки (Hover) */
+.region:hover {
+  fill: var(--blue-light); /* #00AAFF - гарний яскравий синій */
+}
+
+/* Активна (обрана) область */
+.region.active-region,
+.region.active-region:hover {
+  fill: var(--blue-dark); /* #2854C5 - глибокий синій для виділення */
+}
+#map-container {
+  position: relative;
+}
+
+.map-marker {
+  position: absolute;
+  z-index: 1000;
+}
+#map-container svg {
+  position: relative;
+  z-index: 1;
+}
+
+.map-marker {
+  z-index: 10;
+}
+#tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Montserrat', sans-serif;
+    display: none; 
+    pointer-events: none; /* Щоб він не перехоплював кліки */
+    z-index: 1000;
+    white-space: nowrap;
+}
