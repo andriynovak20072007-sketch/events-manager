@@ -1,7 +1,6 @@
 const { Pool } = require('pg');
-require('dotenv').config();
+require('dotenv').config(); // Залишаємо тільки один раз
 
-// Створюємо конфігурацію підключення, використовуючи дані з твого файлу .env
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -10,9 +9,4 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// Функція для виконання запитів
-module.exports = {
-  query: (text, params) => pool.query(text, params),
-};
-
-console.log("🚀 Модуль підключення до PostgreSQL ініціалізовано!");
+module.exports = pool;
