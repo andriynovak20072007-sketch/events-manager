@@ -1,212 +1,189 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
-const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-
-// Налаштування пошти (для розробки посилання просто виводиться в консоль сервера)
-const transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    auth: {
-        user: 'test_user',
-        pass: 'test_pass'
-    }
-});
-
-// Допоміжна функція: перевірка правильного формату email
-const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-};
+const pool = require('../db'); // Твоє підключення до бази PostgreSQL
 
 // ==========================================
-// 1. РОУТ РЕЄСТРАЦІЇ (POST /users/register)
+// ПАТЕРН: Singleton / Service Pattern
+// Виносимо логіку конвертації в окремий сервіс
 // ==========================================
-router.post('/register', async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
-
-        // ВАЛІДАЦІЯ 1: Обов'язкові поля
-        if (!username || !email || !password) {
-            return res.status(400).json({ error: "Всі поля (username, email, password) є обов'язковими" });
-        }
-
-        // ВАЛІДАЦІЯ 2: Правильність email
-        if (!isValidEmail(email)) {
-            return res.status(400).json({ error: "Некоректний формат email адреси" });
-        }
-
-        // ВАЛІДАЦІЯ 3: Довжина пароля
-        if (password.length < 6) {
-            return res.status(400).json({ error: "Пароль має містити щонайменше 6 символів" });
-        }
-
-        // ПЕРЕВІРКА НА ДУБЛІКАТ
-        const userExists = await pool.query(
-            'SELECT * FROM users WHERE email = $1 OR username = $2', 
-            [email, username]
-        );
-        
-        if (userExists.rows.length > 0) {
-            const existingUser = userExists.rows[0];
-            if (existingUser.email === email) {
-                return res.status(400).json({ error: "Користувач з таким email вже зареєстрований" });
-            }
-            if (existingUser.username === username) {
-                return res.status(400).json({ error: "Це ім'я користувача вже зайняте" });
-            }
-        }
-
-        // ХЕШУВАННЯ ПАРОЛЯ
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
-
-        // ГЕНЕРАЦІЯ ТОКЕНА АКТИВАЦІЇ
-        const activationToken = crypto.randomBytes(32).toString('hex');
-
-        // ЗБЕРЕЖЕННЯ В БАЗУ ДАНИХ
-        const newUser = await pool.query(
-            'INSERT INTO users (username, email, password_hash, activation_token) VALUES ($1, $2, $3, $4) RETURNING user_id, username, email',
-            [username, email, passwordHash, activationToken]
-        );
-
-        const activationLink = `http://localhost:5000/users/activate/${activationToken}`;
-        
-        // Симуляція відправки листа (виводимо в консоль)
-        console.log(`\n=== НОВИЙ КОРИСТУВАЧ ЗАРЕЄСТРОВАНИЙ ===`);
-        console.log(`Email: ${email}`);
-        console.log(`Посилання для активації: ${activationLink}`);
-        console.log(`=========================================\n`);
-
-        res.status(201).json({ 
-            message: "Реєстрація успішна! Перевірте консоль сервера для активації акаунта.",
-            user: newUser.rows[0]
-        });
-
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Внутрішня помилка сервера при реєстрації." });
-    }
-});
-
-// ==========================================
-// 2. РОУТ АКТИВАЦІЇ (GET /users/activate/:token)
-// ==========================================
-router.get('/activate/:token', async (req, res) => {
-    try {
-        const { token } = req.params;
-
-        const userResult = await pool.query('SELECT * FROM users WHERE activation_token = $1', [token]);
-
-        if (userResult.rows.length === 0) {
-            return res.status(400).json({ error: "Посилання недійсне або акаунт вже активовано." });
-        }
-
-        // Оновлюємо статус на is_active = TRUE
-        await pool.query(
-            'UPDATE users SET is_active = TRUE, activation_token = NULL WHERE activation_token = $1',
-            [token]
-        );
-
-        res.send("<h1>Акаунт успішно активовано! 🎉</h1><p>Тепер ви можете увійти в систему.</p>");
-
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Помилка сервера при активації." });
-    }
-});
-
-
-
-// ==========================================
-// 3. ЗАПИТ НА ВІДНОВЛЕННЯ ПАРОЛЯ
-// ==========================================
-router.post('/forgot-password', async (req, res) => {
-    try {
-        const { email } = req.body;
-        const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        
-        if (userRes.rows.length === 0) {
-            return res.status(404).json({ error: "Користувача з таким email не знайдено." });
-        }
-
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const expireTime = new Date(Date.now() + 3600000); // +1 година
-
-        await pool.query(
-            'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE email = $3',
-            [resetToken, expireTime, email]
-        );
-
-        const resetLink = `http://localhost:5000/users/reset-password/${resetToken}`;
-        console.log(`\n=== ВІДНОВЛЕННЯ ПАРОЛЯ ===\nEmail: ${email}\nПосилання: ${resetLink}\n==========================\n`);
-
-        res.json({ message: "Лист з інструкціями відправлено на вашу пошту (перевірте консоль)." });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Помилка сервера." });
-    }
-});
-
-
-// ==========================================
-// 5. ЛОГІН КОРИСТУВАЧА (ВХІД)
-// ==========================================
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        // 1. Перевіряємо, чи передані дані
-        if (!email || !password) {
-            return res.status(400).json({ error: "Будь ласка, введіть email та пароль." });
-        }
-
-        // 2. Шукаємо користувача в базі
-        const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userRes.rows.length === 0) {
-            return res.status(400).json({ error: "Неправильний email або пароль." });
-        }
-
-        const user = userRes.rows[0];
-
-        // 3. Перевіряємо пароль (порівнюємо введений пароль з хешем у базі)
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) {
-            return res.status(400).json({ error: "Неправильний email або пароль." });
-        }
-
-        // 4. Записуємо користувача в СЕСІЮ
-        req.session.user = {
-            id: user.user_id,
-            username: user.username,
-            email: user.email,
-            role: user.role
+class CurrencyService {
+    constructor() {
+        // Базова валюта - UAH (Єдине джерело правди)
+        this.rates = {
+            'UAH': 1.00,
+            'USD': 40.50,
+            'EUR': 44.20
         };
+    }
 
-        res.json({ 
-            message: "Вхід успішний!", 
-            user: req.session.user 
-        });
+    // Метод конвертації будь-якої валюти в будь-яку
+    convert(amount, fromCurrency, toCurrency) {
+        if (!amount || amount <= 0) return 0;
+        
+        const fromRate = this.rates[(fromCurrency || 'UAH').toUpperCase()] || 1;
+        const toRate = this.rates[toCurrency.toUpperCase()];
 
+        if (!toRate) return amount; // Якщо валюту не знайдено, повертаємо як є
+
+        // Математика: переводимо в гривню, а потім у цільову валюту
+        const amountInBase = amount * fromRate;
+        return (amountInBase / toRate).toFixed(2);
+    }
+}
+// Створюємо єдиний екземпляр сервісу (Singleton)
+const currencyService = new CurrencyService();
+
+// =======================================================
+// 1. GET /events - Отримання всіх подій (Фільтр по регіону + Конвертація)
+// =======================================================
+router.get('/', async (req, res) => {
+    // Зчитуємо параметри з запиту
+    const { region, target_currency } = req.query;
+
+    try {
+        let queryText = 'SELECT * FROM events';
+        let queryParams = [];
+
+        // ТВОЯ ЛОГІКА: Якщо клієнт передав ?region=..., додаємо фільтрацію
+        if (region) {
+            queryText += ' WHERE region = $1';
+            queryParams.push(region);
+        }
+
+        const result = await pool.query(queryText, queryParams);
+        let events = result.rows;
+
+        // ЛОГІКА КОМАНДИ: Якщо користувач попросив іншу валюту
+        if (target_currency) {
+            events = events.map(event => {
+                if (event.price > 0) {
+                    return {
+                        ...event,
+                        // Використовуємо сервіс для розрахунку нової ціни
+                        display_price: currencyService.convert(event.price, event.currency, target_currency),
+                        display_currency: target_currency.toUpperCase()
+                    };
+                }
+                return event;
+            });
+        }
+
+        res.json(events);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Помилка сервера при вході." });
+        console.error('Помилка отримання подій:', err.message);
+        res.status(500).send("Server error");
     }
 });
 
 // ==========================================
-// 6. ЛОГАУТ (ВИХІД З СИСТЕМИ)
+// 2. ЛОГІКА СПІВСТАВЛЕННЯ З ОБЛАСТЯМИ
 // ==========================================
-router.post('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ error: "Помилка при виході з системи." });
-        }
-        res.clearCookie('connect.sid'); // Видаляємо кукі сесії
-        res.json({ message: "Ви успішно вийшли з системи." });
-    });
+router.get('/filter', async (req, res) => {
+    const { region } = req.query;
+    try {
+        const result = await pool.query(
+            'SELECT * FROM events WHERE region = $1 AND is_private = FALSE ORDER BY event_day ASC', 
+            [region]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Помилка фільтрації за областю");
+    }
 });
 
+// ==========================================
+// 3. ЛОГІКА ДЛЯ МАРШРУТІВ (Точки А, Б, С)
+// ==========================================
+router.get('/route-data', async (req, res) => {
+    const { ids } = req.query;
+    if (!ids) return res.status(400).send("Не вказано ID подій для маршруту");
+    
+    const idArray = ids.split(',').map(Number);
+    try {
+        const result = await pool.query(
+            'SELECT event_id, title, latitude, longitude, region FROM events WHERE event_id = ANY($1)',
+            [idArray]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Помилка підготовки даних маршруту");
+    }
+});
+
+// =======================================================
+// 4. GET /events/:id - Отримання однієї події за ID
+// ВАЖЛИВО: Цей маршрут має бути СУВОРО ПІСЛЯ /filter та /route-data!
+// =======================================================
+router.get('/:id', async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        
+        const result = await pool.query('SELECT * FROM events WHERE id = $1', [eventId]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ msg: "Подію не знайдено" });
+        }
+        
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Помилка отримання події за ID:', err.message);
+        res.status(500).send("Server error");
+    }
+});
+
+// ==========================================
+// 5. СТВОРЕННЯ НОВОЇ ПОДІЇ (POST)
+// ==========================================
+router.post('/', async (req, res) => {
+    const { 
+        title, description, event_day, start_time, end_time, 
+        latitude, longitude, category_id, creator_id,
+        region, is_private, price, currency 
+    } = req.body;
+
+    // --- ВАЛІДАЦІЯ ---
+    if (!title || title.trim().length < 5) {
+        return res.status(400).json({ error: "Назва занадто коротка (мін. 5 симв.)" });
+    }
+    if (!description || description.trim().length < 10) {
+        return res.status(400).json({ error: "Опис має бути не менше 10 символів" });
+    }
+    if (!event_day || !start_time || !end_time) {
+        return res.status(400).json({ error: "Дата та час обов'язкові" });
+    }
+    if (!creator_id) {
+        return res.status(400).json({ error: "Не вказано ID творця події" });
+    }
+    if (!region) {
+        return res.status(400).json({ error: "Обов'язково вкажіть область (region)" });
+    }
+
+    // Валідація ціни та валюти
+    const eventPrice = price !== undefined ? parseFloat(price) : 0.00;
+    if (eventPrice < 0) {
+        return res.status(400).json({ error: "Ціна не може бути від'ємною" });
+    }
+    const eventCurrency = currency ? currency.toUpperCase() : 'UAH';
+
+    try {
+        const query = `
+            INSERT INTO events (title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, is_private, price, currency) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+            RETURNING *`;
+        
+        const eventIsPrivate = is_private !== undefined ? is_private : true;
+        
+        const values = [title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, eventIsPrivate, eventPrice, eventCurrency];
+        
+        const result = await pool.query(query, values);
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Помилка при створенні події в базі даних" });
+    }
+});
+
+// Експорт роутера МАЄ БУТИ В САМОМУ КІНЦІ ФАЙЛУ
 module.exports = router;

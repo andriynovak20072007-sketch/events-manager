@@ -87,6 +87,128 @@ body {
   border-radius: 50%;
 }
 
+/* --- СТИЛІ ДЛЯ ЦЕНТРАЛЬНОГО БЛОКУ ХЕДЕРА --- */
+.header-center {
+    display: flex;
+    align-items: center;
+    flex: 1; /* Розтягує центральний блок на весь вільний простір */
+    padding-left: 20px; /* Відступ від сірої лінії-розділювача */
+    padding-right: 20px; /* Відступ перед блоком UA/Профіль */
+}
+
+/* Пошуковий рядок */
+.search-box {
+    display: flex;
+    align-items: center;
+    flex: 1; /* ОЦЕ ГОЛОВНЕ: змушує пошук зайняти весь вільний простір і відштовхнути інші кнопки вправо */
+    background: transparent; /* Без фону, як на макеті */
+}
+
+.search-box .search-icon {
+    width: 20px;
+    height: 20px;
+    color: #8C8C8C;
+    margin-right: 12px;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    width: 100%;
+    color: var(--black);
+}
+
+.search-box input::placeholder {
+    color: #8C8C8C;
+}
+
+/* Кругла сіра кнопка з плюсом */
+.add-event-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #B3B3B3;
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-right: 15px; /* Відступ між плюсом і фільтрами */
+    flex-shrink: 0; /* Забороняємо кнопці стискатися */
+}
+
+.add-event-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.add-event-btn:hover {
+    background-color: #8C8C8C;
+}
+
+/* Контейнер для фільтрів */
+.header-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Відстань між пігулками */
+}
+
+/* Спільні стилі для кнопок-фільтрів */
+.filter-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F0EEF6; /* Світло-фіолетовий фон */
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--black);
+    cursor: pointer;
+    transition: 0.2s;
+    height: 36px;
+    white-space: nowrap; /* Текст не переноситься на новий рядок */
+}
+
+.filter-pill:hover {
+    background: #E4E0ED;
+}
+
+.filter-pill .icon {
+    width: 18px;
+    height: 18px;
+    color: #444;
+}
+
+/* Активний синій фільтр (Місто) */
+.city-filter {
+    background: #00AAFF;
+    color: white;
+}
+
+.city-filter:hover {
+    background: #0099e6;
+}
+
+.city-filter .icon,
+.city-filter .arrow {
+    color: white;
+}
+
+.city-filter .arrow {
+    width: 18px;
+    height: 18px;
+    margin-left: 8px;
+}
+
 .form-wrapper {
   display: flex;
   justify-content: center;
@@ -110,6 +232,11 @@ body {
   margin-bottom: 10px;
 }
 
+.register-form .code-box:focus {
+  box-shadow: 0 0 5px #2F80ED;
+  background: white;
+  border: 2px solid #aecbfa; 
+}
 .register-form input {
   padding: 14px;
   background: #EAEAEA;
@@ -183,38 +310,225 @@ body {
   text-decoration: underline;
 }
 
-.footer {
-  background: #373a3c; 
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  padding: 40px;
-  margin-top: 100px;
+.promo-section {
+    background-color: #ffffff;
+    padding: 80px 20px 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Montserrat', sans-serif;
 }
 
-.footer a {
-  display: block;
-  color: white;
-  text-decoration: none;
-  margin: 5px 0;
-  font-size: 14px;
+.promo-main-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 60px;
+    text-align: center;
 }
 
-.footer h3 {
-  margin-bottom: 10px;
+.promo-content {
+    display: flex;
+    gap: 60px;
+    max-width: 1000px;
+    width: 100%;
+    align-items: center; /* Центрує лівий і правий блок по вертикалі */
+    justify-content: space-between;
 }
 
-.form-content {
-  display: none;
-  flex-direction: column;
-  gap: 15px;
-  transition: opacity 0.3s ease;
+/* --- ЛІВИЙ БЛОК (Текст і список) --- */
+.promo-text-block {
+    flex: 1;
+    text-align: left; /* Жорстко вирівнюємо все ліворуч */
 }
 
-.form-content.active {
-  display: flex;
+.promo-text-block h3 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #000;
+    margin: 0 0 15px 0;
 }
 
+.promo-text-block p {
+    font-size: 16px;
+    color: #444;
+    line-height: 1.5;
+    margin: 0 0 30px 0;
+    max-width: 400px;
+}
+
+.promo-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.promo-list li {
+    display: flex;
+    align-items: center; /* Вирівнює галочку і текст на одній лінії */
+    gap: 15px; /* Відстань між іконкою і текстом */
+    font-size: 18px;
+    font-weight: 500;
+    color: #000;
+}
+
+.promo-list svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0; /* Галочка не буде стискатися */
+}
+
+/* --- ПРАВИЙ БЛОК (Форма) --- */
+.promo-form-block {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.promo-form-box {
+    background-color: #EFEFF5; /* Світло-сіро-фіолетовий фон як на макеті */
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* Красива розмита тінь */
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.promo-form-box input {
+    background-color: #C8C8C8; /* Сірий колір інпутів */
+    border: none;
+    padding: 18px 24px;
+    border-radius: 30px; /* Сильне заокруглення (пігулка) */
+    font-size: 16px;
+    font-family: 'Montserrat', sans-serif;
+    color: #000;
+    outline: none;
+    transition: 0.2s;
+}
+
+.promo-form-box input::placeholder {
+    color: #666;
+}
+
+.promo-form-box input:focus {
+    background-color: #b5b5b5;
+}
+
+/* --- СТИЛІ ДЛЯ КНОПКИ (БАЗОВИЙ СТАН) --- */
+.promo-form-box button {
+    background: linear-gradient(90deg, var(--blue-dark), var(--blue-light)); /* Синій градієнт кнопки */
+    color: #fff;
+    border: none;
+    padding: 18px 24px;
+    border-radius: 30px; /* Пігулка */
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: 'Montserrat', sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.promo-form-box button:hover {
+    opacity: 0.9; 
+    transform: translateY(-5px); 
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Оскільки в .error вже є margin-top: -10px, ми просто даємо відступ обгортці */
+.promo-form-box {
+    gap: 15px; /* Трохи зменшив загальний відступ, бо тепер є текст помилок */
+}
+/* Виправляємо налізання тексту помилки у новій формі */
+.field-group .error {
+    margin-top: 5px; /* Відштовхуємо текст помилки вниз, щоб він не ліз на рамку */
+    padding-left: 25px; /* Зсуваємо текст трохи правіше, щоб він стояв рівно під текстом у круглому полі */
+    margin-bottom: -5px; /* Трохи компенсуємо висоту, щоб форма не ставала занадто довгою */
+}
+.site-footer {
+    background-color: #383A3C;
+    padding: 60px 80px 30px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto 50px;
+}
+
+/* Об'єднаний та очищений клас для колонок */
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Залишили 12px для компактності */
+    min-width: 200px;
+}
+
+/* 1. Збільшені сині заголовки */
+.footer-column h4 {
+    color: #00AAFF; 
+    font-size: 18px; /* Збільшили розмір з 15px до 18px */
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    line-height: 1.4; 
+}
+
+/* 2. Позиціювання іконки Instagram */
+.social-link {
+    /* Вибери ОДИН з варіантів вирівнювання: */
+    
+    /* Варіант А: НА ПОЧАТКУ (зліва) - розкоментуй рядок нижче */
+    align-self: flex-start; 
+    
+    /* Варіант Б: ПОСЕРЕДИНІ колонки - розкоментуй рядок нижче замість попереднього */
+    /* align-self: center; */
+    
+    margin-top: 10px; /* Додатковий відступ від заголовка вниз */
+    transition: transform 0.3s ease; /* Плавність для анімації */
+}
+
+/* Ефект збільшення іконки при наведенні (за бажанням) */
+.social-link:hover {
+    transform: scale(1.1);
+}
+
+footer a {
+    color: #ffffff; /* Робить букви чисто білими */
+    text-decoration: none; /* Прибирає стандартне підкреслення */
+    transition: color 0.3s ease; /* Додає плавність для ефекту при наведенні */
+}
+
+footer a:hover {
+    color: #00bfff; /* Залишає блакитний колір при наведенні (під колір заголовків) */
+}
+
+.footer-bottom {
+    border-top: 1px solid #505254; 
+    padding-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-size: 13px;
+    color: #FFFFFF; /* Текст знизу теж білий */
+}
+
+.footer-bottom p {
+    margin: 0;
+}
 /* ERRORS */
 .error {
   color: var(--red);
@@ -285,16 +599,16 @@ input.input-error {
   background: #EAEAEA;
   border: none;
   border-radius: 10px;
-  font-size: 32px;
+  font-size: 70px;    
+  font-weight: 600;
   text-align: center;
-  outline: none;
+  line-height: 60px;  
 }
 
 .code-box:focus {
   box-shadow: 0 0 5px #2F80ED;
 }
 
-/* ІКОНКИ ОКА (SVG) */
 .password-wrapper {
   position: relative;
   display: flex;
@@ -324,4 +638,224 @@ input.input-error {
 
 .toggle-password:hover svg {
   stroke: var(--blue-dark); 
+}
+/* Затемнений фон модального вікна */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay .form-wrapper {
+  margin-top: 0; 
+  position: relative;
+}
+
+/* Кнопка закриття (хрестик) */
+.close-modal {
+  position: absolute;
+  top: 15px; right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #737373;
+  cursor: pointer;
+  z-index: 10;
+}
+.close-modal:hover { color: var(--red); }
+.zoom {
+    position: absolute;
+    bottom: 30px; /* Відступ від низу */
+    right: 30px;  /* Відступ від правого краю */
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border-radius: 15px; /* Заокруглені кути */
+    
+    /* ТІНЬ ЯК НА СКРІНШОТІ */
+    /* 0px (зсув по X) 10px (зсув по Y) 25px (розмиття) колір з прозорістю */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); 
+    
+    overflow: hidden;
+    z-index: 1000;
+    border: 1px solid rgba(0, 0, 0, 0.05); /* Ледь помітна рамка для чіткості */
+}
+
+.zoom button {
+    width: 50px;
+    height: 50px;
+    border: none;
+    background: transparent;
+    font-size: 30px; /* Великі плюс і мінус */
+    color: #444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+/* Лінія між кнопками */
+.zoom button:first-child {
+    border-bottom: 1.5px solid #f0f0f0;
+}
+
+.zoom button:hover {
+    background-color: #f8f9fa;
+}
+/* 1. Анімація появи всієї секції при завантаженні */
+@keyframes mapFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(1.1); /* Починаємо трохи збільшеними */
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1); /* Повертаємося до нормального розміру */
+    }
+}
+
+.map-section {
+    position: relative;
+    width: 100%;
+    margin-top: 30px;
+    
+    /* Застосовуємо анімацію: назва, тривалість, тип плавности, затримка */
+    animation: mapFadeIn 1.5s ease-out 0.5s both;
+    
+    overflow: hidden; /* Щоб карта не вилазила за межі при зумі */
+}
+
+/* 2. Стилі контейнера карти */
+#map-container {
+    width: 100%;
+    height: 80vh; /* Задаємо висоту на 80% екрану */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* 3. Плавність для самої SVG-карти */
+#map-container svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    
+    /* ЦЕ РОБИТЬ ЗУМ КНОПКАМИ ПЛАВНИМ */
+    transition: transform 0.4s ease-out; /* Плавна зміна transform */
+    
+    transform-origin: center center; /* Зум від центру */
+}
+
+.popular-events {
+    background-color: #FFB300; /* Яскраво-жовтий колір */
+    padding: 70px 20px;
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.popular-title {
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.events-grid {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap; /* Дозволяє переноситись на телефоні */
+    max-width: 1200px;
+    width: 100%;
+}
+
+.event-card {
+    background-color: #F8F9FB; /* Світлий колір фону картки */
+    border-radius: 28px;
+    padding: 20px;
+    width: 340px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.event-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 18px;
+    margin-bottom: 20px;
+}
+
+.event-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    color: var(--black);
+}
+
+.event-detail {
+    display: flex;
+    align-items: center; /* Вирівнюємо іконку і текст по вертикалі */
+    justify-content: flex-start; /* ПРИТИСКАЄМО ВСЕ ДО ЛІВОГО КРАЮ */
+    gap: 12px;
+    font-size: 14px;
+    color: var(--black);
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+/* Якщо іконка (svg) все ще "стрибає", додамо їй фіксований розмір */
+.event-detail svg {
+    flex-shrink: 0; /* Забороняємо іконці зменшуватися */
+    width: 16px;
+    height: 16px;
+}
+
+.event-link {
+    margin-top: auto; /* ВІДШТОВХУЄ КНОПКУ ВНИЗ, якщо текст над нею короткий */
+    padding-top: 15px; /* Додатковий відступ зверху */
+    color: var(--blue-dark);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    align-self: flex-start; /* Притискає лінк до лівого краю */
+    border-bottom: 1px solid transparent;
+    transition: 0.2s;
+}
+
+.event-link:hover {
+    border-bottom: 1px solid var(--blue-dark);
+}
+/* Ховаємо всі блоки форм за замовчуванням */
+.form-content {
+    display: none; 
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Показуємо лише ту форму, яка має клас active */
+.form-content.active {
+    display: flex;
+}
+
+/* Стилі для заголовка, щоб вони не злипалися */
+.form-content h1 {
+    margin-bottom: 20px;
+    text-align: center;
 }
