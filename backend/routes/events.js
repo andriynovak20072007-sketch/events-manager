@@ -73,12 +73,15 @@ router.get('/', async (req, res) => {
 // ==========================================
 router.get('/filter', async (req, res) => {
     const { region } = req.query;
+            //обробка помилки
+
     try {
         const result = await pool.query(
             'SELECT * FROM events WHERE region = $1 AND is_private = FALSE ORDER BY event_day ASC', 
             [region]
         );
         res.json(result.rows);
+
     } catch (err) {
         console.error(err);
         res.status(500).send("Помилка фільтрації за областю");
@@ -112,7 +115,9 @@ router.get('/:id', async (req, res) => {
     try {
         const eventId = req.params.id;
         const result = await pool.query('SELECT * FROM events WHERE id = $1', [eventId]);
-        
+
+        //обробка помилок
+
         if (result.rows.length === 0) {
             return res.status(404).json({ msg: "Подію не знайдено" });
         }
@@ -142,6 +147,8 @@ router.post('/', async (req, res) => {
     const eventPrice = price !== undefined ? parseFloat(price) : 0.00;
     if (eventPrice < 0) return res.status(400).json({ error: "Ціна не може бути від'ємною" });
     const eventCurrency = currency ? currency.toUpperCase() : 'UAH';
+    
+    //обробка помилки
 
     try {
         const query = `
