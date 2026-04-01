@@ -108,6 +108,111 @@ router.get('/route-data', async (req, res) => {
     }
 });
 
+// ==========================================
+// ПАТЕРН: Query Builder (Будівельник запитів)
+// Використовується виключно для нових завдань фільтрації та пошуку
+// ==========================================
+class EventSearchBuilder {
+    constructor() {
+        // Базовий запит (1=1 дозволяє легко додавати AND умови далі)
+        this.query = 'SELECT * FROM events WHERE 1=1';
+        this.values = [];
+        this.paramIndex = 1;
+    }
+
+    // 1. Реалізувати API пошуку за назвою
+    searchByTitle(title) {
+        if (title) {
+            this.query += ` AND title ILIKE $${this.paramIndex}`;
+            this.values.push(`%${title}%`); // ILIKE забезпечує пошук без урахування регістру
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 2. Реалізувати API пошуку за тегами/ключовими словами
+    searchByKeyword(keyword) {
+        if (keyword) {
+            // Шукаємо ключове слово і в назві, і в описі
+            this.query += ` AND (title ILIKE $${this.paramIndex} OR description ILIKE $${this.paramIndex})`;
+            this.values.push(`%${keyword}%`);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 3. Реалізувати API фільтрації по даті
+    filterByDate(date) {
+        if (date) {
+            this.query += ` AND event_day = $${this.paramIndex}`;
+            this.values.push(date);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 4. Реалізувати API фільтрації по місту (використовуємо поле region)
+    filterByCity(city) {
+        if (city) {
+            this.query += ` AND region ILIKE $${this.paramIndex}`;
+            this.values.push(`%${city}%`);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 5. Реалізувати API фільтрації по категорії
+    filterByCategory(categoryId) {
+        if (categoryId) {
+            this.query += ` AND category_id = $${this.paramIndex}`;
+            this.values.push(categoryId);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    build() {
+        // Додаємо сортування за замовчуванням: найближчі події першими
+        this.query += ' ORDER BY event_day ASC, start_time ASC';
+        return { text: this.query, values: this.values };
+    }
+}
+
+// =======================================================
+// НОВИЙ МАРШРУТ: GET /events/search
+// Обробляє: пошук за назвою, ключовими словами, датою, містом, категорією
+// ВАЖЛИВО: Розмістити ПЕРЕД router.get('/:id', ...)
+// =======================================================
+router.get('/search', async (req, res) => {
+    // Зчитуємо параметри з URL (наприклад: /api/events/search?city=Львів&date=2024-05-20)
+    const { title, keyword, date, city, category_id } = req.query;
+
+    try {
+        // Використовуємо наш патерн Будівельник для формування запиту
+        const builder = new EventSearchBuilder()
+            .searchByTitle(title)
+            .searchByKeyword(keyword)
+            .filterByDate(date)
+            .filterByCity(city)
+            .filterByCategory(category_id);
+
+        const { text, values } = builder.build();
+
+        // Виконуємо згенерований запит у БД
+        const result = await pool.query(text, values);
+
+        // Обробка пустого результату 
+        if (result.rows.length === 0) {
+            return res.status(404).json({ msg: "За вашим запитом подій не знайдено" });
+        }
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Помилка розширеного пошуку подій:', err.message);
+        res.status(500).send("Внутрішня помилка сервера під час пошуку");
+    }
+});
+
 // =======================================================
 // 4. GET /events/:id - Отримання однієї події за ID
 // =======================================================
