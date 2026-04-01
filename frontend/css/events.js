@@ -54,3 +54,121 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// Отримуємо елементи пошуку зі сторінки
+const searchInput = document.getElementById('title-search-input');
+const searchMessage = document.getElementById('search-message');
+
+
+/*
+ Обробка помилок і порожнього результату (за назвою)
+ Обробка null/порожнього результату (пошук)
+*/
+function showSearchMessage(text, isError = false) {
+  if (!searchMessage) return;
+
+  searchMessage.textContent = text;
+  searchMessage.style.display = 'block';
+  searchMessage.style.color = isError ? 'red' : '#333';
+}
+
+
+//Очищає повідомлення перед новим пошуком
+function clearSearchMessage() {
+  if (!searchMessage) return;
+
+  searchMessage.textContent = '';
+  searchMessage.style.display = 'none';
+}
+
+
+/*
+Обробка null/порожнього результату (пошук)
+Обробка помилок і порожнього результату (за назвою)
+*/
+function handleSearchResults(events) {
+
+  // Якщо API повернув null або undefined
+  if (events == null) {
+    showSearchMessage('Подій не знайдено');
+    return;
+  }
+
+  // Якщо API повернув не масив (помилка формату)
+  if (!Array.isArray(events)) {
+    showSearchMessage('Неправильний формат даних пошуку', true);
+    return;
+  }
+
+  // Якщо масив пустий
+  if (events.length === 0) {
+    showSearchMessage('Подій не знайдено');
+    return;
+  }
+
+  // Якщо все ок — прибираємо повідомлення
+  clearSearchMessage();
+
+  // відображення списку подій
+  console.log('Знайдені події:', events);
+}
+
+
+// якщо сталася помилка запиту (fetch, сервер, мережа)
+function handleSearchError() {
+  showSearchMessage('Сталася помилка під час пошуку', true);
+}
+
+
+/*
+- викликає API
+- отримує дані
+- передає їх у handleSearchResults
+- при помилці викликає handleSearchError
+*/
+async function searchByTitle(title) {
+  try {
+    clearSearchMessage();
+
+    const response = await fetch(`/events?title=${encodeURIComponent(title)}`);
+
+    // Якщо сервер повернув помилку
+    if (!response.ok) {
+      throw new Error('Помилка запиту');
+    }
+
+    const data = await response.json();
+
+    // Якщо API повернув null
+    if (data == null) {
+      handleSearchResults(null);
+      return;
+    }
+
+    handleSearchResults(data);
+
+  } catch (error) {
+    console.error('Search error:', error);
+    handleSearchError();
+  }
+}
+
+
+/*
+- якщо поле пусте → показує повідомлення
+- якщо є текст → запускає пошук
+*/
+if (searchInput) {
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const value = searchInput.value.trim();
+
+      if (value === '') {
+        showSearchMessage('Введіть назву події');
+        return;
+      }
+
+      searchByTitle(value);
+    }
+  });
+}
