@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const cityFilterMessage = document.getElementById('city-filter-message');
+    const eventsListContainer = document.getElementById('events-list');
     const mapContainer = document.getElementById('map-container');
     if (!mapContainer) return;
 
@@ -136,6 +138,422 @@ document.addEventListener("DOMContentLoaded", () => {
             { id: 'fest1', title: 'Фестиваль "Summer Fest"', location: 'Львів, Стадіон "Прайм"', time: '28 квітня, 18:00', color: 'marker-purple', icon: 'music', x: 18.5, y: 35 },
             { id: 'lecture1', title: 'ІТ Конференція "CodeX"', location: 'Львів, Арена Львів', time: '20 травня, 10:00', color: 'marker-purple', icon: 'education', x: 21, y: 38 }
         ];
+
+        // Оновлення карти та списку після застосування фільтру (по місту)
+// показ повідомлення
+function showCityFilterMessage(text, isError = false) {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = text;
+    cityFilterMessage.style.display = 'block';
+    cityFilterMessage.style.color = isError ? 'red' : '#333';
+}
+
+// очистка повідомлення
+function clearCityFilterMessage() {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = '';
+    cityFilterMessage.style.display = 'none';
+}
+
+// список подій
+function renderEventsList(eventsToRender) {
+    if (!eventsListContainer) return;
+
+    eventsListContainer.innerHTML = '';
+
+    if (!eventsToRender || eventsToRender.length === 0) {
+        showCityFilterMessage('У вибраному місті подій не знайдено');
+        return;
+    }
+
+    clearCityFilterMessage();
+
+    eventsToRender.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'event-card';
+
+        card.innerHTML = `
+            <h3>${event.title || 'Без назви'}</h3>
+            <p>${event.location || 'Локацію не вказано'}</p>
+            <p>${event.time || 'Час не вказано'}</p>
+            <a href="events.html?event=${event.id}">Детальніше</a>
+        `;
+
+        eventsListContainer.appendChild(card);
+    });
+}
+
+// маркери карти
+function renderMarkers(eventsToRender) {
+    markersLayer.innerHTML = '';
+    markersList.length = 0;
+
+    if (!eventsToRender || eventsToRender.length === 0) return;
+
+    eventsToRender.forEach(ev => {
+        const marker = document.createElement('div');
+
+        marker.className = `map-marker is-dot ${ev.color}`;
+        marker.style.left = `${ev.x}%`;
+        marker.style.top = `${ev.y}%`;
+        marker.style.pointerEvents = 'auto';
+
+        marker.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            document.getElementById('bp-title').textContent = ev.title;
+            document.getElementById('bp-location').textContent = ev.location;
+            document.getElementById('bp-time').textContent = ev.time;
+            document.getElementById('bp-icon-container').innerHTML = icons[ev.icon];
+            document.getElementById('bp-btn').href = `events.html?event=${ev.id}`;
+
+            const rect = marker.getBoundingClientRect();
+            eventTooltip.style.left = `${rect.left + rect.width / 2}px`;
+
+            const yOffset = marker.classList.contains('is-pin') ? 10 : 20;
+            eventTooltip.style.top = `${rect.top - yOffset}px`;
+
+            eventTooltip.classList.add('show');
+        });
+
+        markersLayer.appendChild(marker);
+        markersList.push(marker);
+    });
+}
+
+// ГОЛОВНА функція твого таску
+function updateUIAfterCityFilter(filteredEvents) {
+    try {
+        if (!filteredEvents || filteredEvents.length === 0) {
+            renderMarkers([]);
+            renderEventsList([]);
+            showCityFilterMessage('У вибраному місті подій не знайдено');
+            return;
+        }
+
+        clearCityFilterMessage();
+        renderMarkers(filteredEvents);
+        renderEventsList(filteredEvents);
+
+    } catch (error) {
+        console.error('City filter UI error:', error);
+        showCityFilterMessage('Сталася помилка при оновленні', true);
+    }
+}
+
+/*
+Оновлення карти та списку після застосування фільтру (за датою)
+Показує повідомлення користувачу, якщо після фільтрації за датою
+нічого не знайдено або сталася помилка
+*/
+function showDateFilterMessage(text, isError = false) {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = text;
+    cityFilterMessage.style.display = 'block';
+    cityFilterMessage.style.color = isError ? 'red' : '#333';
+}
+
+
+/*
+Очищає повідомлення перед новим оновленням карти і списку
+*/
+function clearDateFilterMessage() {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = '';
+    cityFilterMessage.style.display = 'none';
+}
+
+
+/*
+- оновлює карту
+- оновлює список
+- показує повідомлення, якщо результат порожній
+- показує повідомлення про помилку, якщо щось зламалось
+*/
+function updateUIAfterDateFilter(filteredEvents) {
+    try {
+        if (!filteredEvents || filteredEvents.length === 0) {
+            renderMarkers([]);
+            renderEventsList([]);
+            showDateFilterMessage('На вибрану дату подій не знайдено');
+            return;
+        }
+
+        clearDateFilterMessage();
+        renderMarkers(filteredEvents);
+        renderEventsList(filteredEvents);
+
+    } catch (error) {
+        console.error('Date filter UI error:', error);
+        showDateFilterMessage('Сталася помилка під час оновлення по даті', true);
+    }
+}
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (по категорії)
+=====================================================
+Опис:
+Показує повідомлення користувачу, якщо після фільтрації по категорії
+нічого не знайдено або сталася помилка
+*/
+function showCategoryFilterMessage(text, isError = false) {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = text;
+    cityFilterMessage.style.display = 'block';
+    cityFilterMessage.style.color = isError ? 'red' : '#333';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (по категорії)
+=====================================================
+Опис:
+Очищає повідомлення перед новим оновленням карти і списку
+*/
+function clearCategoryFilterMessage() {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = '';
+    cityFilterMessage.style.display = 'none';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (по категорії)
+=====================================================
+Опис:
+Це головна функція твого таску.
+Вона НЕ фільтрує сама по категорії.
+Вона приймає вже готовий відфільтрований масив подій
+і після цього:
+- оновлює карту
+- оновлює список
+- показує повідомлення, якщо результат порожній
+- показує повідомлення про помилку, якщо щось зламалось
+*/
+function updateUIAfterCategoryFilter(filteredEvents) {
+    try {
+        if (!filteredEvents || filteredEvents.length === 0) {
+            renderMarkers([]);
+            renderEventsList([]);
+            showCategoryFilterMessage('У вибраній категорії подій не знайдено');
+            return;
+        }
+
+        clearCategoryFilterMessage();
+        renderMarkers(filteredEvents);
+        renderEventsList(filteredEvents);
+
+    } catch (error) {
+        console.error('Category filter UI error:', error);
+        showCategoryFilterMessage('Сталася помилка під час оновлення по категорії', true);
+    }
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (за ціною)
+=====================================================
+Опис:
+Показує повідомлення користувачу, якщо після фільтрації за ціною
+нічого не знайдено або сталася помилка
+*/
+function showPriceFilterMessage(text, isError = false) {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = text;
+    cityFilterMessage.style.display = 'block';
+    cityFilterMessage.style.color = isError ? 'red' : '#333';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (за ціною)
+=====================================================
+Опис:
+Очищає повідомлення перед новим оновленням карти і списку
+*/
+function clearPriceFilterMessage() {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = '';
+    cityFilterMessage.style.display = 'none';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після затосування фільтру (за ціною)
+=====================================================с
+Опис:
+Це головна функція твого таску.
+Вона НЕ фільтрує сама за ціною.
+Вона приймає вже готовий відфільтрований масив подій
+і після цього:
+- оновлює карту
+- оновлює список
+- показує повідомлення, якщо результат порожній
+- показує повідомлення про помилку, якщо щось зламалось
+*/
+function updateUIAfterPriceFilter(filteredEvents) {
+    try {
+        if (!filteredEvents || filteredEvents.length === 0) {
+            renderMarkers([]);
+            renderEventsList([]);
+            showPriceFilterMessage('У вибраному ціновому діапазоні подій не знайдено');
+            return;
+        }
+
+        clearPriceFilterMessage();
+        renderMarkers(filteredEvents);
+        renderEventsList(filteredEvents);
+
+    } catch (error) {
+        console.error('Price filter UI error:', error);
+        showPriceFilterMessage('Сталася помилка під час оновлення за ціною', true);
+    }
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (по рейтингу)
+=====================================================
+Опис:
+Показує повідомлення користувачу, якщо після фільтрації по рейтингу
+нічого не знайдено або сталася помилка
+*/
+function showRatingFilterMessage(text, isError = false) {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = text;
+    cityFilterMessage.style.display = 'block';
+    cityFilterMessage.style.color = isError ? 'red' : '#333';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (по рейтингу)
+=====================================================
+Опис:
+Очищає повідомлення перед новим оновленням карти і списку
+*/
+function clearRatingFilterMessage() {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = '';
+    cityFilterMessage.style.display = 'none';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після застосування фільтру (по рейтингу)
+=====================================================
+Опис:
+Це головна функція твого таску.
+Вона НЕ фільтрує сама по рейтингу.
+Вона приймає вже готовий відфільтрований масив подій
+і після цього:
+- оновлює карту
+- оновлює список
+- показує повідомлення, якщо результат порожній
+- показує повідомлення про помилку, якщо щось зламалось
+*/
+function updateUIAfterRatingFilter(filteredEvents) {
+    try {
+        if (!filteredEvents || filteredEvents.length === 0) {
+            renderMarkers([]);
+            renderEventsList([]);
+            showRatingFilterMessage('Подій із вибраним рейтингом не знайдено');
+            return;
+        }
+
+        clearRatingFilterMessage();
+        renderMarkers(filteredEvents);
+        renderEventsList(filteredEvents);
+
+    } catch (error) {
+        console.error('Rating filter UI error:', error);
+        showRatingFilterMessage('Сталася помилка під час оновлення по рейтингу', true);
+    }
+}
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після сортування (по даті)
+=====================================================
+Опис:
+Показує повідомлення користувачу, якщо після сортування
+дані відсутні або сталася помилка
+*/
+function showDateSortMessage(text, isError = false) {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = text;
+    cityFilterMessage.style.display = 'block';
+    cityFilterMessage.style.color = isError ? 'red' : '#333';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після сортування (по даті)
+=====================================================
+Опис:
+Очищає повідомлення перед новим оновленням карти і списку
+*/
+function clearDateSortMessage() {
+    if (!cityFilterMessage) return;
+
+    cityFilterMessage.textContent = '';
+    cityFilterMessage.style.display = 'none';
+}
+
+
+/*
+=====================================================
+ТАСК: Оновлення карти та списку після сортування (по даті)
+=====================================================
+Опис:
+Це головна функція твого таску.
+Вона НЕ сортує сама по даті.
+Вона приймає вже готовий відсортований масив подій
+і після цього:
+- оновлює карту
+- оновлює список
+- показує повідомлення, якщо масив порожній
+- показує повідомлення про помилку, якщо щось зламалось
+*/
+function updateUIAfterDateSorting(sortedEvents) {
+    try {
+        if (!sortedEvents || sortedEvents.length === 0) {
+            renderMarkers([]);
+            renderEventsList([]);
+            showDateSortMessage('Події для сортування відсутні');
+            return;
+        }
+
+        clearDateSortMessage();
+        renderMarkers(sortedEvents);
+        renderEventsList(sortedEvents);
+
+    } catch (error) {
+        console.error('Date sorting UI error:', error);
+        showDateSortMessage('Сталася помилка під час оновлення після сортування', true);
+    }
+}
 
         const markersList = [];
 
