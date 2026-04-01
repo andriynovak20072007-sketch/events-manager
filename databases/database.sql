@@ -1,21 +1,17 @@
-
-
-
-
-
-
-
-
-
 ------------------------------------------------------------
 -- FINAL PRODUCTION SCHEMA: EVENT MANAGER DB
 ------------------------------------------------------------
 
-DROP TRIGGER IF EXISTS trigger_check_privacy ON events;
-DROP FUNCTION IF EXISTS check_event_privacy();
+-- Спочатку видаляємо ті таблиці, які залежать від інших
+DROP TABLE IF EXISTS ratings;
+DROP TABLE IF EXISTS route_events;
+DROP TABLE IF EXISTS favorites;
+DROP TABLE IF EXISTS routes;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS event_participants;
 DROP TABLE IF EXISTS invitations;
+
+-- Тепер можна безпечно видаляти головні таблиці
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS users;
@@ -79,6 +75,46 @@ CREATE TABLE invitations (
     event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
     invite_code VARCHAR(10) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1. Таблиця самих маршрутів (заголовок маршруту)
+CREATE TABLE routes (
+    route_id SERIAL PRIMARY KEY,
+    creator_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    route_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Таблиця зв'язку (які події входять у маршрут і в якому порядку)
+-- Це патерн Many-to-Many з додатковим полем порядку
+CREATE TABLE route_events (
+    id SERIAL PRIMARY KEY,
+    route_id INT REFERENCES routes(route_id) ON DELETE CASCADE,
+    event_id INT REFERENCES events(event_id) ON DELETE CASCADE,
+    order_index INT NOT NULL -- Порядок події в маршруті (1, 2, 3...)
+);
+
+-- 3. Таблиця "Обране"
+-- Сюди юзер може додати АБО окрему подію, АБО цілий маршрут
+CREATE TABLE favorites (
+    favorite_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    event_id INT REFERENCES events(event_id) ON DELETE CASCADE, -- Якщо лайкнув подію
+    route_id INT REFERENCES routes(route_id) ON DELETE CASCADE, -- Якщо лайкнув маршрут
+    CHECK (
+        (event_id IS NOT NULL AND route_id IS NULL) OR 
+        (event_id IS NULL AND route_id IS NOT NULL)
+    ) -- Перевірка, що в одному рядку або подія, або маршрут
+);
+
+-- Таблиця рейтингів (Оцінки від 1 до 5)
+CREATE TABLE ratings (
+    rating_id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    score INTEGER CHECK (score >= 1 AND score <= 5), -- Захист: оцінка тільки 1-5
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, event_id) -- Захист від накрутки: 1 юзер = 1 оцінка на 1 подію
 );
 
 -- БІЗНЕС-ЛОГІКА (ТРИГЕР)
