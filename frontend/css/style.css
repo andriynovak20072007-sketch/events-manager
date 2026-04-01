@@ -9,6 +9,12 @@
   --gray: #737373;
   --white: #ffffff;
   --black: #000000;
+  --bg-color: #f3f0f8;
+    --text-main: #1a1a1a;
+    --text-muted: #4a4a4a;
+    --primary-color: #a020f0;
+    --border-color: #d1cce0;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 body {
@@ -87,21 +93,19 @@ body {
   border-radius: 50%;
 }
 
-/* --- СТИЛІ ДЛЯ ЦЕНТРАЛЬНОГО БЛОКУ ХЕДЕРА --- */
 .header-center {
     display: flex;
     align-items: center;
-    flex: 1; /* Розтягує центральний блок на весь вільний простір */
-    padding-left: 20px; /* Відступ від сірої лінії-розділювача */
-    padding-right: 20px; /* Відступ перед блоком UA/Профіль */
+    flex: 1; 
+    padding-left: 20px; 
+    padding-right: 20px; 
 }
 
-/* Пошуковий рядок */
 .search-box {
     display: flex;
     align-items: center;
-    flex: 1; /* ОЦЕ ГОЛОВНЕ: змушує пошук зайняти весь вільний простір і відштовхнути інші кнопки вправо */
-    background: transparent; /* Без фону, як на макеті */
+    flex: 1; 
+    background: transparent;
 }
 
 .search-box .search-icon {
@@ -126,7 +130,6 @@ body {
     color: #8C8C8C;
 }
 
-/* Кругла сіра кнопка з плюсом */
 .add-event-btn {
     width: 36px;
     height: 36px;
@@ -139,8 +142,8 @@ body {
     justify-content: center;
     cursor: pointer;
     transition: 0.2s;
-    margin-right: 15px; /* Відступ між плюсом і фільтрами */
-    flex-shrink: 0; /* Забороняємо кнопці стискатися */
+    margin-right: 15px; 
+    flex-shrink: 0; 
 }
 
 .add-event-btn svg {
@@ -152,19 +155,17 @@ body {
     background-color: #8C8C8C;
 }
 
-/* Контейнер для фільтрів */
 .header-filters {
     display: flex;
     align-items: center;
-    gap: 10px; /* Відстань між пігулками */
+    gap: 10px;
 }
 
-/* Спільні стилі для кнопок-фільтрів */
 .filter-pill {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #F0EEF6; /* Світло-фіолетовий фон */
+    background: #F0EEF6;
     padding: 8px 16px;
     border-radius: 20px;
     border: none;
@@ -175,7 +176,7 @@ body {
     cursor: pointer;
     transition: 0.2s;
     height: 36px;
-    white-space: nowrap; /* Текст не переноситься на новий рядок */
+    white-space: nowrap; 
 }
 
 .filter-pill:hover {
@@ -188,7 +189,6 @@ body {
     color: #444;
 }
 
-/* Активний синій фільтр (Місто) */
 .city-filter {
     background: #00AAFF;
     color: white;
@@ -332,14 +332,13 @@ body {
     gap: 60px;
     max-width: 1000px;
     width: 100%;
-    align-items: center; /* Центрує лівий і правий блок по вертикалі */
+    align-items: center; 
     justify-content: space-between;
 }
 
-/* --- ЛІВИЙ БЛОК (Текст і список) --- */
 .promo-text-block {
     flex: 1;
-    text-align: left; /* Жорстко вирівнюємо все ліворуч */
+    text-align: left;
 }
 
 .promo-text-block h3 {
@@ -368,8 +367,8 @@ body {
 
 .promo-list li {
     display: flex;
-    align-items: center; /* Вирівнює галочку і текст на одній лінії */
-    gap: 15px; /* Відстань між іконкою і текстом */
+    align-items: center; 
+    gap: 15px; 
     font-size: 18px;
     font-weight: 500;
     color: #000;
@@ -378,10 +377,9 @@ body {
 .promo-list svg {
     width: 24px;
     height: 24px;
-    flex-shrink: 0; /* Галочка не буде стискатися */
+    flex-shrink: 0; 
 }
 
-/* --- ПРАВИЙ БЛОК (Форма) --- */
 .promo-form-block {
     flex: 1;
     display: flex;
@@ -389,10 +387,10 @@ body {
 }
 
 .promo-form-box {
-    background-color: #EFEFF5; /* Світло-сіро-фіолетовий фон як на макеті */
+    background-color: #EFEFF5; 
     padding: 40px;
     border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* Красива розмита тінь */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); 
     width: 100%;
     max-width: 380px;
     display: flex;
@@ -401,10 +399,10 @@ body {
 }
 
 .promo-form-box input {
-    background-color: #C8C8C8; /* Сірий колір інпутів */
+    background-color: #C8C8C8; 
     border: none;
     padding: 18px 24px;
-    border-radius: 30px; /* Сильне заокруглення (пігулка) */
+    border-radius: 30px; 
     font-size: 16px;
     font-family: 'Montserrat', sans-serif;
     color: #000;
@@ -420,13 +418,12 @@ body {
     background-color: #b5b5b5;
 }
 
-/* --- СТИЛІ ДЛЯ КНОПКИ (БАЗОВИЙ СТАН) --- */
 .promo-form-box button {
-    background: linear-gradient(90deg, var(--blue-dark), var(--blue-light)); /* Синій градієнт кнопки */
+    background: linear-gradient(90deg, var(--blue-dark), var(--blue-light)); 
     color: #fff;
     border: none;
     padding: 18px 24px;
-    border-radius: 30px; /* Пігулка */
+    border-radius: 30px; 
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -446,15 +443,14 @@ body {
     flex-direction: column;
 }
 
-/* Оскільки в .error вже є margin-top: -10px, ми просто даємо відступ обгортці */
 .promo-form-box {
-    gap: 15px; /* Трохи зменшив загальний відступ, бо тепер є текст помилок */
+    gap: 15px; 
 }
-/* Виправляємо налізання тексту помилки у новій формі */
+
 .field-group .error {
-    margin-top: 5px; /* Відштовхуємо текст помилки вниз, щоб він не ліз на рамку */
-    padding-left: 25px; /* Зсуваємо текст трохи правіше, щоб він стояв рівно під текстом у круглому полі */
-    margin-bottom: -5px; /* Трохи компенсуємо висоту, щоб форма не ставала занадто довгою */
+    margin-top: 5px; 
+    padding-left: 25px; 
+    margin-bottom: -5px; 
 }
 .site-footer {
     background-color: #383A3C;
@@ -469,50 +465,39 @@ body {
     margin: 0 auto 50px;
 }
 
-/* Об'єднаний та очищений клас для колонок */
 .footer-column {
     display: flex;
     flex-direction: column;
-    gap: 12px; /* Залишили 12px для компактності */
+    gap: 12px; 
     min-width: 200px;
 }
 
-/* 1. Збільшені сині заголовки */
 .footer-column h4 {
     color: #00AAFF; 
-    font-size: 18px; /* Збільшили розмір з 15px до 18px */
+    font-size: 18px; 
     font-weight: 700;
     margin: 0 0 5px 0;
     line-height: 1.4; 
 }
 
-/* 2. Позиціювання іконки Instagram */
 .social-link {
-    /* Вибери ОДИН з варіантів вирівнювання: */
-    
-    /* Варіант А: НА ПОЧАТКУ (зліва) - розкоментуй рядок нижче */
     align-self: flex-start; 
-    
-    /* Варіант Б: ПОСЕРЕДИНІ колонки - розкоментуй рядок нижче замість попереднього */
-    /* align-self: center; */
-    
-    margin-top: 10px; /* Додатковий відступ від заголовка вниз */
-    transition: transform 0.3s ease; /* Плавність для анімації */
+    margin-top: 10px; 
+    transition: transform 0.3s ease; 
 }
 
-/* Ефект збільшення іконки при наведенні (за бажанням) */
 .social-link:hover {
     transform: scale(1.1);
 }
 
 footer a {
-    color: #ffffff; /* Робить букви чисто білими */
-    text-decoration: none; /* Прибирає стандартне підкреслення */
-    transition: color 0.3s ease; /* Додає плавність для ефекту при наведенні */
+    color: #ffffff; 
+    text-decoration: none; 
+    transition: color 0.3s ease; 
 }
 
 footer a:hover {
-    color: #00bfff; /* Залишає блакитний колір при наведенні (під колір заголовків) */
+    color: #00bfff; 
 }
 
 .footer-bottom {
@@ -523,13 +508,13 @@ footer a:hover {
     max-width: 1200px;
     margin: 0 auto;
     font-size: 13px;
-    color: #FFFFFF; /* Текст знизу теж білий */
+    color: #FFFFFF;
 }
 
 .footer-bottom p {
     margin: 0;
 }
-/* ERRORS */
+
 .error {
   color: var(--red);
   font-size: 12px;
@@ -639,7 +624,7 @@ input.input-error {
 .toggle-password:hover svg {
   stroke: var(--blue-dark); 
 }
-/* Затемнений фон модального вікна */
+
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -656,7 +641,6 @@ input.input-error {
   position: relative;
 }
 
-/* Кнопка закриття (хрестик) */
 .close-modal {
   position: absolute;
   top: 15px; right: 20px;
@@ -669,20 +653,16 @@ input.input-error {
 .close-modal:hover { color: var(--red); }
 .zoom {
     position: absolute;
-    bottom: 30px; /* Відступ від низу */
-    right: 30px;  /* Відступ від правого краю */
+    bottom: 30px; 
+    right: 30px; 
     display: flex;
     flex-direction: column;
     background-color: #ffffff;
-    border-radius: 15px; /* Заокруглені кути */
-    
-    /* ТІНЬ ЯК НА СКРІНШОТІ */
-    /* 0px (зсув по X) 10px (зсув по Y) 25px (розмиття) колір з прозорістю */
+    border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); 
-    
     overflow: hidden;
     z-index: 1000;
-    border: 1px solid rgba(0, 0, 0, 0.05); /* Ледь помітна рамка для чіткості */
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .zoom button {
@@ -690,7 +670,7 @@ input.input-error {
     height: 50px;
     border: none;
     background: transparent;
-    font-size: 30px; /* Великі плюс і мінус */
+    font-size: 30px; 
     color: #444;
     cursor: pointer;
     display: flex;
@@ -699,7 +679,6 @@ input.input-error {
     transition: background-color 0.2s;
 }
 
-/* Лінія між кнопками */
 .zoom button:first-child {
     border-bottom: 1.5px solid #f0f0f0;
 }
@@ -707,15 +686,15 @@ input.input-error {
 .zoom button:hover {
     background-color: #f8f9fa;
 }
-/* 1. Анімація появи всієї секції при завантаженні */
+
 @keyframes mapFadeIn {
     0% {
         opacity: 0;
-        transform: scale(1.1); /* Починаємо трохи збільшеними */
+        transform: scale(1.1);
     }
     100% {
         opacity: 1;
-        transform: scale(1); /* Повертаємося до нормального розміру */
+        transform: scale(1); 
     }
 }
 
@@ -723,37 +702,29 @@ input.input-error {
     position: relative;
     width: 100%;
     margin-top: 30px;
-    
-    /* Застосовуємо анімацію: назва, тривалість, тип плавности, затримка */
-    animation: mapFadeIn 1.5s ease-out 0.5s both;
-    
-    overflow: hidden; /* Щоб карта не вилазила за межі при зумі */
+    animation: mapFadeIn 1.5s ease-out 0.5s both;  
+    overflow: hidden; 
 }
 
-/* 2. Стилі контейнера карти */
 #map-container {
     width: 100%;
-    height: 80vh; /* Задаємо висоту на 80% екрану */
+    height: 80vh; 
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
 }
 
-/* 3. Плавність для самої SVG-карти */
 #map-container svg {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    
-    /* ЦЕ РОБИТЬ ЗУМ КНОПКАМИ ПЛАВНИМ */
-    transition: transform 0.4s ease-out; /* Плавна зміна transform */
-    
-    transform-origin: center center; /* Зум від центру */
+    transition: transform 0.4s ease-out; 
+    transform-origin: center center; 
 }
 
 .popular-events {
-    background-color: #FFB300; /* Яскраво-жовтий колір */
+    background-color: #FFB300;
     padding: 70px 20px;
     margin-top: 50px;
     display: flex;
@@ -773,13 +744,13 @@ input.input-error {
     display: flex;
     gap: 30px;
     justify-content: center;
-    flex-wrap: wrap; /* Дозволяє переноситись на телефоні */
+    flex-wrap: wrap; 
     max-width: 1200px;
     width: 100%;
 }
 
 .event-card {
-    background-color: #F8F9FB; /* Світлий колір фону картки */
+    background-color: #F8F9FB;
     border-radius: 28px;
     padding: 20px;
     width: 340px;
@@ -811,8 +782,8 @@ input.input-error {
 
 .event-detail {
     display: flex;
-    align-items: center; /* Вирівнюємо іконку і текст по вертикалі */
-    justify-content: flex-start; /* ПРИТИСКАЄМО ВСЕ ДО ЛІВОГО КРАЮ */
+    align-items: center; 
+    justify-content: flex-start;
     gap: 12px;
     font-size: 14px;
     color: var(--black);
@@ -820,21 +791,20 @@ input.input-error {
     font-weight: 500;
 }
 
-/* Якщо іконка (svg) все ще "стрибає", додамо їй фіксований розмір */
 .event-detail svg {
-    flex-shrink: 0; /* Забороняємо іконці зменшуватися */
+    flex-shrink: 0; 
     width: 16px;
     height: 16px;
 }
 
 .event-link {
-    margin-top: auto; /* ВІДШТОВХУЄ КНОПКУ ВНИЗ, якщо текст над нею короткий */
-    padding-top: 15px; /* Додатковий відступ зверху */
+    margin-top: auto; 
+    padding-top: 15px; 
     color: var(--blue-dark);
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
-    align-self: flex-start; /* Притискає лінк до лівого краю */
+    align-self: flex-start; 
     border-bottom: 1px solid transparent;
     transition: 0.2s;
 }
@@ -842,20 +812,389 @@ input.input-error {
 .event-link:hover {
     border-bottom: 1px solid var(--blue-dark);
 }
-/* Ховаємо всі блоки форм за замовчуванням */
+
 .form-content {
     display: none; 
     flex-direction: column;
     gap: 15px;
 }
 
-/* Показуємо лише ту форму, яка має клас active */
 .form-content.active {
     display: flex;
 }
 
-/* Стилі для заголовка, щоб вони не злипалися */
 .form-content h1 {
     margin-bottom: 20px;
     text-align: center;
 }
+
+/* Базові налаштування сайдбару (Зменшено відступи, щоб все помістилося без скролу) */
+.sidebar {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Зменшено з 20px до 12px для компактності */
+}
+
+/* Стилі для карток (Фільтри, Популярні, Сортувати) */
+.card {
+    background-color: #ebeaf3; /* Світло-фіолетовий/сірий фон */
+    border-radius: 24px;
+    padding: 16px 24px; /* Зменшено верхній/нижній відступи з 24px до 16px */
+    box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 16px; /* Зменшено з 20px до 16px */
+    color: #000;
+}
+
+/* Групи полів форми */
+.form-group {
+    margin-bottom: 14px; /* Зменшено з 18px до 14px */
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px; /* Зменшено з 10px до 8px */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label i {
+    color: #1e3a8a; /* Темно-синій колір іконок */
+    font-size: 16px;
+}
+
+/* Обгортка для полів вводу (щоб іконка була всередині) */
+.input-wrapper {
+    position: relative;
+}
+
+/* Самі поля вводу (трохи тонші) */
+.input-wrapper input, 
+.input-wrapper select {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 40px 10px 16px; /* Зменшено верхній/нижній відступи з 12px до 10px */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    outline: none;
+    appearance: none; /* Прибирає стандартну стрілочку в select */
+    cursor: pointer;
+}
+
+.input-icon-right {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #333;
+    pointer-events: none; /* Щоб клік проходив крізь іконку до інпуту */
+    font-size: 16px;
+}
+
+/* Кнопка "Застосувати" */
+.btn-primary {
+    width: 100%;
+    background: #9d2cff; /* Яскраво-фіолетовий */
+    color: #ffffff;
+    border: none;
+    border-radius: 16px;
+    padding: 12px; /* Зменшено з 14px до 12px */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(157, 44, 255, 0.3);
+    transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+/* Кнопка "Сортувати за" */
+.btn-sort {
+    background-color: #ebeaf3;
+    border: none;
+    border-radius: 30px; /* Сильне заокруглення як у капсули */
+    padding: 14px; /* Зменшено з 16px до 14px */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000;
+    box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Список "Популярні" */
+.popular-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.popular-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0; /* Зменшено з 12px до 10px */
+    border-bottom: 1px solid #c2c2d6; /* Лінія-розділювач */
+}
+
+.popular-item:last-child {
+    border-bottom: none; /* Прибираємо лінію в останнього елемента */
+}
+
+.city-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.city-name i {
+    color: #1e3a8a; /* Темно-синій для будівель */
+    font-size: 16px;
+}
+
+.event-count {
+    font-size: 14px;
+    font-weight: 500;
+    color: #000;
+}
+
+/* Клас для приховування елементів через JavaScript */
+.hidden {
+    display: none !important;
+}
+
+/* Заголовок в розгорнутій картці сортування (працює як кнопка "Закрити") */
+.sort-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 16px; /* Зменшено з 20px до 16px */
+}
+
+.sort-header h2 {
+    margin-bottom: 0; /* Відміняємо нижній відступ, бо він заданий в контейнері */
+}
+
+.sort-header i {
+    font-size: 18px;
+    color: #1a1a1a;
+}
+
+.search-box { position: relative; }
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.search-results li {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f5;
+    transition: background 0.2s;
+}
+
+.search-results li:hover { background-color: #edeaf5; }
+
+/* ==========================================
+   КАРУСЕЛЬ КАРТОК (СЛАЙДЕР)
+========================================== */
+.carousel-container {
+    width: 100%;
+    max-width: 1300px;
+    overflow: hidden; /* Ховаємо те, що вилазить за межі (крім скролу) */
+    position: relative;
+}
+
+.events-grid {
+    display: flex;
+    gap: 30px;
+    padding: 20px 10px;
+    overflow-x: auto; /* Дозволяємо прокрутку */
+    scroll-behavior: smooth; /* Плавний скрол при кліку на кнопки */
+    -ms-overflow-style: none;  /* Ховаємо стандартний скролбар в Firefox */
+    scrollbar-width: none;     /* Ховаємо стандартний скролбар в Firefox */
+}
+
+/* Ховаємо стандартний скролбар в Chrome/Safari/Edge, бо в нас є кнопки */
+.events-grid::-webkit-scrollbar {
+    display: none; 
+}
+
+/* Картка події */
+.event-card {
+    flex: 0 0 auto; /* Забороняємо карткам стискатися */
+    width: 320px;   /* Фіксована ширина картки */
+    background-color: #FFFFFF; 
+    border-radius: 24px; 
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================
+   КНОПКИ КЕРУВАННЯ СЛАЙДЕРОМ (< >)
+========================================== */
+.carousel-controls {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.slider-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 2px solid white; /* Біла обводка як на макеті */
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slider-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.slider-btn:hover {
+    background-color: white;
+    color: #FFB300; /* При наведенні стає білою з жовтою стрілкою */
+    transform: scale(1.1);
+}
+
+/* ==========================================
+   ОНОВЛЕНІ ДЕТАЛІ КАРТКИ (ДЛЯ ЦІНИ)
+========================================== */
+.event-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Розсуває дату і ціну по краях */
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.event-detail-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+}
+
+.event-price {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2854C5; /* Синій колір ціни */
+}
+
+/* ==========================================
+   СІТКА КАРТОК (Горизонтальна прокрутка)
+========================================== */
+.events-grid {
+    display: flex;
+    gap: 30px;
+    justify-content: flex-start; /* Починаємо з лівого краю */
+    flex-wrap: nowrap; /* ВАЖЛИВО: забороняємо перенесення на новий рядок */
+    overflow-x: auto;  /* ВАЖЛИВО: вмикаємо горизонтальну прокрутку */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 10px 40px 10px; /* Відступи, щоб тіні карток не обрізалися */
+    
+    /* Робимо скрол плавним (якщо гортати на тачпаді) */
+    scroll-behavior: smooth;
+    
+    /* Ховаємо стандартний негарний скролбар браузера для сучасного вигляду */
+    scrollbar-width: none; /* Для Firefox */
+}
+
+.events-grid::-webkit-scrollbar {
+    display: none; /* Для Chrome, Safari, Opera */
+}
+
+/* ==========================================
+   САМА КАРТКА ПОДІЇ
+========================================== */
+.event-card {
+    flex: 0 0 auto; /* ВАЖЛИВО: не дає картці стискатися, щоб вміститися на екран */
+    width: 320px;   /* Жорстка ширина картки */
+    background-color: #FFFFFF; 
+    border-radius: 24px; 
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Зображення всередині картки */
+.event-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-bottom: 16px;
+}
+
+/* ... решта стилів для .event-name, .event-detail залишаються без змін ... */

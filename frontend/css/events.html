@@ -169,6 +169,137 @@
 </div>
 
       </div> </div> </div> </main>
+<div id="authModal" class="modal-overlay" style="display: none;">
+  <div class="form-wrapper">
+    <span class="close-modal" id="closeModalBtn">&times;</span>
+    
+    <form id="registrationForm" class="register-form" novalidate>
+
+      <div class="form-content register active">
+        <h1>Створити профіль</h1>
+        <input type="email" id="reg-email" placeholder="e-mail..." required>
+        <p class="error" id="email-error"></p>
+
+        <div class="password-wrapper">
+          <input type="password" id="reg-password" placeholder="Пароль..." required>
+          <span class="toggle-password">
+            <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </span>
+        </div>
+        <p class="error" id="password-error"></p>
+
+        <input type="text" id="reg-username" placeholder="@ім’я користувача" required>
+        <p class="error" id="username-error"></p>
+
+        <label class="checkbox">
+          <input type="checkbox"> Запам’ятати мене
+        </label>
+
+        <button type="submit" class="main-btn">Створити профіль</button>
+
+        <p class="or">або</p>
+
+        <button type="button" class="google-login">
+          <img src="images/гугл.webp" class="google-icon" alt="Google">
+          Ввійти з Google
+        </button>
+
+        <p class="login-link">
+          Вже маєте аккаунт?
+          <a href="#" class="switch-login">Увійти</a>
+        </p>
+      </div>
+
+      <div class="form-content login">
+        <h1>Вітаємо знову!</h1>
+        <input type="email" id="login-email" placeholder="e-mail..." required>
+        <p class="error" id="login-email-error"></p>
+
+        <div class="password-wrapper">
+          <input type="password" id="login-password" placeholder="Пароль..." required>
+          <span class="toggle-password">
+            <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </span>
+        </div>
+        <p class="error" id="login-password-error"></p>
+
+        <div class="checkbox-forgot">
+          <label class="checkbox">
+            <input type="checkbox"> Запам’ятати мене
+          </label>
+          <a href="#" class="forgot-password">Забули пароль?</a>
+        </div>
+
+        <button type="submit" class="main-btn">Увійти</button>
+
+        <p class="or">або</p>
+
+        <button type="button" class="google-login">
+          <img src="images/гугл.webp" class="google-icon" alt="Google">
+          Ввійти з Google
+        </button>
+
+        <p class="login-link">
+          Не маєте аккаунт?
+          <a href="#" class="switch-register">Створити</a>
+        </p>
+      </div>
+
+      <div class="form-content forgot">
+        <h1>Відновлення пароля</h1>
+        <input type="email" id="forgot-email" placeholder="e-mail..." required>
+        <p class="error" id="forgot-email-error"></p>
+        <button type="button" id="forgot-submit" class="main-btn">Скинути пароль</button>
+        <p class="login-link">
+          <a href="#" class="back-login">Повернутися до входу</a>
+        </p>
+      </div>
+
+      <div class="form-content verify">
+        <h1>Введіть код</h1>
+        <div class="code-inputs">
+          <input maxlength="1" class="code-box">
+          <input maxlength="1" class="code-box">
+          <input maxlength="1" class="code-box">
+          <input maxlength="1" class="code-box">
+        </div>
+        <button type="submit" class="main-btn">Підтвердити</button>
+        <p class="login-link">
+          <a href="#" class="back-login">Повернутися до входу</a>
+        </p>
+      </div>
+
+      <div class="form-content reset-password">
+        <h1>Підтвердження пароля</h1>
+        <div class="password-wrapper">
+          <input type="password" id="new-password" placeholder="Новий пароль..." required>
+          <span class="toggle-password">
+            <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </span>
+        </div>
+        <p class="error" id="new-password-error"></p>
+
+        <div class="password-wrapper">
+          <input type="password" id="confirm-password" placeholder="Підтвердження..." required>
+          <span class="toggle-password">
+            <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </span>
+        </div>
+        <p class="error" id="confirm-password-error"></p>
+
+        <button type="submit" class="main-btn">Підтвердити</button>
+        <p class="login-link">
+          <a href="#" class="back-login">Повернутися до входу</a>
+        </p>
+      </div>
+
+    </form>
+  </div>
+</div>
 
 <footer class="site-footer">
   <div class="footer-top">
@@ -214,5 +345,6 @@
 </footer>
 
 <script src="events.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

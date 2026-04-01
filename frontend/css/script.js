@@ -1,20 +1,16 @@
 console.log("JS підключений");
-
 const form = document.getElementById("registrationForm");
-
 // Форми 
-// Зберігаємо посилання на всі блоки форм
 const forms = {
-  register: document.querySelector(".register"), // форма реєстрації
-  login: document.querySelector(".login"),       // форма входу
-  forgot: document.querySelector(".forgot"),     // форма відновлення пароля
-  verify: document.querySelector(".verify"),     // форма введення коду підтвердження
-  reset: document.querySelector(".reset-password") // форма зміни нового пароля
+  register: document.querySelector(".register"), 
+  login: document.querySelector(".login"),   
+  forgot: document.querySelector(".forgot"),     
+  verify: document.querySelector(".verify"),    
+  reset: document.querySelector(".reset-password") 
 };
-
 // Кнопки 
-const switchLogin = document.querySelector(".switch-login"); // кнопка "Увійти" у формі реєстрації
-const switchRegister = document.querySelector(".switch-register"); // кнопка "Створити" у формі входу
+const switchLogin = document.querySelector(".switch-login"); // кнопка "Увійти"
+const switchRegister = document.querySelector(".switch-register"); // кнопка "Створити" 
 const forgotBtn = document.querySelector(".forgot-password"); // посилання "Забули пароль?"
 const backLoginBtns = document.querySelectorAll(".back-login"); // кнопки повернення до входу
 const forgotSubmitBtn = document.getElementById("forgot-submit"); // кнопка відправки email для відновлення
@@ -23,14 +19,11 @@ const forgotSubmitBtn = document.getElementById("forgot-submit"); // кнопк�
 const regEmail = document.getElementById("reg-email");
 const regPassword = document.getElementById("reg-password");
 const regUsername = document.getElementById("reg-username");
-
 const loginEmail = document.getElementById("login-email");
 const loginPassword = document.getElementById("login-password");
-
 const forgotEmail = document.getElementById("forgot-email");
-
-const newPassword = document.getElementById("new-password"); // новий пароль
-const confirmPassword = document.getElementById("confirm-password"); // підтвердження пароля
+const newPassword = document.getElementById("new-password"); 
+const confirmPassword = document.getElementById("confirm-password"); 
 
 //Елементи для відображення помилок
 const emailError = document.getElementById("email-error");
@@ -47,9 +40,9 @@ const confirmPasswordError = document.getElementById("confirm-password-error");
 
 // Показує потрібну форму, ховає інші та скидає всі поля і помилки
 function showForm(name) {
-  form.reset(); // очищення всіх полів форми
-  document.querySelectorAll(".error").forEach(e => e.textContent = ""); // очищення повідомлень про помилки
-  document.querySelectorAll(".input-error").forEach(i => i.classList.remove("input-error")); // видалення стилів помилок
+  form.reset(); 
+  document.querySelectorAll(".error").forEach(e => e.textContent = ""); 
+  document.querySelectorAll(".input-error").forEach(i => i.classList.remove("input-error"));
 
   // Скидання полів пароля та іконки очей
   document.querySelectorAll(".password-wrapper input").forEach(input => input.type = "password");
@@ -165,17 +158,25 @@ function validateConfirmPassword(pass, confirm, error) {
 }
 
 // Валідація при введенні
-regEmail.addEventListener("input", () => validateEmail(regEmail, emailError));
-regPassword.addEventListener("input", () => validatePassword(regPassword, passwordError));
-regUsername.addEventListener("input", () => validateUsername(regUsername, usernameError));
+if (regEmail) {
+    regEmail.addEventListener("input", () => validateEmail(regEmail, emailError));
+    regPassword.addEventListener("input", () => validatePassword(regPassword, passwordError));
+    regUsername.addEventListener("input", () => validateUsername(regUsername, usernameError));
+}
 
-loginEmail.addEventListener("input", () => validateEmail(loginEmail, loginEmailError));
-loginPassword.addEventListener("input", () => validatePassword(loginPassword, loginPasswordError));
+if (loginEmail) {
+    loginEmail.addEventListener("input", () => validateEmail(loginEmail, loginEmailError));
+    loginPassword.addEventListener("input", () => validatePassword(loginPassword, loginPasswordError));
+}
 
-forgotEmail.addEventListener("input", () => validateEmail(forgotEmail, forgotEmailError));
+if (forgotEmail) {
+    forgotEmail.addEventListener("input", () => validateEmail(forgotEmail, forgotEmailError));
+}
 
-newPassword.addEventListener("input", () => validatePassword(newPassword, newPasswordError));
-confirmPassword.addEventListener("input", () => validateConfirmPassword(newPassword, confirmPassword, confirmPasswordError));
+if (newPassword) {
+    newPassword.addEventListener("input", () => validatePassword(newPassword, newPasswordError));
+    confirmPassword.addEventListener("input", () => validateConfirmPassword(newPassword, confirmPassword, confirmPasswordError));
+}
 
 // Показ / приховування пароля 
 document.querySelectorAll(".toggle-password").forEach(iconBtn => {
@@ -200,14 +201,12 @@ document.querySelectorAll(".toggle-password").forEach(iconBtn => {
 const codeBoxes = document.querySelectorAll(".code-box");
 
 codeBoxes.forEach((box, index) => {
-  // Автоматичний перехід на наступне поле
   box.addEventListener("input", () => {
     if (box.value.length === 1 && index < codeBoxes.length - 1) {
       codeBoxes[index + 1].focus();
     }
   });
 
-  // Повернення назад при Backspace
   box.addEventListener("keydown", (e) => {
     if (e.key === "Backspace" && box.value === "" && index > 0) {
       codeBoxes[index - 1].focus();
@@ -230,7 +229,6 @@ if (forgotSubmitBtn) {
   });
 }
 
-// Головний сабміт форми 
 form.addEventListener("submit", e => {
   e.preventDefault();
 
@@ -299,7 +297,6 @@ if (closeModalBtn && authModal) {
   });
 }
 
-// Закрити форму по кліку на темний фон (поза формою)
 if (authModal) {
   window.addEventListener("click", (e) => {
     if (e.target === authModal) {
@@ -308,7 +305,7 @@ if (authModal) {
   });
 }
 
-// --- ВАЛІДАЦІЯ ПРОМО-ФОРМИ (Стати менеджером) ---
+// ВАЛІДАЦІЯ ПРОМО-ФОРМИ (Стати менеджером) ---
 const promoForm = document.getElementById("promoForm");
 const promoName = document.getElementById("promo-name");
 const promoSphere = document.getElementById("promo-sphere");
@@ -318,7 +315,7 @@ const promoNameError = document.getElementById("promo-name-error");
 const promoSphereError = document.getElementById("promo-sphere-error");
 const promoEmailError = document.getElementById("promo-email-error");
 
-// Проста перевірка для звичайного тексту (ім'я, сфера)
+// Проста перевірка для  (ім'я, сфера)
 function validateText(input, error, message) {
   clearError(input, error);
   if (input.value.trim() === "") {
@@ -336,7 +333,7 @@ if (promoForm) {
 
   // Перевірка при натисканні "Подати заявку"
   promoForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // Зупиняємо стандартне відправлення
+    e.preventDefault(); 
 
     let valid = true;
     if (!validateText(promoName, promoNameError, "Введіть ваше ім'я")) valid = false;
@@ -345,29 +342,80 @@ if (promoForm) {
 
     if (valid) {
       alert("Ваша заявка успішно відправлена! Ми зв'яжемося з вами.");
-      promoForm.reset(); // Очищаємо форму після успіху
+      promoForm.reset(); 
     }
   });
 }
 // --- ПЕРЕХІД МІЖ ПОЛЯМИ ПО ENTER ---
-// Створюємо масив полів у тому порядку, в якому хочемо по них переходити
 const promoInputsArr = [promoName, promoSphere, promoEmail];
 
 promoInputsArr.forEach((input, index) => {
   if (input) {
     input.addEventListener("keydown", (e) => {
-      // Перевіряємо, чи натиснута клавіша Enter
       if (e.key === "Enter") {
-        e.preventDefault(); // Зупиняємо передчасну відправку форми
-
-        // Якщо це не останнє поле в масиві -> фокусуємося на наступному
+        e.preventDefault(); 
         if (index < promoInputsArr.length - 1) {
           promoInputsArr[index + 1].focus();
-        } else {
-          // Якщо це останнє поле (e-mail) -> імітуємо клік по кнопці "Подати заявку"
+        } else {  
           promoForm.querySelector('button[type="submit"]').click();
         }
       }
     });
   }
+});
+
+
+       document.addEventListener('DOMContentLoaded', () => {
+    const sortBtn = document.getElementById('sort-btn');
+    const sortCard = document.getElementById('sort-card');
+    const popularCard = document.getElementById('popular-card');
+    const sortClose = document.getElementById('sort-close');
+
+    // Перевіряємо, чи дійсно ці елементи є на поточній сторінці
+    if (sortBtn && sortCard && popularCard && sortClose) {
+        
+        // Коли клікаємо на кнопку "Сортувати за"
+        sortBtn.addEventListener('click', () => {
+            sortBtn.classList.add('hidden');       // Ховаємо кнопку-капсулу
+            popularCard.classList.add('hidden');   // Ховаємо "Популярні"
+            sortCard.classList.remove('hidden');   // Показуємо розгорнуту картку сортування
+        });
+
+        // Коли клікаємо на заголовок "Сортувати за ^"
+        sortClose.addEventListener('click', () => {
+            sortCard.classList.add('hidden');      // Ховаємо картку сортування
+            sortBtn.classList.remove('hidden');    // Повертаємо кнопку-капсулу
+            popularCard.classList.remove('hidden');// Повертаємо "Популярні"
+        });
+        
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const applyBtn = document.getElementById('apply-btn');
+    const dateInput = document.getElementById('date-input');
+    const citySelect = document.getElementById('city-select');
+
+    applyBtn.addEventListener('click', () => {
+        // 1. Отримуємо обрані значення
+        const selectedDate = dateInput.value; // Формат: "YYYY-MM-DD"
+        const selectedCity = citySelect.value;
+
+        // 2. Фільтруємо масив подій
+        const filteredEvents = allEvents.filter(event => {
+            // Перевіряємо збіг по даті (якщо дата обрана)
+            const matchDate = selectedDate ? event.date === selectedDate : true;
+            
+            // Перевіряємо збіг по місту (якщо місто обране)
+            const matchCity = selectedCity ? event.city === selectedCity : true;
+
+            // Подія залишається в масиві, якщо відповідає всім умовам
+            return matchDate && matchCity; 
+        });
+
+        // 3. Оновлюємо інтерфейс
+        console.log('Знайдені події:', filteredEvents);
+        renderEvents(filteredEvents); 
+        renderMapMarkers(filteredEvents);
+    });
 });
