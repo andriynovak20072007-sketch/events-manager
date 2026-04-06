@@ -1025,3 +1025,42 @@ document.addEventListener('DOMContentLoaded', () => {
     renderEventCards(eventsList);
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggle-map-type');
+    const svgMap = document.getElementById('map-container');
+    const leafletElem = document.getElementById('leaflet-map');
+    
+    let lMap; // Змінна для реальної карти
+    let isRealMapInit = false;
+
+    toggleBtn.addEventListener('click', function() {
+        const isSvgActive = svgMap.classList.contains('active');
+        const btnText = toggleBtn.querySelector('span');
+
+        if (isSvgActive) {
+            // Перемикаємо на реальну карту
+            svgMap.classList.remove('active');
+            leafletElem.classList.add('active');
+            btnText.innerText = "SVG Карта";
+
+            if (!isRealMapInit) {
+                // Ініціалізація карти (центр України)
+                lMap = L.map('leaflet-map').setView([48.3794, 31.1656], 6);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(lMap);
+                
+                // Додаємо маркер для прикладу
+                L.marker([50.4501, 30.5234]).addTo(lMap).bindPopup('Київ: 120 подій');
+                
+                isRealMapInit = true;
+            } else {
+                setTimeout(() => lMap.invalidateSize(), 400);
+            }
+        } else {
+            // Повертаємось до SVG
+            leafletElem.classList.remove('active');
+            svgMap.classList.add('active');
+            btnText.innerText = "Реальна карта";
+        }
+    });
+});
+

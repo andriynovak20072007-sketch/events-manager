@@ -236,7 +236,7 @@ if (forgotSubmitBtn) {
 }
 
 if (form) {
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
 
     // Реєстрація
@@ -247,7 +247,28 @@ if (form) {
       if (!validatePassword(regPassword, passwordError)) valid = false;
 
       if (!valid) return;
-      alert("Реєстрація успішна");
+      
+      try {
+        const res = await fetch('http://localhost:5000/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            username: regUsername.value, 
+            email: regEmail.value, 
+            password: regPassword.value 
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert("Помилка реєстрації: " + (data.error || "Невідома помилка"));
+        } else {
+          alert(data.message || "Реєстрація успішна! Перевірте консоль сервера для активації.");
+          showForm("login");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Помилка з'єднання з сервером.");
+      }
     }
 
     // Вхід
@@ -257,7 +278,31 @@ if (form) {
       if (!validatePassword(loginPassword, loginPasswordError)) valid = false;
 
       if (!valid) return;
-      alert("Вхід успішний");
+      
+      try {
+        const res = await fetch('http://localhost:5000/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: loginEmail.value, 
+            password: loginPassword.value 
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert("Помилка входу: " + (data.error || "Невідома помилка"));
+        } else {
+          alert("Вхід успішний!");
+          localStorage.setItem('user', JSON.stringify(data.user));
+          const authModal = document.getElementById("authModal");
+          if (authModal) authModal.style.display = "none";
+          
+          window.dispatchEvent(new Event('userLoginStateChanged'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Помилка з'єднання з сервером.");
+      }
     }
 
     // Підтвердження коду
@@ -313,6 +358,125 @@ if (authModal) {
     }
   });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  const dateInput = document.getElementById("header-date");
+  const dateText = document.getElementById("header-date-text");
+  const cityFilter = document.querySelector(".city-filter");
+  const cityDropdown = document.querySelector(".city-dropdown");
+  const cityFilterText = document.querySelector(".city-filter-text");
+  const categoryFilter = document.querySelector(".category-filter");
+  const categoryDropdown = document.querySelector(".category-dropdown");
+  const categoryFilterText = document.querySelector(".category-filter-text");
+
+  const closeDropdowns = (exclude = null) => {
+    if (cityDropdown && exclude !== cityDropdown) {
+      cityDropdown.classList.add("hidden");
+    }
+    if (categoryDropdown && exclude !== categoryDropdown) {
+      categoryDropdown.classList.add("hidden");
+    }
+  };
+
+  if (dateInput && dateText) {
+    const dateFilterPill = document.querySelector(".date-filter");
+    if (dateFilterPill) {
+      dateFilterPill.addEventListener("click", () => {
+        try {
+          if (typeof dateInput.showPicker === 'function') {
+            dateInput.showPicker();
+          } else {
+            dateInput.focus();
+          }
+        } catch (e) {}
+      });
+    }
+
+    dateInput.addEventListener("input", () => {
+      if (dateInput.value) {
+        const selectedDate = new Date(dateInput.value);
+        dateText.textContent = selectedDate.toLocaleDateString("uk-UA", {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+      } else {
+        dateText.textContent = "Дата";
+      }
+    });
+  }
+
+  if (cityFilter && cityDropdown && cityFilterText) {
+    cityFilter.addEventListener("click", (e) => {
+      if (e.target.closest(".city-option") || e.target.closest(".city-reset")) {
+        return;
+      }
+      const isHidden = cityDropdown.classList.contains("hidden");
+      closeDropdowns(cityDropdown);
+      if (isHidden) {
+        cityDropdown.classList.remove("hidden");
+      } else {
+        cityDropdown.classList.add("hidden");
+      }
+    });
+
+    cityDropdown.addEventListener("click", (e) => {
+      const option = e.target.closest(".city-option");
+      const reset = e.target.closest(".city-reset");
+      if (option) {
+        cityFilterText.textContent = option.textContent;
+        cityDropdown.classList.add("hidden");
+      }
+      if (reset) {
+        cityFilterText.textContent = "Місто";
+        cityDropdown.classList.add("hidden");
+      }
+    });
+  }
+
+  if (categoryFilter && categoryDropdown && categoryFilterText) {
+    categoryFilter.addEventListener("click", (e) => {
+      if (e.target.closest(".category-option") || e.target.closest(".category-reset")) {
+        return;
+      }
+      const isHidden = categoryDropdown.classList.contains("hidden");
+      closeDropdowns(categoryDropdown);
+      if (isHidden) {
+        categoryDropdown.classList.remove("hidden");
+      } else {
+        categoryDropdown.classList.add("hidden");
+      }
+    });
+
+    categoryDropdown.addEventListener("click", (e) => {
+      const option = e.target.closest(".category-option");
+      const reset = e.target.closest(".category-reset");
+      if (option) {
+        categoryFilterText.textContent = option.textContent;
+        categoryDropdown.classList.add("hidden");
+      }
+      if (reset) {
+        categoryFilterText.textContent = "Категорії";
+        categoryDropdown.classList.add("hidden");
+      }
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (cityFilter && !cityFilter.contains(e.target) && cityDropdown) {
+      cityDropdown.classList.add("hidden");
+    }
+    if (categoryFilter && !categoryFilter.contains(e.target) && categoryDropdown) {
+      categoryDropdown.classList.add("hidden");
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeDropdowns();
+    }
+  });
+});
 
 // ВАЛІДАЦІЯ ПРОМО-ФОРМИ (Стати менеджером) ---
 const promoForm = document.getElementById("promoForm");
@@ -399,4 +563,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
     }
 });
-
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Знаходимо контейнер, де лежать наші картки подій
+    const eventsGrid = document.querySelector('.events-grid');
+
+    // Перевіряємо, чи є такий блок на сторінці
+    if (eventsGrid) {
+        new Sortable(eventsGrid, {
+            animation: 200, // Плавна анімація переміщення (в мілісекундах)
+            ghostClass: 'sortable-ghost', // Клас для "тіні" картки на новому місці
+            dragClass: 'sortable-drag', // Клас для картки, яку ми тримаємо
+            delay: 50, // Невелика затримка для мобільних пристроїв, щоб не плутати зі скролом
+            delayOnTouchOnly: true
+        });
+    }
+});

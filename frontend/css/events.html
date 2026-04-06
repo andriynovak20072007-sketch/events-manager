@@ -35,16 +35,14 @@
 
       <div class="header-filters">
         <div class="filter-pill date-filter">
-          <label for="header-date" style="display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%;">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span id="header-date-text">Дата</span>
-            <input type="date" id="header-date" style="position: absolute; opacity: 0; width: 0; height: 0;">
-          </label>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span id="header-date-text">Дата</span>
+          <input type="date" id="header-date">
         </div>
 
         <div class="filter-pill city-filter">
@@ -52,20 +50,34 @@
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
-          Місто
+          <span class="city-filter-text">Місто</span>
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
+          <div class="city-dropdown hidden">
+            <button type="button" class="city-option">Львів</button>
+            <button type="button" class="city-option">Київ</button>
+            <button type="button" class="city-option">Одеса</button>
+            <button type="button" class="city-option">Харків</button>
+            <button type="button" class="city-reset">Усі міста</button>
+          </div>
         </div>
 
-        <button class="filter-pill">
+        <div class="filter-pill category-filter">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="3" y1="9" x2="21" y2="9"></line>
             <line x1="3" y1="15" x2="21" y2="15"></line>
           </svg>
-          Категорії
-        </button>
+          <span class="category-filter-text">Категорії</span>
+          <div class="category-dropdown hidden">
+            <button type="button" class="category-option">Концерти</button>
+            <button type="button" class="category-option">Виставки</button>
+            <button type="button" class="category-option">Конференції</button>
+            <button type="button" class="category-option">Фестивалі</button>
+            <button type="button" class="category-reset">Усі категорії</button>
+          </div>
+        </div>
       </div>
     </div>
 
