@@ -437,3 +437,75 @@ html, body {
     padding: 0;
 }
 
+/* ФІКС ІКОНОК В ХЕДЕРІ */
+.header svg {
+    flex-shrink: 0 !important;
+}
+
+.filter-pill .icon, 
+.filter-pill .arrow {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.search-box .search-icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.add-event-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* --- ФІКС СТРУКТУРИ ХЕДЕРА --- */
+
+/* Робимо саму шапку гнучкою і розкидаємо ліву, центральну і праву частини */
+.header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Вишиковуємо в ряд пошук, плюсик і фільтри */
+.header-center {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    flex: 1 !important;
+}
+
+/* Забороняємо фільтрам (Дата, Місто, Категорії) падати один під одного */
+.header-filters {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* Вишиковуємо логотип (зліва) та іконки профілю (справа) */
+.header-left, 
+.header-right {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 15px !important;
+}
+
+/* Рятуємо поле пошуку, щоб воно не сплющувалося */
+.search-box {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    min-width: 250px !important;
+}
+
+/* Плавна заливка сердечка */
+#favoriteIcon {
+    transition: fill 0.3s ease;
+}

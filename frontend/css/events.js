@@ -67,6 +67,34 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- ЛОГІКА КНОПКИ "ОБРАНЕ" ---
+    const favoriteBtn = document.getElementById('favoriteToggleBtn');
+    const favoriteIcon = document.getElementById('favoriteIcon');
+    const favoriteText = document.getElementById('favoriteText');
+
+    if (favoriteBtn) {
+        favoriteBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Зупиняємо перехід по href="#", щоб сторінка не стрибала вгору
+            
+            // Перевіряємо, чи є в кнопки клас 'active' (чи вона вже в обраному)
+            const isFavorite = favoriteBtn.classList.contains('active');
+            
+            if (isFavorite) {
+                // ВИДАЛЯЄМО З ОБРАНОГО
+                favoriteBtn.classList.remove('active');
+                favoriteIcon.setAttribute('fill', 'none'); // Робимо сердечко порожнім
+                favoriteText.innerText = 'Додати до обраного'; // Міняємо текст
+            } else {
+                // ДОДАЄМО В ОБРАНЕ
+                favoriteBtn.classList.add('active');
+                favoriteIcon.setAttribute('fill', 'var(--red)'); // Заливаємо сердечко червоним
+                favoriteText.innerText = 'Видалити з обраного'; // Міняємо текст
+            }
+        });
+    }
+});
+
+
     // --- 3. ЛОГІКА ПОШУКУ ПОДІЙ ---
     
     // Отримуємо елементи пошуку зі сторінки
@@ -155,4 +183,3 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-});
