@@ -1,5 +1,6 @@
 console.log("JS підключений");
 const form = document.getElementById("registrationForm");
+
 // Форми 
 const forms = {
   register: document.querySelector(".register"), 
@@ -8,6 +9,7 @@ const forms = {
   verify: document.querySelector(".verify"),    
   reset: document.querySelector(".reset-password") 
 };
+
 // Кнопки 
 const switchLogin = document.querySelector(".switch-login"); // кнопка "Увійти"
 const switchRegister = document.querySelector(".switch-register"); // кнопка "Створити" 
@@ -40,7 +42,7 @@ const confirmPasswordError = document.getElementById("confirm-password-error");
 
 // Показує потрібну форму, ховає інші та скидає всі поля і помилки
 function showForm(name) {
-  form.reset(); 
+  if (form) form.reset(); 
   document.querySelectorAll(".error").forEach(e => e.textContent = ""); 
   document.querySelectorAll(".input-error").forEach(i => i.classList.remove("input-error"));
 
@@ -57,10 +59,12 @@ function showForm(name) {
 }
 
 // Перемикання форм 
-switchLogin.addEventListener("click", e => {
-  e.preventDefault();
-  showForm("login");
-});
+if (switchLogin) {
+  switchLogin.addEventListener("click", e => {
+    e.preventDefault();
+    showForm("login");
+  });
+}
 
 if (switchRegister) {
   switchRegister.addEventListener("click", e => {
@@ -69,10 +73,12 @@ if (switchRegister) {
   });
 }
 
-forgotBtn.addEventListener("click", e => {
-  e.preventDefault();
-  showForm("forgot");
-});
+if (forgotBtn) {
+  forgotBtn.addEventListener("click", e => {
+    e.preventDefault();
+    showForm("forgot");
+  });
+}
 
 backLoginBtns.forEach(btn => {
   btn.addEventListener("click", e => {
@@ -229,56 +235,59 @@ if (forgotSubmitBtn) {
   });
 }
 
-form.addEventListener("submit", e => {
-  e.preventDefault();
+if (form) {
+  form.addEventListener("submit", e => {
+    e.preventDefault();
 
-  // Реєстрація
-  if (forms.register.classList.contains("active")) {
-    let valid = true;
-    if (!validateUsername(regUsername, usernameError)) valid = false;
-    if (!validateEmail(regEmail, emailError)) valid = false;
-    if (!validatePassword(regPassword, passwordError)) valid = false;
+    // Реєстрація
+    if (forms.register.classList.contains("active")) {
+      let valid = true;
+      if (!validateUsername(regUsername, usernameError)) valid = false;
+      if (!validateEmail(regEmail, emailError)) valid = false;
+      if (!validatePassword(regPassword, passwordError)) valid = false;
 
-    if (!valid) return;
-    alert("Реєстрація успішна");
-  }
-
-  // Вхід
-  else if (forms.login.classList.contains("active")) {
-    let valid = true;
-    if (!validateEmail(loginEmail, loginEmailError)) valid = false;
-    if (!validatePassword(loginPassword, loginPasswordError)) valid = false;
-
-    if (!valid) return;
-    alert("Вхід успішний");
-  }
-
-  // Підтвердження коду
-  else if (forms.verify.classList.contains("active")) {
-    let code = "";
-    codeBoxes.forEach(box => code += box.value);
-
-    if (code.length !== 4) {
-      alert("Введіть 4 цифри коду");
-      return;
+      if (!valid) return;
+      alert("Реєстрація успішна");
     }
 
-    showForm("reset");
-  }
+    // Вхід
+    else if (forms.login.classList.contains("active")) {
+      let valid = true;
+      if (!validateEmail(loginEmail, loginEmailError)) valid = false;
+      if (!validatePassword(loginPassword, loginPasswordError)) valid = false;
 
-  // Зміна пароля
-  else if (forms.reset.classList.contains("active")) {
-    let valid = true;
+      if (!valid) return;
+      alert("Вхід успішний");
+    }
 
-    if (!validatePassword(newPassword, newPasswordError)) valid = false;
-    if (!validateConfirmPassword(newPassword, confirmPassword, confirmPasswordError)) valid = false;
+    // Підтвердження коду
+    else if (forms.verify.classList.contains("active")) {
+      let code = "";
+      codeBoxes.forEach(box => code += box.value);
 
-    if (!valid) return;
+      if (code.length !== 4) {
+        alert("Введіть 4 цифри коду");
+        return;
+      }
 
-    alert("Пароль змінено ✅");
-    showForm("login");
-  }
-});
+      showForm("reset");
+    }
+
+    // Зміна пароля
+    else if (forms.reset.classList.contains("active")) {
+      let valid = true;
+
+      if (!validatePassword(newPassword, newPasswordError)) valid = false;
+      if (!validateConfirmPassword(newPassword, confirmPassword, confirmPasswordError)) valid = false;
+
+      if (!valid) return;
+
+      alert("Пароль змінено ✅");
+      showForm("login");
+    }
+  });
+}
+
 const authModal = document.getElementById("authModal");
 const profileBtn = document.getElementById("profileBtn");
 const closeModalBtn = document.getElementById("closeModalBtn");
@@ -346,6 +355,7 @@ if (promoForm) {
     }
   });
 }
+
 // --- ПЕРЕХІД МІЖ ПОЛЯМИ ПО ENTER ---
 const promoInputsArr = [promoName, promoSphere, promoEmail];
 
@@ -364,8 +374,7 @@ promoInputsArr.forEach((input, index) => {
   }
 });
 
-
-       document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const sortBtn = document.getElementById('sort-btn');
     const sortCard = document.getElementById('sort-card');
     const popularCard = document.getElementById('popular-card');
@@ -390,32 +399,4 @@ promoInputsArr.forEach((input, index) => {
         
     }
 });
-
-document.addEventListener('DOMContentLoaded', () => {
-    const applyBtn = document.getElementById('apply-btn');
-    const dateInput = document.getElementById('date-input');
-    const citySelect = document.getElementById('city-select');
-
-    applyBtn.addEventListener('click', () => {
-        // 1. Отримуємо обрані значення
-        const selectedDate = dateInput.value; // Формат: "YYYY-MM-DD"
-        const selectedCity = citySelect.value;
-
-        // 2. Фільтруємо масив подій
-        const filteredEvents = allEvents.filter(event => {
-            // Перевіряємо збіг по даті (якщо дата обрана)
-            const matchDate = selectedDate ? event.date === selectedDate : true;
-            
-            // Перевіряємо збіг по місту (якщо місто обране)
-            const matchCity = selectedCity ? event.city === selectedCity : true;
-
-            // Подія залишається в масиві, якщо відповідає всім умовам
-            return matchDate && matchCity; 
-        });
-
-        // 3. Оновлюємо інтерфейс
-        console.log('Знайдені події:', filteredEvents);
-        renderEvents(filteredEvents); 
-        renderMapMarkers(filteredEvents);
-    });
-});
+

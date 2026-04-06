@@ -1,39 +1,65 @@
-require('dotenv').config(); // ПЕРШИЙ РЯДОК
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
-
 const pool = require('./db');
 
-// Імпорт роутів
+// ==========================================
+// 1. ІМПОРТ КОНТРОЛЕРІВ (РОУТІВ)
+// ==========================================
 const usersRoutes = require('./routes/users');
 const eventsRoutes = require('./routes/events');
 const categoriesRoutes = require('./routes/categories');
 const commentsRoutes = require('./routes/comments');
+const infoRoutes = require('./routes/info');
+const favoritesRoutes = require('./routes/favorites'); // 🟢 ДОДАНО: Маршрут обраного
 
 const app = express();
 
-// Middlewares
+// ==========================================
+// 2. МІДЛВЕРИ (MIDDLEWARES)
+// ==========================================
 app.use(cors());
-app.use(express.json()); // ЦЕ ВАЖЛИВО ДЛЯ POST-ЗАПИТІВ
+app.use(express.json()); // Дозволяє серверу читати JSON з req.body
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || "secretkey", // Краще винести в .env
+    secret: process.env.SESSION_SECRET || "fallback_secret_key",
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { secure: false } // Для локальної розробки HTTP. На продакшені (HTTPS) має бути true
 }));
 
-// Підключення маршрутів
+// ==========================================
+// 3. ПІДКЛЮЧЕННЯ МАРШРУТІВ (РОУТИНГ)
+// ==========================================
 app.use('/api/users', usersRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/comments', commentsRoutes);
+app.use('/api/info', infoRoutes);
+app.use('/api/favorites', favoritesRoutes); // 🟢 ДОДАНО: Ендпоінт для обраного
 
+// Базовий тестовий роут для перевірки працездатності
 app.get('/', (req, res) => {
     res.send("Event Manager API працює 🚀");
 });
 
+// ==========================================
+// 4. ПАТЕРН: ЦЕНТРАЛІЗОВАНА ОБРОБКА ПОМИЛОК
+// ==========================================
+// Цей мідлвер ловить всі помилки, які "впали" в додатку і не були оброблені
+app.use((err, req, res, next) => {
+    console.error('🔥 Неперехоплена помилка сервера:', err.stack);
+    res.status(500).json({ 
+        error: "Внутрішня помилка сервера", 
+        message: err.message 
+    });
+});
+
+// ==========================================
+// 5. ЗАПУСК СЕРВЕРА
+// ==========================================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server працює на порту ${PORT}`);
+    console.log(`🚀 Server працює на порту ${PORT}`);
 });

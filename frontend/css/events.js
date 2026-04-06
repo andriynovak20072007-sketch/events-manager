@@ -1,4 +1,4 @@
-const eventsData = {
+const eventPageData = {
     'fest1': {
         title: 'Фестиваль "Summer Fest"',
         city: 'Львів, Стадіон "Прайм"',
@@ -8,7 +8,7 @@ const eventsData = {
         regionId: 'Lviv' // Точно як id="Lviv" у вашому HTML
     },
     'fest2': {
-       title: 'Фестиваль "Fest"',
+        title: 'Фестиваль "Fest"',
         city: 'Київ, Стадіон "Прайм"',
         date: '30 травня, 19:00',
         image: 'images/fest2.png',
@@ -26,19 +26,33 @@ const eventsData = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    //  Отримуємо ID події з посилання
+    // --- 1. ЛОГІКА СТОРІНКИ ПОДІЇ (Підстановка даних) ---
+    
+    // Отримуємо ID події з посилання
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get('event');
-    //  Якщо така подія є в нашому списку — підставляємо дані
-    if (eventId && eventsData[eventId]) {
-        const data = eventsData[eventId];
-        document.querySelector('.event-page-title').innerText = data.title;
-        document.querySelector('.meta-row span').innerText = data.city; 
-        document.querySelectorAll('.meta-row span')[1].innerText = data.date; 
-        document.querySelector('.event-poster-img').src = data.image;
-        document.querySelector('.buy-ticket-main-btn').innerText = `Придбати квиток | ${data.price}`;
+    
+    // Якщо така подія є в нашому списку — підставляємо дані
+    if (eventId && eventPageData[eventId]) {
+        const data = eventPageData[eventId];
+        
+        const titleEl = document.querySelector('.event-page-title');
+        if (titleEl) titleEl.innerText = data.title;
+        
+        const metaSpans = document.querySelectorAll('.meta-row span');
+        if (metaSpans.length >= 2) {
+            metaSpans[0].innerText = data.city; 
+            metaSpans[1].innerText = data.date; 
+        }
+        
+        const posterImg = document.querySelector('.event-poster-img');
+        if (posterImg) posterImg.src = data.image;
+        
+        const buyBtn = document.querySelector('.buy-ticket-main-btn');
+        if (buyBtn) buyBtn.innerText = `Придбати квиток | ${data.price}`;
     }
-    // 3. Логіка "Читати далі" 
+
+    // 2. Логіка "Читати далі" 
     const descriptionBlock = document.querySelector('.event-details-text');
     if (descriptionBlock) {
         const readMoreBtn = document.createElement('button');
@@ -52,5 +66,93 @@ document.addEventListener("DOMContentLoaded", () => {
             readMoreBtn.innerText = descriptionBlock.classList.contains('expanded') ? 'Згорнути' : 'Читати далі';
         });
     }
-});
 
+    // --- 3. ЛОГІКА ПОШУКУ ПОДІЙ ---
+    
+    // Отримуємо елементи пошуку зі сторінки
+    // Додано гнучкий пошук: шукає по ID (якщо є) або бере інпут з .search-box
+    const searchInput = document.getElementById('title-search-input') || document.querySelector('.search-box input');
+    const searchMessage = document.getElementById('search-message');
+
+    // Вивід повідомлень
+    function showSearchMessage(text, isError = false) {
+        if (!searchMessage) return;
+        searchMessage.textContent = text;
+        searchMessage.style.display = 'block';
+        searchMessage.style.color = isError ? 'red' : '#333';
+    }
+
+    // Очищення повідомлень
+    function clearSearchMessage() {
+        if (!searchMessage) return;
+        searchMessage.textContent = '';
+        searchMessage.style.display = 'none';
+    }
+
+    // Обробка результатів пошуку
+    function handleSearchResults(events) {
+        // Якщо API повернув null або undefined
+        if (events == null) {
+            showSearchMessage('Подій не знайдено');
+            return;
+        }
+
+        // Якщо API повернув не масив (помилка формату)
+        if (!Array.isArray(events)) {
+            showSearchMessage('Неправильний формат даних пошуку', true);
+            return;
+        }
+
+        // Якщо масив пустий
+        if (events.length === 0) {
+            showSearchMessage('Подій не знайдено');
+            return;
+        }
+
+        // Якщо все ок — прибираємо повідомлення
+        clearSearchMessage();
+
+        // Тут буде відображення списку подій
+        console.log('Знайдені події:', events);
+    }
+
+    // Обробка помилок
+    function handleSearchError() {
+        showSearchMessage('Сталася помилка під час пошуку', true);
+    }
+
+    // Запит до локальних даних (імітація API)
+    function searchByTitle(title) {
+        try {
+            clearSearchMessage();
+
+            const query = title.toLowerCase();
+            const results = Object.values(eventPageData).filter(event => 
+                event.title.toLowerCase().includes(query) || 
+                event.city.toLowerCase().includes(query)
+            );
+
+            handleSearchResults(results);
+
+        } catch (error) {
+            console.error('Search error:', error);
+            handleSearchError();
+        }
+    }
+
+    // Слухач подій для поля вводу
+    if (searchInput) {
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const value = searchInput.value.trim();
+
+                if (value === '') {
+                    showSearchMessage('Введіть назву події');
+                    return;
+                }
+
+                searchByTitle(value);
+            }
+        });
+    }
+});

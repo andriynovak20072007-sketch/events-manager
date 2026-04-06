@@ -176,18 +176,41 @@ svg {
   fill: var(--blue-dark); 
 }
 
+.map-section {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    padding: 0 40px 40px 40px;
+    /* Замість фіксованої height: calc(100vh - 80px) */
+    min-height: 100vh; 
+    height: auto; 
+}
+
+.map-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
 #map-container {
-  position: relative;
+    width: 100%;
+    max-width: 1100px; /* Обмеж максимальну ширину, щоб карта не розтягувалася на весь екран */
+    margin: 0 auto;
+    position: relative;
+}
+
+#map-container svg {
+    width: 100%;
+    height: auto; /* Дозволяє висоті підлаштовуватися під ширину */
+    display: block;
 }
 
 .map-marker {
   position: absolute;
   z-index: 1000;
 }
-#map-container svg {
-  position: relative;
-  z-index: 1;
-}
+
 
 .map-marker {
   z-index: 10;
@@ -210,14 +233,6 @@ svg {
 .sidebar {
     width: 280px;
     flex-shrink: 0; /* Щоб сайдбар не стискався */
-}
-
-/* Права частина: Кнопки + Карта */
-.map-area {
-    flex: 1; /* Займає весь залишок ширини */
-    display: flex;
-    flex-direction: column; /* Кнопки зверху, карта знизу */
-    align-items: center; /* Центрує кнопки відносно КАРТИ */
 }
 
 /* Робимо поле відносною системою координат */
@@ -298,3 +313,4 @@ svg {
     color: #6209DD;
     border-radius: 12px;
 }
+

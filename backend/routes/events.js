@@ -3,12 +3,11 @@ const router = express.Router();
 const pool = require('../db');
 
 // ==========================================
-// ПАТЕРН: Singleton / Service Pattern
-// Виносимо логіку конвертації в окремий сервіс
+// ПАТЕРН 1: Singleton / Service Pattern
+// Логіка конвертації валют
 // ==========================================
 class CurrencyService {
     constructor() {
-        // Базова валюта - UAH (Єдине джерело правди)
         this.rates = {
             'UAH': 1.00,
             'USD': 40.50,
@@ -16,61 +15,111 @@ class CurrencyService {
         };
     }
 
-    // Метод конвертації будь-якої валюти в будь-яку
     convert(amount, fromCurrency, toCurrency) {
         if (!amount || amount <= 0) return 0;
-        
-        const fromRate = this.rates[fromCurrency.toUpperCase()] || 1;
+        const fromRate = this.rates[(fromCurrency || 'UAH').toUpperCase()] || 1;
         const toRate = this.rates[toCurrency.toUpperCase()];
-
-        if (!toRate) return amount; // Якщо валюту не знайдено, повертаємо як є
-
-        // Математика: переводимо в гривню, а потім у цільову валюту
+        if (!toRate) return amount; 
         const amountInBase = amount * fromRate;
         return (amountInBase / toRate).toFixed(2);
     }
 }
-// Створюємо єдиний екземпляр сервісу (Singleton)
 const currencyService = new CurrencyService();
 
 // ==========================================
-// 1. ОТРИМАННЯ ВСІХ ПОДІЙ (з конвертацією)
+// ПАТЕРН 2: Strategy Pattern для сортування
+// Дозволяє легко додавати нові типи сортування
 // ==========================================
+const sortStrategies = {
+    'price_asc': (a, b) => a.base_uah_price - b.base_uah_price,
+    'price_desc': (a, b) => b.base_uah_price - a.base_uah_price,
+    'rating_desc': (a, b) => b.average_rating - a.average_rating,
+    'rating_asc': (a, b) => a.average_rating - b.average_rating,
+    'date_asc': (a, b) => new Date(a.event_day) - new Date(b.event_day),
+    'date_desc': (a, b) => new Date(b.event_day) - new Date(a.event_day)
+};
+
+// =======================================================
+// 1. GET /events - Отримання всіх подій (Фільтр + Рейтинг + Сортування)
+// =======================================================
 router.get('/', async (req, res) => {
-    // Зчитуємо валюту з запиту (напр. ?target_currency=USD)
-    const { target_currency } = req.query;
+    const { region, target_currency, sort_by } = req.query;
 
     try {
-        const result = await pool.query('SELECT * FROM events ORDER BY created_at DESC');
+        // SQL запит з LEFT JOIN для динамічного підрахунку середнього рейтингу
+        let queryText = `
+            SELECT e.*, 
+                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating 
+            FROM events e
+            LEFT JOIN ratings r ON e.event_id = r.event_id
+        `;
+        let queryParams = [];
+        let whereClauses = [];
+
+        if (region) {
+            whereClauses.push(`e.region = $1`);
+            queryParams.push(region);
+        }
+
+        if (whereClauses.length > 0) {
+            queryText += ' WHERE ' + whereClauses.join(' AND ');
+        }
+
+        queryText += ' GROUP BY e.event_id ORDER BY e.created_at DESC';
+
+        const result = await pool.query(queryText, queryParams);
         let events = result.rows;
 
-        // Якщо користувач попросив іншу валюту, застосовуємо наш Патерн
-        if (target_currency) {
-            events = events.map(event => {
-                if (event.price > 0) {
-                    return {
-                        ...event,
-                        // Використовуємо сервіс для розрахунку нової ціни
-                        display_price: currencyService.convert(event.price, event.currency, target_currency),
-                        display_currency: target_currency.toUpperCase()
-                    };
-                }
-                return event;
-            });
+        // Обробка кожної події (Конвертація та підготовка до сортування)
+        events = events.map(event => {
+            const eventPrice = parseFloat(event.price) || 0;
+            const eventCurrency = event.currency || 'UAH';
+            
+            // Рахуємо приховану ціну в грн для сортування
+            const baseUahPrice = parseFloat(currencyService.convert(eventPrice, eventCurrency, 'UAH'));
+            
+            let displayPrice = eventPrice;
+            let displayCurrency = eventCurrency;
+            
+            if (target_currency) {
+                displayPrice = currencyService.convert(eventPrice, eventCurrency, target_currency);
+                displayCurrency = target_currency.toUpperCase();
+            }
+
+            return {
+                ...event,
+                average_rating: parseFloat(event.average_rating),
+                base_uah_price: baseUahPrice,
+                display_price: displayPrice,
+                display_currency: displayCurrency
+            };
+        });
+
+        // Застосування сортування за стратегією
+        if (sort_by && sortStrategies[sort_by.toLowerCase()]) {
+            events.sort(sortStrategies[sort_by.toLowerCase()]);
         }
+
+        // Видаляємо технічне поле перед відправкою клієнту
+        events = events.map(event => {
+            delete event.base_uah_price;
+            return event;
+        });
 
         res.json(events);
     } catch (err) {
-        console.error(err);
+        console.error('Помилка отримання подій:', err.message);
         res.status(500).send("Server error");
     }
 });
 
 // ==========================================
-// 2. ЛОГІКА СПІВСТАВЛЕННЯ З ОБЛАСТЯМИ
+// 2. Фільтрація публічних подій за областю
 // ==========================================
 router.get('/filter', async (req, res) => {
     const { region } = req.query;
+    if (!region) return res.status(400).json({ error: "Не вказано регіон" });
+
     try {
         const result = await pool.query(
             'SELECT * FROM events WHERE region = $1 AND is_private = FALSE ORDER BY event_day ASC', 
@@ -79,16 +128,16 @@ router.get('/filter', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).send("Помилка фільтрації за областю");
+        res.status(500).send("Помилка фільтрації");
     }
 });
 
 // ==========================================
-// 3. ЛОГІКА ДЛЯ МАРШРУТІВ (Точки А, Б, С)
+// 3. Дані для побудови маршруту на карті
 // ==========================================
 router.get('/route-data', async (req, res) => {
     const { ids } = req.query;
-    if (!ids) return res.status(400).send("Не вказано ID подій для маршруту");
+    if (!ids) return res.status(400).send("Не вказано ID подій");
     
     const idArray = ids.split(',').map(Number);
     try {
@@ -99,12 +148,129 @@ router.get('/route-data', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).send("Помилка підготовки даних маршруту");
+        res.status(500).send("Помилка даних маршруту");
     }
 });
 
 // ==========================================
-// 4. СТВОРЕННЯ НОВОЇ ПОДІЇ (POST)
+// ПАТЕРН 3: Query Builder (Будівельник запитів)
+// Використовується виключно для нових завдань фільтрації та пошуку
+// ==========================================
+class EventSearchBuilder {
+    constructor() {
+        // Базовий запит (1=1 дозволяє легко додавати AND умови далі)
+        this.query = 'SELECT * FROM events WHERE 1=1';
+        this.values = [];
+        this.paramIndex = 1;
+    }
+
+    // 1. Реалізувати API пошуку за назвою
+    searchByTitle(title) {
+        if (title) {
+            this.query += ` AND title ILIKE $${this.paramIndex}`;
+            this.values.push(`%${title}%`); // ILIKE забезпечує пошук без урахування регістру
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 2. Реалізувати API пошуку за тегами/ключовими словами
+    searchByKeyword(keyword) {
+        if (keyword) {
+            // Шукаємо ключове слово і в назві, і в описі
+            this.query += ` AND (title ILIKE $${this.paramIndex} OR description ILIKE $${this.paramIndex})`;
+            this.values.push(`%${keyword}%`);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 3. Реалізувати API фільтрації по даті
+    filterByDate(date) {
+        if (date) {
+            this.query += ` AND event_day = $${this.paramIndex}`;
+            this.values.push(date);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 4. Реалізувати API фільтрації по місту (використовуємо поле region)
+    filterByCity(city) {
+        if (city) {
+            this.query += ` AND region ILIKE $${this.paramIndex}`;
+            this.values.push(`%${city}%`);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    // 5. Реалізувати API фільтрації по категорії
+    filterByCategory(categoryId) {
+        if (categoryId) {
+            this.query += ` AND category_id = $${this.paramIndex}`;
+            this.values.push(categoryId);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    build() {
+        // Додаємо сортування за замовчуванням: найближчі події першими
+        this.query += ' ORDER BY event_day ASC, start_time ASC';
+        return { text: this.query, values: this.values };
+    }
+}
+
+// =======================================================
+// НОВИЙ МАРШРУТ: GET /events/search
+// Обробляє: пошук за назвою, ключовими словами, датою, містом, категорією
+// =======================================================
+router.get('/search', async (req, res) => {
+    // Зчитуємо параметри з URL (наприклад: /api/events/search?city=Львів&date=2024-05-20)
+    const { title, keyword, date, city, category_id } = req.query;
+
+    try {
+        // Використовуємо наш патерн Будівельник для формування запиту
+        const builder = new EventSearchBuilder()
+            .searchByTitle(title)
+            .searchByKeyword(keyword)
+            .filterByDate(date)
+            .filterByCity(city)
+            .filterByCategory(category_id);
+
+        const { text, values } = builder.build();
+
+        // Виконуємо згенерований запит у БД
+        const result = await pool.query(text, values);
+
+        // Обробка пустого результату 
+        if (result.rows.length === 0) {
+            return res.status(404).json({ msg: "За вашим запитом подій не знайдено" });
+        }
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Помилка розширеного пошуку подій:', err.message);
+        res.status(500).send("Внутрішня помилка сервера під час пошуку");
+    }
+});
+
+// ==========================================
+// 4. Отримання однієї події за ID
+// ==========================================
+router.get('/:id', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM events WHERE event_id = $1', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ msg: "Не знайдено" });
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).send("Server error");
+    }
+});
+
+// ==========================================
+// 5. Створення нової події
 // ==========================================
 router.post('/', async (req, res) => {
     const { 
@@ -113,29 +279,9 @@ router.post('/', async (req, res) => {
         region, is_private, price, currency 
     } = req.body;
 
-    // --- ВАЛІДАЦІЯ ---
-    if (!title || title.trim().length < 5) {
-        return res.status(400).json({ error: "Назва занадто коротка (мін. 5 симв.)" });
-    }
-    if (!description || description.trim().length < 10) {
-        return res.status(400).json({ error: "Опис має бути не менше 10 символів" });
-    }
-    if (!event_day || !start_time || !end_time) {
-        return res.status(400).json({ error: "Дата та час обов'язкові" });
-    }
-    if (!creator_id) {
-        return res.status(400).json({ error: "Не вказано ID творця події" });
-    }
-    if (!region) {
-        return res.status(400).json({ error: "Обов'язково вкажіть область (region)" });
-    }
-
-    // Валідація ціни та валюти
-    const eventPrice = price !== undefined ? parseFloat(price) : 0.00;
-    if (eventPrice < 0) {
-        return res.status(400).json({ error: "Ціна не може бути від'ємною" });
-    }
-    const eventCurrency = currency ? currency.toUpperCase() : 'UAH';
+    // Балідація
+    if (!title || title.length < 5) return res.status(400).json({ error: "Назва коротка" });
+    if (!region) return res.status(400).json({ error: "Вкажіть область" });
 
     try {
         const query = `
@@ -143,15 +289,13 @@ router.post('/', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
             RETURNING *`;
         
-        const eventIsPrivate = is_private !== undefined ? is_private : true;
-        
-        const values = [title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, eventIsPrivate, eventPrice, eventCurrency];
+        const values = [title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, is_private ?? true, price || 0, currency || 'UAH'];
         
         const result = await pool.query(query, values);
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Помилка при створенні події в базі даних" });
+        res.status(500).json({ error: "Помилка БД" });
     }
 });
 

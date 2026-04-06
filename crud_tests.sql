@@ -18,7 +18,7 @@ WHERE e.event_id = 1;
 
 -- Оновлюємо опис події
 UPDATE events 
-SET description = 'Оновлений опис: Навчаємось SQL разом з Gemini' 
+SET description = 'Оновлений опис: Навчаємось SQL' 
 WHERE event_id = 2;
 
 -- Змінюємо статус участі користувача

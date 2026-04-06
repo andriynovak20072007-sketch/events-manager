@@ -7,54 +7,79 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="map.css">
-   <link rel="stylesheet" href="events.css">
+  <link rel="stylesheet" href="events.css">
 </head>
 <body>
 
 <header class="header">
-  <div class="header-left">
-    <img src="images/Frame 37.png" class="logo-image" alt="logo">
-    <div class="divider"></div>
-  </div>
-<div class="header-center">
-    <div class="search-box">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input type="text" placeholder="Пошук подій ...">
+    <div class="header-left">
+      <img src="images/Frame 37.png" class="logo-image" alt="logo">
+      <div class="divider"></div>
     </div>
 
-    <button class="add-event-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-    </button>
-
-    <div class="header-filters">
-      <button class="filter-pill">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-        Дата
-      </button>
-      
-      <div class="filter-pill city-filter">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-        Місто
-        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    <div class="header-center">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="Пошук подій ...">
       </div>
-      
-      <button class="filter-pill">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
-        Категорії
+
+      <button class="add-event-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
       </button>
+
+      <div class="header-filters">
+        <div class="filter-pill date-filter">
+          <label for="header-date" style="display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%;">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span id="header-date-text">Дата</span>
+            <input type="date" id="header-date" style="position: absolute; opacity: 0; width: 0; height: 0;">
+          </label>
+        </div>
+
+        <div class="filter-pill city-filter">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          Місто
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+
+        <button class="filter-pill">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="3" y1="15" x2="21" y2="15"></line>
+          </svg>
+          Категорії
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="header-right">
-    <div class="language-btn">UA</div>
-    <div class="icon-btn">
-      <img src="images/Frame 39.png" alt="icon">
-      <span class="red-dot"></span>
+
+    <div class="header-right">
+      <div class="language-btn">UA</div>
+      <div class="icon-btn">
+        <img src="images/Frame 39.png" alt="icon">
+        <span class="red-dot"></span>
+      </div>
+      <div class="icon-btn" id="profileBtn">
+        <img src="images/Frame 38.png" alt="icon">
+      </div>
     </div>
-    <div class="icon-btn" id="profileBtn">
-      <img src="images/Frame 38.png" alt="icon">
-    </div>
-  </div>
-</header>
+  </header>
 
 
 <main class="event-page-wrapper">
@@ -346,5 +371,6 @@
 
 <script src="events.js"></script>
 <script src="script.js"></script>
+<script src="wishlist.js"></script>
 </body>
 </html>
