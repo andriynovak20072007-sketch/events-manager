@@ -53,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
             readMoreBtn.innerText = descriptionBlock.classList.contains('expanded') ? 'Згорнути' : 'Читати далі';
         });
     }
-<<<<<<< HEAD
 
     // --- ЛОГІКА КНОПКИ "ОБРАНЕ" ---
     const favoriteBtn = document.getElementById('favoriteToggleBtn');
@@ -82,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-=======
 });
 
 // Отримуємо елементи пошуку зі сторінки
@@ -202,4 +200,3 @@ if (searchInput) {
     }
   });
 }
->>>>>>> 46fa32c74ac38ca9d1282afc3f95ce8955d22d2b
