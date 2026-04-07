@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
     } finally {
         client.release(); 
     }
-}); // <--- Крок 1 закінчився тут
+});
 
 // =======================================================
 // 2. GET /api/routes/:id - Отримання конкретного маршруту
@@ -98,6 +98,77 @@ router.get('/:id', async (req, res) => {
         console.error('Помилка при отриманні маршруту:', err.message);
         res.status(500).json({ error: "Помилка сервера при завантаженні маршруту" });
     }
-}); // <--- Крок 2 закінчився тут
+});
+
+// =======================================================
+// 3. PUT /api/routes/:id - Оновлення існуючого маршруту
+// =======================================================
+router.put('/:id', async (req, res) => {
+    const { id } = req.params; // ID маршруту з URL
+    const { route_name, creator_id, event_ids } = req.body;
+
+    // Базова валідація
+    if (!route_name || !creator_id || !event_ids || !Array.isArray(event_ids)) {
+        return res.status(400).json({ error: "Неповні дані для оновлення маршруту" });
+    }
+
+    const client = await pool.connect(); // Знову беремо клієнта для транзакції
+
+    try {
+        await client.query('BEGIN');
+
+        // Оновлюємо заголовок маршруту + ПЕРЕВІРКА БЕЗПЕКИ
+        // Ми перевіряємо creator_id, щоб ніхто не міг змінити чужий маршрут
+        const updateRouteQuery = `
+            UPDATE routes 
+            SET route_name = $1 
+            WHERE route_id = $2 AND creator_id = $3 
+            RETURNING *`;
+        const routeResult = await client.query(updateRouteQuery, [route_name, id, creator_id]);
+
+        // Якщо маршрут не знайшовся або юзер не його власник — скасовуємо все
+        if (routeResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: "Маршрут не знайдено або у вас немає прав на його зміну" });
+        }
+
+        // =====================================================================
+        // 🚀 ПАТЕРН: "CLEAR AND REPLACE" (Delete-and-Replace)
+        // Замість складного вираховування різниці між старими та новими точками,
+        // ми в рамках транзакції очищаємо старий список і записуємо новий.
+        // Це гарантує відсутність багів із дублюванням або зміщенням індексів.
+        // =====================================================================
+
+        // --> КРОК 1: CLEAR (Очищення)
+        // Видаляємо СТАРІ точки маршруту
+        await client.query('DELETE FROM route_events WHERE route_id = $1', [id]);
+
+        // --> КРОК 2: REPLACE (Заміна/Перезапис)
+        // Записуємо НОВІ точки маршруту з новим порядком
+        const insertEventQuery = `
+            INSERT INTO route_events (route_id, event_id, order_index) 
+            VALUES ($1, $2, $3)
+        `;
+
+        for (let i = 0; i < event_ids.length; i++) {
+            await client.query(insertEventQuery, [id, event_ids[i], i + 1]);
+        }
+        
+        // =====================================================================
+        // КІНЕЦЬ ПАТЕРНУ
+        // =====================================================================
+
+        await client.query('COMMIT'); // Фіксуємо зміни
+
+        res.json({ message: "Маршрут успішно оновлено" });
+
+    } catch (err) {
+        await client.query('ROLLBACK'); // Відкат у разі помилки
+        console.error('Помилка оновлення маршруту:', err.message);
+        res.status(500).json({ error: "Не вдалося оновити маршрут" });
+    } finally {
+        client.release();
+    }
+});
 
 module.exports = router;
