@@ -71,18 +71,59 @@ body {
     font-size: 14px; border-bottom: 1px solid #eee; list-style: none;
 }
 
+/* Контейнер кнопок */
 .categories {
-    display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    width: 100%;
 }
 
-.categories button {
-    padding: 8px 16px; border-radius: 20px; border: none; font-weight: 600; color: white; cursor: pointer;
+/* Базовий стиль "пігулки" */
+.category-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 42px; /* Фіксована висота, щоб не розтягувались */
+    padding: 0 24px;
+    border: none;
+    border-radius: 50px; /* Максимальне закруглення */
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.concert { background: var(--purple); }
-.festival { background: var(--orange); }
-.education { background: #2854C5; }
-.sport { background: #73C92D; }
+.category-pill i {
+    font-size: 16px;
+}
+
+.category-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Градієнти точно за макетом */
+.concert { 
+    background: linear-gradient(90deg, #6209DD 0%, #8C3AAA 100%); 
+}
+.festival { 
+    background: linear-gradient(90deg, #FF8A00 0%, #FFD600 100%); 
+}
+.education { 
+    background: linear-gradient(90deg, #2854C5 0%, #00AAFF 100%); 
+}
+.sport { 
+    background: linear-gradient(90deg, #22892E 0%, #9DDD09 100%); 
+}
 
 .map-wrapper {
     position: relative; display: flex; justify-content: center;
@@ -119,35 +160,57 @@ svg {
     padding: 5px 12px; border-radius: 8px; font-size: 13px;
     display: none; pointer-events: none; z-index: 1000;
 }
-/* Базовий стан області */
+
 .region {
-  fill: #B9CCFF; /* Твій початковий світло-блакитний колір карти */
-  transition: fill 0.3s ease; /* Плавна зміна кольору */
+  fill: #B9CCFF;  
+  transition: fill 0.3s ease; 
   cursor: pointer;
 }
 
-/* Ефект наведення мишки (Hover) */
 .region:hover {
-  fill: var(--blue-light); /* #00AAFF - гарний яскравий синій */
+  fill: var(--blue-light); 
 }
 
-/* Активна (обрана) область */
 .region.active-region,
 .region.active-region:hover {
-  fill: var(--blue-dark); /* #2854C5 - глибокий синій для виділення */
+  fill: var(--blue-dark); 
 }
+
+.map-section {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    padding: 0 40px 40px 40px;
+    /* Замість фіксованої height: calc(100vh - 80px) */
+    min-height: 100vh; 
+    height: auto; 
+}
+
+.map-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
 #map-container {
-  position: relative;
+    width: 100%;
+    max-width: 1100px; /* Обмеж максимальну ширину, щоб карта не розтягувалася на весь екран */
+    margin: 0 auto;
+    position: relative;
+}
+
+#map-container svg {
+    width: 100%;
+    height: auto; /* Дозволяє висоті підлаштовуватися під ширину */
+    display: block;
 }
 
 .map-marker {
   position: absolute;
   z-index: 1000;
 }
-#map-container svg {
-  position: relative;
-  z-index: 1;
-}
+
 
 .map-marker {
   z-index: 10;
@@ -161,7 +224,133 @@ svg {
     font-size: 13px;
     font-family: 'Montserrat', sans-serif;
     display: none; 
-    pointer-events: none; /* Щоб він не перехоплював кліки */
+    pointer-events: none; 
     z-index: 1000;
     white-space: nowrap;
 }
+
+/* Сайдбар */
+.sidebar {
+    width: 280px;
+    flex-shrink: 0; /* Щоб сайдбар не стискався */
+}
+
+/* Робимо поле відносною системою координат */
+.date-input-styled {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Беремо стандартну іконку календаря і "прибиваємо" її до правого краю */
+.date-input-styled::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 15px; /* Можеш змінити це число (наприклад, 10px або 20px), щоб вирівняти ідеально по нижній іконці */
+    cursor: pointer;
+    background-color: transparent; /* Щоб не було білого фону під іконкою, якщо такий з'явиться */
+}
+
+/* Бейдж (тег) рейтингу в картці */
+.event-rating-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* Відстань між зіркою та числом */
+    background-color: #FFF8E1; /* Надзвичайно легкий жовтий фон */
+    color: #FFB300; /* Золотий колір для тексту та зірки */
+    padding: 4px 10px; /* Відступи всередині бейджа */
+    border-radius: 12px; /* Повністю заокруглені краї */
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    border: 1px solid rgba(255, 179, 0, 0.2); /* Дуже прозора золота обводка */
+}
+
+/* Стиль самої векторної зірочки */
+.event-rating-badge svg {
+    width: 14px;
+    height: 14px;
+    fill: #FFB300; /* Заливаємо іконку золотим кольором */
+}
+
+/* ==========================================
+   КОНТЕЙНЕР ДЛЯ КНОПОК (КНОПКИ ОДНА ПІД ОДНОЮ)
+========================================== */
+.filter-actions {
+    display: flex;
+    flex-direction: column; /* Магія тут: ставимо елементи в стовпчик */
+    gap: 10px; /* Відстань між кнопками по вертикалі */
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Обидві кнопки тепер красиві та на всю ширину меню */
+.filter-actions .btn-primary,
+.filter-actions .btn-reset {
+    width: 100% !important; /* Розтягуємо на 100% */
+    margin: 0 !important;
+    padding: 12px !important; /* Повертаємо комфортні відступи */
+    font-size: 14px !important; /* Нормальний розмір шрифту */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+/* Трохи зменшуємо яскравість кнопки "Скинути", щоб вона не сперечалася з головною */
+.btn-reset {
+    background: transparent;
+    color: #737373;
+    border: 1px solid transparent; /* Прибираємо навіть рамку, залишаємо просто текст з іконкою */
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-reset:hover {
+    background: #f0eeff; /* Легкий фіолетовий фон при наведенні */
+    color: #6209DD;
+    border-radius: 12px;
+}
+
+.map-wrapper {
+    background: #fff;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.map-view {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.map-view.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Кнопка перемикання */
+.map-toggle-btn {
+    position: absolute;
+    top: 20px; right: 20px;
+    z-index: 2000;
+    background: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 50px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.map-toggle-btn i { color: #2854C5; }

@@ -38,6 +38,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/info', infoRoutes);
 app.use('/api/favorites', favoritesRoutes); // 🟢 ДОДАНО: Ендпоінт для обраного
+app.use('/api/routes', require('./routes/routes'));
 
 // Базовий тестовий роут для перевірки працездатності
 app.get('/', (req, res) => {
