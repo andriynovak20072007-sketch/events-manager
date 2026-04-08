@@ -1,5 +1,51 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    // Резервні події для демонстрації, якщо база даних пуста
+    // --- 1. ЛОГІКА ІНТЕРФЕЙСУ (ПРАЦЮЄ ЗАВЖДИ, ДЕ Є ЦІ ЕЛЕМЕНТИ) ---
+
+    // Кнопка "Читати далі"
+    const descriptionBlock = document.querySelector('.event-details-text');
+    if (descriptionBlock) {
+        // Перевіряємо, чи ще немає кнопки, щоб не наплодити дублікатів
+        if (!document.querySelector('.read-more-btn')) {
+            const readMoreBtn = document.createElement('button');
+            readMoreBtn.innerText = 'Читати далі';
+            readMoreBtn.className = 'read-more-btn';
+            
+            descriptionBlock.parentNode.insertBefore(readMoreBtn, descriptionBlock.nextSibling);
+
+            readMoreBtn.addEventListener('click', () => {
+                descriptionBlock.classList.toggle('expanded');
+                readMoreBtn.innerText = descriptionBlock.classList.contains('expanded') ? 'Згорнути' : 'Читати далі';
+            });
+        }
+    }
+
+    // Кнопка "ОБРАНЕ"
+    const favoriteBtn = document.getElementById('favoriteToggleBtn');
+    const favoriteIcon = document.getElementById('favoriteIcon');
+    const favoriteText = document.getElementById('favoriteText');
+
+    if (favoriteBtn) {
+        favoriteBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Зупиняємо стрибок сторінки вгору
+            
+            const isFavorite = favoriteBtn.classList.contains('active');
+            
+            if (isFavorite) {
+                // ВИДАЛЯЄМО З ОБРАНОГО
+                favoriteBtn.classList.remove('active');
+                favoriteIcon.style.fill = 'none'; // Робимо прозорим
+                favoriteText.innerText = 'Додати до обраного'; 
+            } else {
+                // ДОДАЄМО В ОБРАНЕ
+                favoriteBtn.classList.add('active');
+                favoriteIcon.style.fill = '#ff4d4d'; // Заливаємо червоним (колір var(--red))
+                favoriteText.innerText = 'Видалити з обраного'; 
+            }
+        });
+    }
+
+    // --- 2. ЛОГІКА ЗАВАНТАЖЕННЯ ДАНИХ (API) ---
+
     const fallbackEvents = [
         { event_id: 'fest1', title: 'Фестиваль "Summer Fest"', region: 'Львів, Стадіон "Прайм"', event_day: '2026-04-28', start_time: '18:00', price: '450', currency: 'UAH', custom_image: 'images/fest1..png' },
         { event_id: 'fest2', title: 'Фестиваль "Fest"', region: 'Київ, Стадіон "Прайм"', event_day: '2026-05-30', start_time: '19:00', price: '500', currency: 'UAH', custom_image: 'images/fest2.png' },
@@ -7,7 +53,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         { event_id: 'fest4', title: 'Концерт "Арт-Зима"', region: 'Харків, "Арена"', event_day: '2026-12-05', start_time: '19:30', price: '400', currency: 'UAH', custom_image: 'images/fest2.png' }
     ];
 
-    // 1. Отримуємо події з API
     let eventsData = [];
     try {
         const response = await fetch('http://localhost:5000/api/events');
@@ -20,16 +65,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error('Помилка підключення до API:', e);
     }
 
-    // Якщо база даних порожня або сервер недоступний, використовуємо резервні дані
     if (!eventsData || eventsData.length === 0) {
         eventsData = fallbackEvents;
     }
 
-    // --- 2. ЛОГІКА СТОРІНКИ ПОДІЇ ТА ГОЛОВНОЇ СТОРІНКИ ---
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get('event');
     
-    // Якщо ми на сторінці окремої події (events.html?event=123)
+    // Якщо ми на сторінці окремої події і є ID
     if (eventId) {
         try {
             const res = await fetch(`http://localhost:5000/events/${eventId}`);
@@ -57,52 +100,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 const descpriptionEl = document.querySelector('.event-details-text p');
-                if (descpriptionEl) descpriptionEl.innerText = data.description || '';
+                if (descpriptionEl && data.description) descpriptionEl.innerText = data.description;
             }
         } catch(e) {
             console.error("Помилка завантаження події: ", e);
         }
-
-        // Логіка "Читати далі" 
-        const descriptionBlock = document.querySelector('.event-details-text');
-        if (descriptionBlock) {
-            const readMoreBtn = document.createElement('button');
-            readMoreBtn.innerText = 'Читати далі';
-            readMoreBtn.className = 'read-more-btn';
-            
-            descriptionBlock.parentNode.insertBefore(readMoreBtn, descriptionBlock.nextSibling);
-
-            readMoreBtn.addEventListener('click', () => {
-                descriptionBlock.classList.toggle('expanded');
-                readMoreBtn.innerText = descriptionBlock.classList.contains('expanded') ? 'Згорнути' : 'Читати далі';
-            });
-        }
-
-        // ЛОГІКА КНОПКИ "ОБРАНЕ"
-        const favoriteBtn = document.getElementById('favoriteToggleBtn');
-        const favoriteIcon = document.getElementById('favoriteIcon');
-        const favoriteText = document.getElementById('favoriteText');
-
-        if (favoriteBtn) {
-            favoriteBtn.addEventListener('click', async function(e) {
-                e.preventDefault(); 
-                
-                const isFavorite = favoriteBtn.classList.contains('active');
-                
-                if (isFavorite) {
-                    favoriteBtn.classList.remove('active');
-                    favoriteIcon.setAttribute('fill', 'none'); 
-                    favoriteText.innerText = 'Додати до обраного'; 
-                } else {
-                    favoriteBtn.classList.add('active');
-                    favoriteIcon.setAttribute('fill', 'var(--red)'); 
-                    favoriteText.innerText = 'Видалити з обраного'; 
-                }
-            });
-        }
     } 
-    // Якщо ми на головній сторінці (index.html) - малюємо сітку подій
-    else {
+    // Якщо ми на головній сторінці (рендеримо сітку)
+    else if (document.getElementById('events-grid')) {
         const eventsGrid = document.getElementById('events-grid');
         
         const renderEvents = (eventsToRender) => {
@@ -125,7 +130,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 
                 const imgSrc = ev.custom_image || 'images/fest1..png';
                 
-                // В якості картинки ставимо ту шо у нас є
                 card.innerHTML = `
                     <div style="background-image: url('${imgSrc}'); background-size: cover; background-position: center; border-radius: 18px; width: 100%; height: 200px; margin-bottom: 15px;"></div>
                     <h3 class="event-name">${ev.title}</h3>
@@ -154,7 +158,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         };
 
-        // Початковий рендер
         renderEvents(eventsData);
 
         // --- 3. ЛОГІКА ПОШУКУ ПОДІЙ ---
@@ -195,7 +198,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
 
-        // Слухач подій для поля вводу
         if (searchInput) {
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -211,3 +213,121 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 });
+
+// Отримуємо елементи пошуку зі сторінки
+const searchInput = document.getElementById('title-search-input');
+const searchMessage = document.getElementById('search-message');
+
+
+/*
+ Обробка помилок і порожнього результату (за назвою)
+ Обробка null/порожнього результату (пошук)
+*/
+function showSearchMessage(text, isError = false) {
+  if (!searchMessage) return;
+
+  searchMessage.textContent = text;
+  searchMessage.style.display = 'block';
+  searchMessage.style.color = isError ? 'red' : '#333';
+}
+
+
+//Очищає повідомлення перед новим пошуком
+function clearSearchMessage() {
+  if (!searchMessage) return;
+
+  searchMessage.textContent = '';
+  searchMessage.style.display = 'none';
+}
+
+
+/*
+Обробка null/порожнього результату (пошук)
+Обробка помилок і порожнього результату (за назвою)
+*/
+function handleSearchResults(events) {
+
+  // Якщо API повернув null або undefined
+  if (events == null) {
+    showSearchMessage('Подій не знайдено');
+    return;
+  }
+
+  // Якщо API повернув не масив (помилка формату)
+  if (!Array.isArray(events)) {
+    showSearchMessage('Неправильний формат даних пошуку', true);
+    return;
+  }
+
+  // Якщо масив пустий
+  if (events.length === 0) {
+    showSearchMessage('Подій не знайдено');
+    return;
+  }
+
+  // Якщо все ок — прибираємо повідомлення
+  clearSearchMessage();
+
+  // відображення списку подій
+  console.log('Знайдені події:', events);
+}
+
+
+// якщо сталася помилка запиту (fetch, сервер, мережа)
+function handleSearchError() {
+  showSearchMessage('Сталася помилка під час пошуку', true);
+}
+
+
+/*
+- викликає API
+- отримує дані
+- передає їх у handleSearchResults
+- при помилці викликає handleSearchError
+*/
+async function searchByTitle(title) {
+  try {
+    clearSearchMessage();
+
+    const response = await fetch(`/events?title=${encodeURIComponent(title)}`);
+
+    // Якщо сервер повернув помилку
+    if (!response.ok) {
+      throw new Error('Помилка запиту');
+    }
+
+    const data = await response.json();
+
+    // Якщо API повернув null
+    if (data == null) {
+      handleSearchResults(null);
+      return;
+    }
+
+    handleSearchResults(data);
+
+  } catch (error) {
+    console.error('Search error:', error);
+    handleSearchError();
+  }
+}
+
+
+/*
+- якщо поле пусте → показує повідомлення
+- якщо є текст → запускає пошук
+*/
+if (searchInput) {
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const value = searchInput.value.trim();
+
+      if (value === '') {
+        showSearchMessage('Введіть назву події');
+        return;
+      }
+
+      searchByTitle(value);
+    }
+  });
+}
