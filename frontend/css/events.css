@@ -15,6 +15,7 @@ body {
     background-color: #ffffff;
     padding: 40px 20px 80px;
     font-family: 'Montserrat', sans-serif;
+    margin-top: 0 !important;
 }
 
 .event-grid-container {
@@ -24,13 +25,12 @@ body {
     flex-direction: column;
 }
 
-/* --- КНОПКА "НАЗАД" --- */
 .back-link-wrapper {
     width: 100%;
     margin-bottom: 30px;
     display: flex !important;
     justify-content: flex-start !important;
-    transform: translateX(-40px); /* Зсув ліворуч */
+    transform: translateX(-40px); 
 }
 
 .back-link {
@@ -60,7 +60,7 @@ body {
     stroke: #2854C5 !important;
 }
 
-/* --- КОЛОНКИ --- */
+/* КОЛОНКИ*/
 .event-content-row {
     display: flex !important;
     flex-direction: row !important;
@@ -82,12 +82,11 @@ body {
     display: block;
 }
 
-/* --- ПРАВА КОЛОНКА --- */
 .event-info-col {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: flex-start !important; /* Жорстко вліво */
+    align-items: flex-start !important;
     text-align: left !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -120,7 +119,7 @@ h1.event-page-title {
 }
 /* Для іконок над кнопкою (локація, дата) */
 .meta-row svg {
-    width: 24px !important; /* однаковий розмір для всіх */
+    width: 24px !important; 
     height: 24px !important;
     flex-shrink: 0 !important;
     display: flex !important;
@@ -130,18 +129,17 @@ h1.event-page-title {
 
 /* Для списку під кнопкою (обране, маршрут, поділитися) */
 ul.event-actions-list li a svg {
-    width: 24px !important; /* ТАКА Ж ширина, як і вище */
+    width: 24px !important; 
     height: 24px !important;
     flex-shrink: 0 !important;
     object-fit: contain !important;
 }
 
-/* Переконайся, що контейнери мають однаковий gap */
 .meta-row, 
 ul.event-actions-list li a {
     display: flex !important;
     align-items: center !important;
-    gap: 12px !important; /* Відстань від іконки до тексту */
+    gap: 12px !important; 
 }
 .meta-row span {
     font-size: 15px !important;
@@ -198,26 +196,26 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     flex-shrink: 0 !important;
     display: block !important;
 }
-/* --- ВІДСТУПИ В ОПИСІ --- */
+
 .event-details-text h2 {
     font-size: 24px !important;
     font-weight: 700 !important;
-    margin-bottom: 20px !important; /* Відступ від заголовка до тексту */
+    margin-bottom: 20px !important; 
     color: #000 !important;
 }
 
 .event-details-text p {
-    margin-bottom: 15px !important; /* Відступ між абзацами */
+    margin-bottom: 15px !important; 
     line-height: 1.6 !important;
 }
-/* --- СЕКЦІЯ ВІДГУКІВ --- */
+
 .event-reviews-section {
     margin-top: 50px !important;
     width: 100% !important;
     max-width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: flex-start !important; /* Усе притискаємо вліво */
+    align-items: flex-start !important; 
 }
 
 .reviews-title {
@@ -232,14 +230,14 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     margin-bottom: 30px !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: flex-start !important; /* Усе притискаємо вліво */
+    align-items: flex-start !important; 
 }
 
 .review-input-wrapper {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: flex-start !important; /* Іконка вліво */
+    justify-content: flex-start !important; 
     width: 100% !important;
     padding: 10px 0 !important;
     margin: 0 !important;
@@ -247,7 +245,7 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
 
 .review-input-icon {
     flex-shrink: 0 !important;
-    margin-right: 12px !important; /* Фіксований відступ від іконки до тексту */
+    margin-right: 12px !important; 
 }
 
 .review-input-field {
@@ -257,7 +255,7 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     background: transparent !important;
     font-size: 15px !important;
     color: #000 !important;
-    text-align: left !important; /* Текст вліво всередині поля */
+    text-align: left !important; 
     padding: 0 !important;
     margin: 0 !important;
     display: block !important;
@@ -274,7 +272,6 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     color: #999;
 }
 
-/* лінія рівна */
 .review-input-underline {
     height: 1px;
     background-color: #D9D9D9;
@@ -282,7 +279,6 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     margin-top: 5px;
 }
 
-/* Список відгуків */
 .review-item {
     margin-bottom: 35px !important;
     width: 100% !important;
@@ -296,10 +292,10 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
 }
 
 .review-avatar-circle {
-    width: 42px !important; /* Трохи підправив розмір під макет */
+    width: 42px !important; 
     height: 42px !important;
     border-radius: 50% !important;
-    background-color: #F0F0F7 !important; /* Твій колір фону */
+    background-color: #F0F0F7 !important; 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -330,11 +326,11 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     padding-left: 0 !important;
     text-align: left !important;
 }
-/* Стилі для іконок на сторінці детальної інформації */
+
 .meta-row svg {
-    width: 20px !important;  /* Фіксована ширина */
-    height: 20px !important; /* Фіксована висота */
-    flex-shrink: 0;          /* Щоб іконка не стискалася */
+    width: 20px !important; 
+    height: 20px !important; 
+    flex-shrink: 0;          
     display: inline-block;
     vertical-align: middle;
 }
@@ -344,7 +340,7 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     width: 18px !important;
     height: 18px !important;
 }
-/* ФІКС ГІГАНТСЬКИХ ІКОНОК НА СТОРІНЦІ ПОДІЇ */
+
 .event-page-wrapper svg, 
 .meta-row svg, 
 .review-input-icon svg,
@@ -361,28 +357,23 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     margin: 0 !important;
 }
 
-/* Прибираємо поп-апи карти зі сторінки події */
 .event-page-wrapper .bp-tooltip, 
 .event-page-wrapper #region-tooltip {
     display: none !important;
 }
-/* --- СТИЛІ ДЛЯ БЛОКУ З ТЕКСТОМ ТА КНОПКИ "ЧИТАТИ ДАЛІ" --- */
 
-/* Контейнер тексту опису */
 .event-details-text {
     position: relative;
-    max-height: 160px; /* Висота приблизно для 3-4 рядків тексту */
+    max-height: 160px; 
     overflow: hidden;
     transition: max-height 0.4s ease-out;
     margin-bottom: 10px !important;
 }
 
-/* Коли блок розгорнуто повністю */
 .event-details-text.expanded {
-    max-height: 2000px; /* З великим запасом для будь-якого тексту */
+    max-height: 2000px; 
 }
 
-/* Ефект градієнтного затухання, коли текст згорнутий */
 .event-details-text:not(.expanded)::after {
     content: "";
     position: absolute;
@@ -391,14 +382,13 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     width: 100%;
     height: 60px;
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-    pointer-events: none; /* Щоб кліки проходили крізь градієнт */
+    pointer-events: none; 
 }
 
-/* Стиль самої кнопки "Читати далі" */
 .read-more-btn {
     background-color: transparent;
     border: none;
-    color: var(--blue-dark, #2854C5); /* Твій фірмовий синій */
+    color: var(--blue-dark, #2854C5); 
     font-family: 'Montserrat', sans-serif;
     font-size: 15px;
     font-weight: 600;
@@ -411,20 +401,111 @@ ul.event-actions-list li a:hover { color: #00AAFF !important; }
     gap: 6px;
 }
 
-/* Ефект при наведенні на кнопку */
 .read-more-btn:hover {
-    color: #00AAFF; /* Світло-блакитний */
+    color: #00AAFF;
     text-decoration: underline;
 }
 
-/* Додамо стрілочку через псевдоелемент для краси */
 .read-more-btn::after {
     content: "↓";
     font-size: 14px;
     transition: transform 0.3s;
 }
 
-/* Коли текст розгорнуто, стрілочка дивиться вгору */
 .event-details-text.expanded + .read-more-btn::after {
     transform: rotate(180deg);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+header.header {
+    margin-bottom: 0 !important;
+}
+
+main.event-page-wrapper {
+    margin-top: 0 !important;
+    padding-top: 40px !important; 
+    flex-grow: 1;
+    background-color: #ffffff !important;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+/* ФІКС ІКОНОК В ХЕДЕРІ */
+.header svg {
+    flex-shrink: 0 !important;
+}
+
+.filter-pill .icon, 
+.filter-pill .arrow {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.search-box .search-icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.add-event-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* --- ФІКС СТРУКТУРИ ХЕДЕРА --- */
+
+/* Робимо саму шапку гнучкою і розкидаємо ліву, центральну і праву частини */
+.header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Вишиковуємо в ряд пошук, плюсик і фільтри */
+.header-center {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    flex: 1 !important;
+}
+
+/* Забороняємо фільтрам (Дата, Місто, Категорії) падати один під одного */
+.header-filters {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* Вишиковуємо логотип (зліва) та іконки профілю (справа) */
+.header-left, 
+.header-right {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 15px !important;
+}
+
+/* Рятуємо поле пошуку, щоб воно не сплющувалося */
+.search-box {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    min-width: 250px !important;
+}
+
+/* Плавна заливка сердечка */
+#favoriteIcon {
+    transition: fill 0.3s ease;
 }

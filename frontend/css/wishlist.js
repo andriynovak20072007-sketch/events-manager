@@ -1,17 +1,17 @@
 // Event Data
 const selectedEvents = [
   {
-    id: 1,
+    id: 'fest1',
     title: 'Фестиваль "Summer Fest"',
     location: 'Львів, Стадіон "Прайм"',
     date: '28 квітня, 18:00',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non enim consequat natum risque quis blandit. Curabitur nec lorem arcu.',
-    //imageUrl: 'https://images.unsplash.com/photo-1473396413399-6717ef7c4093?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwY3Jvd2QlMjBvcmFuZ2UlMjBmaXJlfGVufDF8fHx8MTc3NDg5NTkyNnww&ixlib=rb-4.1.0&q=80&w=1080',
+    imageUrl: 'https://images.unsplash.com/photo-1473396413399-6717ef7c4093?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwY3Jvd2QlMjBvcmFuZ2UlMjBmaXJlfGVufDF8fHx8MTc3NDg5NTkyNnww&ixlib=rb-4.1.0&q=80&w=1080',
     type: 'detailed',
-    Image: '../images/event-1.webp'
+    //imageUrl: '../images/event-1.webp'
   },
   {
-    id: 2,
+    id: 'fest2',
     title: 'Фестиваль "Fest"',
     location: 'Стадіон "Прайм"',
     date: '28 квітня',
@@ -20,7 +20,7 @@ const selectedEvents = [
     type: 'detailed'
   },
   {
-    id: 3,
+    id: 'fest3',
     title: 'Фестиваль "Summer Fest"',
     location: 'Львів, Стадіон "Прайм"',
     date: '28 квітня, 18:00',
@@ -29,7 +29,7 @@ const selectedEvents = [
     type: 'detailed'
   },
   {
-    id: 4,
+    id: 'fest4',
     title: 'Фестиваль "Fest"',
     location: 'Стадіон "Прайм"',
     date: '28 квітня',
@@ -80,8 +80,8 @@ const icons = {
     <line x1="3" y1="10" x2="21" y2="10"></line>
   </svg>`,
   
-  heart: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+  cross: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor">
+    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
   </svg>`
 };
 
@@ -91,8 +91,8 @@ function createDetailedEventCard(event) {
     <div class="event-card">
       <div class="event-image-container">
         <img src="${event.imageUrl}" alt="${event.title}" class="event-image">
-        <button class="favorite-btn" onclick="toggleFavorite(${event.id})">
-          ${icons.heart}
+        <button class="favorite-btn" onclick="toggleFavorite('${event.id}')">
+          ${icons.cross}
         </button>
       </div>
       <div class="event-content">
@@ -107,8 +107,8 @@ function createDetailedEventCard(event) {
         </div>
         <p class="event-description">${event.description}</p>
         <div class="event-actions">
-          <button class="btn-primary" onclick="showDetails(${event.id})">Детальніше</button>
-          <button class="btn-secondary" onclick="addToCalendar(${event.id})">Додати в календар</button>
+          <button class="btn-primary" onclick="showDetails('${event.id}')">Детальніше</button>
+          <button class="btn-secondary" onclick="addToCalendar('${event.id}')">Додати в календар</button>
         </div>
       </div>
     </div>
@@ -132,7 +132,7 @@ function createSimpleEventCard(event) {
           ${icons.calendar}
           <span>${event.date}</span>
         </div>
-        <button class="btn-link" onclick="showDetails(${event.id})">Дізнатися більше</button>
+        <button class="btn-link" onclick="showDetails('${event.id}')">Дізнатися більше</button>
       </div>
     </div>
   `;
@@ -155,14 +155,25 @@ function renderEvents() {
 }
 
 // Event Handlers
+// Event Handlers
 function toggleFavorite(eventId) {
-  console.log('Toggle favorite for event:', eventId);
-  alert(`Подія ${eventId} додана до обраного!`);
+  // 1. Шукаємо індекс події в масиві за її id
+  const index = selectedEvents.findIndex(event => event.id === eventId);
+  
+  // 2. Якщо подія знайдена (індекс не -1), вирізаємо 1 елемент
+  if (index !== -1) {
+    selectedEvents.splice(index, 1);
+  }
+  
+  // 3. Перемальовуємо інтерфейс — подія зникне зі сторінки
+  renderEvents();
+  
+  console.log(`Подію ${eventId} успішно видалено!`);
 }
 
 function showDetails(eventId) {
-  console.log('Show details for event:', eventId);
-  alert(`Показати деталі події ${eventId}`);
+  // Перенаправляємо на сторінку events.html і передаємо ID події в посилання
+  window.location.href = `events.html?event=${eventId}`;
 }
 
 function addToCalendar(eventId) {
