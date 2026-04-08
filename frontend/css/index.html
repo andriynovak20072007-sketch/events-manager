@@ -10,7 +10,9 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="map.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 
@@ -205,29 +207,54 @@
     </div>
 
     <main class="map-area">
-    <div class="categories">
+      <div class="categories">
         <button class="category-pill concert"><i class="fa-solid fa-music"></i> Концерти</button>
         <button class="category-pill festival"><i class="fa-solid fa-tent"></i> Фестивалі</button>
         <button class="category-pill education"><i class="fa-solid fa-graduation-cap"></i> Освіта</button>
         <button class="category-pill sport"><i class="fa-solid fa-person-running"></i> Спорт</button>
-    </div>
+      </div>
 
-    <div class="map-wrapper" style="position: relative; width: 100%; min-height: 500px;">
-        <button id="toggle-map-type" class="map-toggle-btn">
-            <i class="fa-solid fa-layer-group"></i> <span>Реальна карта</span>
+      <div class="map-wrapper" style="position: relative; width: 100%; min-height: 500px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+        
+        <button id="toggle-map-type" class="map-toggle-btn" style="position: absolute; top: 20px; right: 20px; z-index: 2000;">
+          <i class="fa-solid fa-layer-group"></i> <span>Реальна карта</span>
         </button>
 
-        <div id="map-container" class="map-view active">
+        <div id="route-planner-widget" class="route-widget hidden">
+          <div class="route-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h3>Планування маршруту</h3>
+              <span class="route-subtitle"><i class="fa-regular fa-square-check"></i> Обрані події</span>
             </div>
+            <button id="close-widget-btn" class="remove-route-btn" style="font-size: 20px; color: #333; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+          </div>
 
+          <div class="route-items" id="route-items-list"></div>
+
+          <div class="route-distance-info hidden" id="route-distance-info">
+            <div class="event-name-top" id="route-start-name">Початок</div>
+            <div class="distance-line">
+              <div class="line-arrow"></div>
+              <div class="travel-times">
+                <span><i class="fa-solid fa-car"></i> <span id="car-time">-- хв.</span></span>
+                <span><i class="fa-solid fa-person-walking"></i> <span id="walk-time">-- хв.</span></span>
+              </div>
+            </div>
+            <div class="event-name-bottom" id="route-end-name">Кінець</div>
+          </div>
+
+          <button class="btn-primary build-route-btn">Побудувати маршрут</button>
+        </div>
+
+        <div id="map-container" class="map-view active"></div>
         <div id="leaflet-map" class="map-view"></div>
-    </div>
+      </div>
 
-    <div class="zoom">
+      <div class="zoom">
         <button id="zoom-in">+</button>
         <button id="zoom-out">-</button>
-    </div>
-</main>
+      </div>
+    </main>
 </div>
   <section class="popular-events">
     <h2 class="popular-title">Популярні події</h2>

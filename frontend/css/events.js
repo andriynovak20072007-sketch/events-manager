@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Якщо ми на сторінці окремої події (events.html?event=123)
     if (eventId) {
         try {
-            const res = await fetch(`http://localhost:5000/api/events/${eventId}`);
+            const res = await fetch(`http://localhost:5000/events/${eventId}`);
             if (res.ok) {
                 const data = await res.json();
                 
