@@ -27,6 +27,47 @@ class CurrencyService {
 const currencyService = new CurrencyService();
 
 // ==========================================
+// ПАТЕРН 1.1: Service Pattern
+// Логіка обчислення відстаней між подіями (OSRM API)
+// ==========================================
+class DistanceService {
+    constructor() {
+        // Публічний демо-сервер OSRM (безкоштовний для базових запитів)
+        // Для продакшену можна буде легко замінити URL на Mapbox або Google Maps
+        this.baseUrl = 'http://router.project-osrm.org/route/v1/driving';
+    }
+
+    async calculateRoute(points) {
+        // Потрібно мінімум 2 точки (старт і фініш) для обчислення
+        if (!points || points.length < 2) return null;
+
+        // OSRM очікує формат: "довгота,широта;довгота,широта;..."
+        const coordinates = points
+            .map(p => `${p.longitude},${p.latitude}`)
+            .join(';');
+
+        try {
+            // Робимо запит (використовуємо вбудований fetch Node.js 18+)
+            const response = await fetch(`${this.baseUrl}/${coordinates}?overview=false`);
+            const data = await response.json();
+
+            if (data.code === 'Ok' && data.routes.length > 0) {
+                const route = data.routes[0];
+                return {
+                    distance_km: parseFloat((route.distance / 1000).toFixed(2)), // Метри в км
+                    duration_min: Math.round(route.duration / 60)                // Секунди у хвилини
+                };
+            }
+            return null;
+        } catch (error) {
+            console.error('Помилка під час звернення до Distance API:', error.message);
+            return null;
+        }
+    }
+}
+const distanceService = new DistanceService();
+
+// ==========================================
 // ПАТЕРН 2: Strategy Pattern для сортування
 // Дозволяє легко додавати нові типи сортування
 // ==========================================
@@ -133,19 +174,55 @@ router.get('/filter', async (req, res) => {
 });
 
 // ==========================================
-// 3. Дані для побудови маршруту на карті
+// 3. Дані для побудови маршруту на карті ТА розрахунок відстані (Оновлення)
 // ==========================================
 router.get('/route-data', async (req, res) => {
     const { ids } = req.query;
     if (!ids) return res.status(400).send("Не вказано ID подій");
     
+    // Зберігаємо оригінальний порядок ID (наприклад: "3,1,5" -> перша подія 3, друга 1, третя 5)
     const idArray = ids.split(',').map(Number);
+    
     try {
         const result = await pool.query(
             'SELECT event_id, title, latitude, longitude, region FROM events WHERE event_id = ANY($1)',
             [idArray]
         );
-        res.json(result.rows);
+        
+        let events = result.rows;
+
+        // ВАЖЛИВО: Оператор ANY в PostgreSQL перемішує результати.
+        // Нам потрібно відсортувати події рівно в тому порядку, в якому юзер хоче їх відвідати
+        events.sort((a, b) => idArray.indexOf(a.event_id) - idArray.indexOf(b.event_id));
+
+        // Витягуємо лише валідні координати для сервісу
+        const validPoints = events
+            .filter(e => e.latitude && e.longitude)
+            .map(e => ({
+                latitude: parseFloat(e.latitude),
+                longitude: parseFloat(e.longitude)
+            }));
+
+        // Базові значення маршруту
+        let routingInfo = { distance_km: 0, duration_min: 0, status: "Немає даних для маршруту" };
+
+        // Викликаємо інтеграцію API, якщо є хоча б 2 події з геолокацією
+        if (validPoints.length >= 2) {
+            const apiResult = await distanceService.calculateRoute(validPoints);
+            if (apiResult) {
+                routingInfo = { 
+                    ...apiResult, 
+                    status: "Успішно розраховано" 
+                };
+            }
+        }
+
+        // Віддаємо на фронтенд самі події та інформацію про поїздку між ними
+        res.json({
+            route_points: events,
+            routing_info: routingInfo
+        });
+
     } catch (err) {
         console.error(err);
         res.status(500).send("Помилка даних маршруту");
@@ -154,7 +231,6 @@ router.get('/route-data', async (req, res) => {
 
 // ==========================================
 // ПАТЕРН 3: Query Builder (Будівельник запитів)
-// Використовується виключно для нових завдань фільтрації та пошуку
 // ==========================================
 class EventSearchBuilder {
     constructor() {
@@ -298,5 +374,39 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: "Помилка БД" });
     }
 });
+
+
+// ==========================================
+// 6. ВИДАЛЕННЯ ПОДІЇ (DELETE)
+// ==========================================
+router.delete('/:id', async (req, res) => {
+    const eventId = req.params.id;
+
+    try {
+        const result = await pool.query(
+            'DELETE FROM events WHERE event_id = $1 RETURNING *', 
+            [eventId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Подію не знайдено або вже видалено" });
+        }
+
+        res.json({ 
+            msg: "Подію успішно видалено", 
+            deleted_event: result.rows[0] 
+        });
+    } catch (err) {
+        console.error('Помилка при видаленні події:', err.message);
+        res.status(500).json({ error: "Внутрішня помилка сервера при видаленні" });
+    }
+});
+
+module.exports = router;
+
+
+
+
+
 
 module.exports = router;
