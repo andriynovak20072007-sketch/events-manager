@@ -14,6 +14,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+ <link rel="stylesheet" href="hotel.css">
+ <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 </head>
 
 <body>
@@ -255,12 +258,27 @@
         <button id="zoom-out">-</button>
       </div>
     </main>
-</div>
+  </div>
+
   <section class="popular-events">
     <h2 class="popular-title">Популярні події</h2>
 
     <div class="events-grid" id="events-grid">
       <!-- Events will be dynamically injected here across from backend -> /api/events -->
+    </div>
+  </section>
+
+  <!-- ДОДАНО: Секція "Бронювання готелів" -->
+  <section class="hotel-booking-section">
+    <div class="hotel-header">
+      <h2>Бронювання готелів</h2>
+      <p>Готелі поряд, щоб комфортно насолоджуватися подіями</p>
+    </div>
+    
+    <div class="hotel-grid-wrapper">
+      <div class="hotel-grid" id="hotels-grid">
+        <!-- Готелі будуть згенеровані через JS -->
+      </div>
     </div>
   </section>
 
@@ -534,6 +552,7 @@
   <script src="map.js"></script>
   <script src="script.js"></script>
   <script src="events.js"></script>
+  <script src="hotel.js"></script>
 </body>
 
 </html>

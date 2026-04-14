@@ -13,7 +13,7 @@ const eventsList = [
         price: 500,
         rating: 4.8,
         img: 'images/fest1..png',
-        lat: 49.8397, lng: 24.0297, city: 'lviv', category: 'festival', eventDate: '2026-04-28',
+        lat: 49.8500, lng: 24.0300, city: 'lviv', category: 'festival', eventDate: '2026-04-28',
         x: 14.2, y: 35.5, color: 'marker-purple', icon: 'music'
     },
     {
@@ -25,7 +25,7 @@ const eventsList = [
         price: 1200,
         rating: 4.9,
         img: 'images/fest2.png',
-        lat: 50.4501, lng: 30.5234, city: 'kyiv', category: 'festival', eventDate: '2026-05-30',
+        lat: 50.4700, lng: 30.5000, city: 'kyiv', category: 'festival', eventDate: '2026-05-30',
         x: 47.6, y: 25.2, color: 'marker-yellow', icon: 'music'
     },
     {
@@ -37,7 +37,7 @@ const eventsList = [
         price: 0,
         rating: 4.2,
         img: 'images/fest3.png',
-        lat: 46.4825, lng: 30.7233, city: 'odesa', category: 'festival', eventDate: '2026-06-15',
+        lat: 46.5000, lng: 30.7000, city: 'odesa', category: 'festival', eventDate: '2026-06-15',
         x: 46.5, y: 76.5, color: 'marker-blue', icon: 'music'
     },
     {
@@ -49,7 +49,7 @@ const eventsList = [
         price: 800,
         rating: 5.0,
         img: 'images/event-1.webp',
-        lat: 49.8420, lng: 24.0250, city: 'lviv', category: 'education', eventDate: '2026-05-20',
+        lat: 49.8300, lng: 24.0150, city: 'lviv', category: 'education', eventDate: '2026-05-20',
         x: 15.5, y: 36.8, color: 'marker-purple', icon: 'education'
     },
     {
@@ -61,7 +61,7 @@ const eventsList = [
         price: 400,
         rating: 4.7,
         img: 'images/event-2.jpg',
-        lat: 46.4850, lng: 30.7250, city: 'odesa', category: 'education', eventDate: '2026-06-11',
+        lat: 46.4900, lng: 30.7300, city: 'odesa', category: 'education', eventDate: '2026-06-11',
         x: 48.0, y: 78.0, color: 'marker-blue', icon: 'education'
     },
     {
@@ -73,7 +73,7 @@ const eventsList = [
         price: 650,
         rating: 4.5,
         img: 'images/event-3.jpg',
-        lat: 50.4550, lng: 30.5280, city: 'kyiv', category: 'education', eventDate: '2026-06-06',
+        lat: 50.4600, lng: 30.5500, city: 'kyiv', category: 'education', eventDate: '2026-06-06',
         x: 49.0, y: 26.5, color: 'marker-yellow', icon: 'education'
     },
     {
@@ -85,7 +85,7 @@ const eventsList = [
         price: 900,
         rating: 4.6,
         img: 'images/event-1.webp',
-        lat: 50.4520, lng: 30.5300, city: 'kyiv', category: 'concert', eventDate: '2026-05-12',
+        lat: 50.4300, lng: 30.5000, city: 'kyiv', category: 'concert', eventDate: '2026-05-12',
         x: 46.0, y: 24.0, color: 'marker-yellow', icon: 'music'
     },
     {
@@ -97,7 +97,7 @@ const eventsList = [
         price: 1100,
         rating: 4.4,
         img: 'images/event-2.jpg',
-        lat: 49.9935, lng: 36.2304, city: 'kharkiv', category: 'concert', eventDate: '2026-05-18',
+        lat: 50.0100, lng: 36.2000, city: 'kharkiv', category: 'concert', eventDate: '2026-05-18',
         x: 72.5, y: 33.5, color: 'marker-blue', icon: 'music'
     },
     {
@@ -109,7 +109,7 @@ const eventsList = [
         price: 700,
         rating: 4.3,
         img: 'images/event-3.jpg',
-        lat: 46.4800, lng: 30.7200, city: 'odesa', category: 'concert', eventDate: '2026-06-03',
+        lat: 46.4700, lng: 30.7500, city: 'odesa', category: 'concert', eventDate: '2026-06-03',
         x: 45.0, y: 75.0, color: 'marker-blue', icon: 'music'
     },
     {
@@ -121,7 +121,7 @@ const eventsList = [
         price: 1400,
         rating: 4.9,
         img: 'images/event-1.webp',
-        lat: 50.4480, lng: 30.5210, city: 'kyiv', category: 'sport', eventDate: '2026-05-08',
+        lat: 50.4300, lng: 30.5400, city: 'kyiv', category: 'sport', eventDate: '2026-05-08',
         x: 48.5, y: 26.0, color: 'marker-yellow', icon: 'sport'
     },
     {
@@ -133,7 +133,7 @@ const eventsList = [
         price: 250,
         rating: 4.1,
         img: 'images/event-2.jpg',
-        lat: 49.8350, lng: 24.0250, city: 'lviv', category: 'sport', eventDate: '2026-05-22',
+        lat: 49.8200, lng: 24.0400, city: 'lviv', category: 'sport', eventDate: '2026-05-22',
         x: 13.8, y: 37.5, color: 'marker-purple', icon: 'sport'
     },
     {
@@ -145,7 +145,7 @@ const eventsList = [
         price: 300,
         rating: 4.2,
         img: 'images/event-3.jpg',
-        lat: 49.9950, lng: 36.2320, city: 'kharkiv', category: 'sport', eventDate: '2026-05-27',
+        lat: 49.9800, lng: 36.2600, city: 'kharkiv', category: 'sport', eventDate: '2026-05-27',
         x: 72.5, y: 32.0, color: 'marker-blue', icon: 'sport'
     }
 ];
@@ -272,11 +272,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const icons = {
         music: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>',
         education: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>',
-        sport: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"></circle><path d="M12 3v4M12 13v8M7 6l3 3M14 9l3-3M7 14l3-3M14 15l3 3"/></svg>'
+        sport: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"></circle><path d="M12 3v4M12 13v8M7 6l3 3M14 9l3-3M7 14l3-3M14 15l3 3"/></svg>',
+        hotel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M12 14v7"/></svg>'
     };
 
     // Глобальна функція для показу поп-апу (спільна для SVG та Leaflet)
-    window.showEventTooltip = function(ev, anchorElement, yOffset = 20) {
+    window.showEventTooltip = function (ev, anchorElement, yOffset = 20) {
         const tooltip = document.querySelector('.bp-tooltip');
         if (!tooltip) return;
 
@@ -284,7 +285,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('bp-location').textContent = ev.location;
         document.getElementById('bp-time').textContent = ev.dateStr;
         document.getElementById('bp-icon-container').innerHTML = icons[ev.icon] || '';
-        document.getElementById('bp-btn').href = `events.html?event=${ev.id}`;
+        
+        // Визначаємо куди вестиме кнопка детальніше
+        if (ev.category === 'hotel') {
+            document.getElementById('bp-btn').href = `hotel.html?id=${ev.id}`;
+        } else {
+            document.getElementById('bp-btn').href = `events.html?event=${ev.id}`;
+        }
 
         const addRouteBtn = document.getElementById('bp-add-route-btn');
         if (addRouteBtn) {
@@ -316,7 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
             marker.className = `map-marker is-dot ${ev.color}`;
             marker.style.left = `${ev.x}%`;
             marker.style.top = `${ev.y}%`;
-            
+
             marker.style.pointerEvents = 'auto';
             marker.setAttribute('data-event-id', ev.id);
 
@@ -335,6 +342,19 @@ document.addEventListener("DOMContentLoaded", () => {
             markersLayer.appendChild(marker);
             markersList.push(marker);
         });
+
+        // Після рендеру подій, рендеримо ще готелі на SVG
+        if (typeof renderSvgHotelMarkers === 'function' && typeof hotelsList !== 'undefined') {
+            renderSvgHotelMarkers(hotelsList);
+
+            // Забираємо нові маркери, які додав renderSvgHotelMarkers, і пушимо у загальний список для zoom-навігації
+            const hotelElements = markersLayer.querySelectorAll('.map-marker[data-category="hotel"]');
+            hotelElements.forEach(hm => {
+                if (!markersList.includes(hm)) {
+                    markersList.push(hm);
+                }
+            });
+        }
     }
 
     // ГОЛОВНА ФУНКЦІЯ ІНІЦІАЛІЗАЦІЇ КАРТИ 
@@ -373,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
             const newScale = scale * delta;
-            
+
             if (newScale >= 1 && newScale <= 8) {
                 scale = newScale;
                 updateTransform();
@@ -413,10 +433,10 @@ document.addEventListener("DOMContentLoaded", () => {
         function updateTransform() {
             zoomWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
-        
-    const events = eventsList;
 
-        
+        const events = eventsList;
+
+
         // Оновлення карти та списку після застосування фільтру (по місту)
         // показ повідомлення
         function showCityFilterMessage(text, isError = false) {
@@ -848,7 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-       document.addEventListener('click', (e) => {
+        document.addEventListener('click', (e) => {
             // Закриваємо тільки якщо клік НЕ по тултіпу і НЕ по маркеру
             if (!e.target.closest('.bp-tooltip') && !e.target.closest('.map-marker') && !e.target.closest('.leaflet-marker-icon')) {
                 eventTooltip.classList.remove('show');
@@ -1026,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (applyBtn) {
         applyBtn.addEventListener('click', filterMapMarkers);
     }
-    
+
     // 2. Кнопка "Скинути"
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) {
@@ -1034,14 +1054,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dateInput) dateInput.value = '';
             if (citySelect) citySelect.value = '';
             window.currentFilters.category = '';
-            
+
             categoryButtons.forEach(btn => {
                 btn.classList.remove('active');
                 btn.style.opacity = '1';
             });
-            
+
             filterMapMarkers();
-            
+
             // Скидаємо сортування карток
             if (sortPriceSelect) sortPriceSelect.value = 'default';
             if (sortRatingSelect) sortRatingSelect.value = 'default';
@@ -1184,42 +1204,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!toggleBtn || !svgMap || !leafletElem) return;
 
-toggleBtn.addEventListener('click', function () {
-    const isSvgActive = svgMap.classList.contains('active');
-    const btnText = toggleBtn.querySelector('span');
+    toggleBtn.addEventListener('click', function () {
+        const isSvgActive = svgMap.classList.contains('active');
+        const btnText = toggleBtn.querySelector('span');
 
-    if (isSvgActive) {
-        svgMap.classList.remove('active');
-        leafletElem.classList.add('active');
-        btnText.innerText = "SVG Карта";
+        if (isSvgActive) {
+            svgMap.classList.remove('active');
+            leafletElem.classList.add('active');
+            btnText.innerText = "SVG Карта";
 
-        setTimeout(() => {
-            if (!isLeafletMapReady) {
-                leafletMap = L.map('leaflet-map').setView([48.3794, 31.1656], 6);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
-                isLeafletMapReady = true;
+            setTimeout(() => {
+                if (!isLeafletMapReady) {
+                    leafletMap = L.map('leaflet-map').setView([48.3794, 31.1656], 6);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
+                    isLeafletMapReady = true;
 
-               // Закриваємо поп-ап тільки при зумі або перетягуванні мишкою вручну
-                leafletMap.on('dragstart zoomstart', () => {
-                    const tooltip = document.querySelector('.bp-tooltip');
-                    if (tooltip) tooltip.classList.remove('show');
-                });
-            }
+                    // Закриваємо поп-ап тільки при зумі або перетягуванні мишкою вручну
+                    leafletMap.on('dragstart zoomstart', () => {
+                        const tooltip = document.querySelector('.bp-tooltip');
+                        if (tooltip) tooltip.classList.remove('show');
+                    });
+                }
 
-    leafletMap.invalidateSize();
-    renderLeafletMarkers(eventsList); 
-    
-    updateRouteLine(); // <--- ДОДАЙ ТУТ, щоб лінія з'явилася при переході на карту
-}, 300);
-           
-    } else {
-        leafletElem.classList.remove('active');
-        svgMap.classList.add('active');
-        btnText.innerText = "Реальна карта";
-    }
+                leafletMap.invalidateSize();
+                renderLeafletMarkers(eventsList);
+                renderHotelMarkers(hotelsList);
+                window.updateRouteLine(); // Змінено на безпечний виклик
+            }, 300);
 
-    
-});
+        } else {
+            leafletElem.classList.remove('active');
+            svgMap.classList.add('active');
+            btnText.innerText = "Реальна карта";
+        }
+
+
+    });
 });
 function renderLeafletMarkers(eventsToRender) {
     if (!leafletMap) return;
@@ -1233,32 +1253,84 @@ function renderLeafletMarkers(eventsToRender) {
         const lng = parseFloat(ev.lng);
 
         if (!isNaN(lat) && !isNaN(lng)) {
-            // Створюємо іконку-крапку
-            const iconHtml = `<div class="map-marker is-dot ${ev.color}" style="width:14px; height:14px; position:static; transform:none;"></div>`;
+            // За замовчуванням створюємо МАЛЕНЬКУ КРАПКУ (is-dot)
+            const iconHtml = `<div class="map-marker is-dot ${ev.color}" style="position: absolute; top: 0; left: 0;"></div>`;
+
             const customIcon = L.divIcon({
                 html: iconHtml,
-                className: 'leaflet-custom-marker',
-                iconSize: [14, 14],
-                iconAnchor: [7, 7]
+                className: '',
+                iconSize: [0, 0],
+                iconAnchor: [0, 0]
             });
 
             const marker = L.marker([lat, lng], { icon: customIcon }).addTo(leafletMap);
-            
-            // Клік на маркер на реальній карті
-            // Клік на маркер на реальній карті
+
+            // Зберігаємо дані в маркері
+            marker.eventId = ev.id;
+            marker.eventDate = ev.eventDate;
+            marker.cityId = ev.city;
+            marker.category = ev.category;
+            marker.eventData = ev; // Зберігаємо весь об'єкт для попапу
+
+            // Клік на маркер
             marker.on('click', (e) => {
                 L.DomEvent.stopPropagation(e);
                 if (e.originalEvent) e.originalEvent.stopPropagation();
+
+                // 1. Скидаємо всі інші маркери до стану "крапка"
+                leafletEventMarkers.forEach(m => {
+                    const iconEl = m.getElement();
+                    if (iconEl) {
+                        const markerDiv = iconEl.querySelector('.map-marker');
+                        if (markerDiv) {
+                            markerDiv.classList.remove('is-pin');
+                            markerDiv.classList.add('is-dot');
+                        }
+                    }
+                });
+
+                // 2. Перетворюємо цей маркер на великий пін
+                const currentIconEl = e.target.getElement();
+                if (currentIconEl) {
+                    const currentMarkerDiv = currentIconEl.querySelector('.map-marker');
+                    if (currentMarkerDiv) {
+                        currentMarkerDiv.classList.remove('is-dot');
+                        currentMarkerDiv.classList.add('is-pin');
+                    }
+                }
+
+                // 3. Відкриваємо тултіп (40px відступ для великого піна)
                 window.showEventTooltip(ev, e.target._icon, 40);
-                // leafletMap.panTo([lat, lng]); // <- ВИДАЛИЛИ, щоб карта не тікала
             });
 
             leafletEventMarkers.push(marker);
         }
     });
+
+    // Додаємо обробник кліку на саму карту, щоб скидати активні маркери
+    leafletMap.on('click', () => {
+        leafletEventMarkers.forEach(m => {
+            const iconEl = m.getElement();
+            if (iconEl) {
+                const markerDiv = iconEl.querySelector('.map-marker');
+                if (markerDiv) {
+                    markerDiv.classList.remove('is-pin');
+                    markerDiv.classList.add('is-dot');
+                }
+            }
+        });
+
+        // Також ховаємо тултіп
+        const tooltip = document.querySelector('.bp-tooltip');
+        if (tooltip) tooltip.classList.remove('show');
+    });
 }
 function updateLeafletMarkers(selectedDate = '', selectedCity = '', selectedCategory = '') {
     if (!leafletMap || !leafletEventMarkers.length) return;
+
+    // Перевіряємо, чи застосовано хоч якийсь фільтр
+    const isAnyFilterActive = selectedDate !== '' || selectedCity !== '' || selectedCategory !== '';
+
     leafletEventMarkers.forEach(marker => {
         const matchDate = selectedDate ? marker.eventDate === selectedDate : true;
         const matchCity = selectedCity ? marker.cityId === selectedCity : true;
@@ -1266,42 +1338,104 @@ function updateLeafletMarkers(selectedDate = '', selectedCity = '', selectedCate
 
         if (matchDate && matchCity && matchCategory) {
             if (!leafletMap.hasLayer(marker)) marker.addTo(leafletMap);
+
+            // Якщо є фільтр і маркер підходить — робимо його великим піном
+            const iconEl = marker.getElement();
+            if (iconEl) {
+                const markerDiv = iconEl.querySelector('.map-marker');
+                if (markerDiv) {
+                    if (isAnyFilterActive) {
+                        markerDiv.classList.remove('is-dot');
+                        markerDiv.classList.add('is-pin');
+                    } else {
+                        // Якщо фільтрів немає — повертаємо до крапок
+                        markerDiv.classList.remove('is-pin');
+                        markerDiv.classList.add('is-dot');
+                    }
+                }
+            }
         } else {
             if (leafletMap.hasLayer(marker)) marker.remove();
         }
     });
 }
 
-window.updateRouteLine = function() {
+window.updateRouteLine = function () {
     if (!leafletMap) return;
 
-    // 1. Видаляємо попередню лінію з карти, якщо вона існує
+    // Видаляємо старий маршрут, якщо він є
+    if (window.routeControl) {
+        leafletMap.removeControl(window.routeControl);
+        window.routeControl = null;
+    }
     if (routeLine) {
         leafletMap.removeLayer(routeLine);
         routeLine = null;
     }
 
-    // 2. Якщо в маршруті менше 2 точок, лінію малювати немає сенсу
-    if (window.routeEvents.length < 2) return;
+    if (!window.routeEvents || window.routeEvents.length < 2) return;
 
-    // 3. Збираємо координати точок у форматі [[lat, lng], [lat, lng]...]
-    const coordinates = window.routeEvents
-        .filter(ev => ev.lat && ev.lng)
-        .map(ev => [parseFloat(ev.lat), parseFloat(ev.lng)]);
+    // Збираємо координати точок маршруту
+    const waypoints = window.routeEvents
+        .filter(ev => !isNaN(ev.lat) && !isNaN(ev.lng))
+        .map(ev => L.latLng(parseFloat(ev.lat), parseFloat(ev.lng)));
 
-    if (coordinates.length < 2) return;
+    if (waypoints.length < 2) return;
 
-    // 4. Створюємо нову лінію
-    routeLine = L.polyline(coordinates, {
-        color: '#6209DD',      // Твій фіолетовий колір
-        weight: 4,             // Товщина лінії
-        opacity: 0.6,          // Прозорість
-        dashArray: '10, 10',   // Робимо її пунктирною (можна прибрати для суцільної)
-        lineJoin: 'round'      // Заокруглені кути на поворотах
-    }).addTo(leafletMap);
+    // Запасний варіант: малюємо пряму лінію, якщо OSRM недоступний
+    const drawFallbackLine = () => {
+        if (routeLine) {
+            leafletMap.removeLayer(routeLine);
+        }
+        const coords = waypoints.map(wp => [wp.lat, wp.lng]);
+        routeLine = L.polyline(coords, {
+            color: '#6209DD',
+            weight: 4,
+            opacity: 0.8,
+            dashArray: '10, 10',
+            lineJoin: 'round'
+        }).addTo(leafletMap);
 
-    // 5. Опціонально: підганяємо масштаб карти, щоб весь маршрут було видно
-    // leafletMap.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+        try {
+            leafletMap.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+        } catch (e) {
+            console.warn("Could not fitBounds:", e);
+        }
+    };
+
+    try {
+        if (typeof L.Routing !== 'undefined') {
+            // Налаштовуємо Leaflet Routing Machine
+            window.routeControl = L.Routing.control({
+                waypoints: waypoints,
+                lineOptions: {
+                    styles: [{ color: '#6209DD', opacity: 0.8, weight: 6 }], // Ваш фіолетовий колір
+                    addWaypoints: false // Забороняємо додавати нові точки на самій лінії
+                },
+                createMarker: function () { return null; }, // Ховаємо стандартні маркери OSRM (щоб були ваші)
+                addWaypoints: false,
+                routeWhileDragging: false,
+                show: false, // Ховаємо текстовий блок з напрямками (поверніть направо, наліво тощо)
+                fitSelectedRoutes: true
+            }).addTo(leafletMap);
+
+            window.routeControl.on('routingerror', function (err) {
+                console.warn("Помилка маршрутизатора OSRM. Малюємо пряму лінію.", err);
+                if (window.routeControl) {
+                    leafletMap.removeControl(window.routeControl);
+                    window.routeControl = null;
+                }
+                drawFallbackLine(); // Якщо сервер не відповідає - малюємо пряму
+            });
+
+        } else {
+            console.warn("Плагін L.Routing не знайдено в HTML. Малюємо пряму лінію.");
+            drawFallbackLine();
+        }
+    } catch (err) {
+        console.error("Помилка ініціалізації малювання маршруту:", err);
+        drawFallbackLine();
+    }
 }
 
 window.routeEvents = window.routeEvents || [];
@@ -1323,12 +1457,12 @@ window.addToRoute = function (title, location, time, lat, lng) {
 
     console.log(`Додаємо подію: ${title}, Координати:`, parsedLat, parsedLng);
 
-    window.routeEvents.push({ 
-        title: title, 
-        location: location, 
-        time: time, 
-        lat: parsedLat, 
-        lng: parsedLng 
+    window.routeEvents.push({
+        title: title,
+        location: location,
+        time: time,
+        lat: parsedLat,
+        lng: parsedLng
     });
 
     // Показуємо віджет
@@ -1358,8 +1492,8 @@ window.addToRoute = function (title, location, time, lat, lng) {
 
 // ОНОВЛЕНА ФУНКЦІЯ ВИДАЛЕННЯ З МАРШРУТУ
 window.removeFromRoute = function (index) {
-    window.routeEvents.splice(index, 1); 
-    
+    window.routeEvents.splice(index, 1);
+
     if (typeof renderRouteItems === 'function') {
         renderRouteItems();
     }
@@ -1374,52 +1508,7 @@ window.removeFromRoute = function (index) {
     }
 };
 
-// ОНОВЛЕНА ФУНКЦІЯ МАЛЮВАННЯ ЛІНІЇ
-window.updateRouteLine = function() {
-    console.log("Викликано updateRouteLine. Кількість точок:", window.routeEvents ? window.routeEvents.length : 0);
-    
-    // Якщо карта ще не завантажена, не робимо нічого
-    if (!leafletMap) {
-        console.log("Карта leafletMap ще не ініціалізована. Лінія не буде намальована.");
-        return;
-    }
-
-    // Видаляємо стару лінію
-    if (routeLine) {
-        leafletMap.removeLayer(routeLine);
-        routeLine = null;
-    }
-
-    // Якщо точок менше 2, малювати немає сенсу
-    if (!window.routeEvents || window.routeEvents.length < 2) return;
-
-    // Збираємо координати
-    const coordinates = window.routeEvents
-        .filter(ev => !isNaN(ev.lat) && !isNaN(ev.lng))
-        .map(ev => [ev.lat, ev.lng]);
-
-    console.log("Координати для лінії:", coordinates);
-
-    if (coordinates.length < 2) {
-        console.log("Недостатньо валідних координат для малювання лінії.");
-        return;
-    }
-
-    // Малюємо нову лінію
-    routeLine = L.polyline(coordinates, {
-        color: '#6209DD',      // Колір лінії
-        weight: 4,             // Товщина
-        opacity: 0.8,          // Прозорість
-        dashArray: '10, 10',   // Пунктир
-        lineJoin: 'round'
-    }).addTo(leafletMap);
-
-    console.log("Лінія успішно намальована!");
-    
-    // Опціонально: автоматично підігнати масштаб, щоб було видно весь маршрут
-    // leafletMap.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-};
-
+// (Дублююча функція updateRouteLine видалена)
 /**
  * Функція для малювання списку подій у віджеті маршруту.
  */
@@ -1465,41 +1554,40 @@ function renderRouteItems() {
 }
 
 /**
- * Оновлює блоки часу в маршруті (авто та пішки).
+ * Оновлює блоки часу в маршруті (авто та пішки) МІЖ ТОЧКАМИ МАРШРУТУ.
  */
 function updateRouteTimes() {
     const distanceInfo = document.getElementById('route-distance-info');
     if (!distanceInfo) return;
+
     if (window.routeEvents.length < 2) {
         distanceInfo.classList.add('hidden');
         return;
     }
+
     const start = window.routeEvents[0];
     const end = window.routeEvents[window.routeEvents.length - 1];
 
-    // Час авто від користувача до першої події (якщо відомо місцезнаходження)
     let carMinutes = '--';
-    if (window.userLocation && start.lat && start.lng) {
-        const d = getDistanceKm(
-            window.userLocation.latitude,
-            window.userLocation.longitude,
-            start.lat,
-            start.lng
-        );
-        carMinutes = minutesFromDistance(d, 50); // 50 км/год
-    }
-
-    // Час пішки між першою та останньою подією
     let walkMinutes = '--';
+
+    // Рахуємо відстань і час МІЖ першою та останньою подією
     if (start.lat && start.lng && end.lat && end.lng) {
-        const walkDist = getDistanceKm(start.lat, start.lng, end.lat, end.lng);
-        walkMinutes = minutesFromDistance(walkDist, 5); // 5 км/год
+        const distKm = getDistanceKm(start.lat, start.lng, end.lat, end.lng);
+
+        // Авто: середня швидкість ~80 км/год (зміська траса)
+        carMinutes = minutesFromDistance(distKm, 80);
+
+        // Пішки: середня швидкість ~5 км/год
+        walkMinutes = minutesFromDistance(distKm, 5);
     }
 
     const carEl = document.getElementById('car-time');
     const walkEl = document.getElementById('walk-time');
-    if (carEl) carEl.textContent = `${carMinutes} хв.`;
-    if (walkEl) walkEl.textContent = `${walkMinutes} хв.`;
+
+    if (carEl) carEl.textContent = formatTime(carMinutes);
+    if (walkEl) walkEl.textContent = formatTime(walkMinutes);
+
     distanceInfo.classList.remove('hidden');
 }
 
@@ -1525,31 +1613,55 @@ function getDistanceKm(lat1, lng1, lat2, lng2) {
 function minutesFromDistance(distanceKm, speedKmh) {
     return Math.round((distanceKm / speedKmh) * 60);
 }
+/**
+ * Форматує загальну кількість хвилин у дні, години та хвилини
+ */
+function formatTime(totalMinutes) {
+    if (totalMinutes === '--' || isNaN(totalMinutes)) return '-- хв.';
 
+    const days = Math.floor(totalMinutes / (60 * 24)); // Рахуємо дні
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60); // Залишок у годинах
+    const minutes = Math.round(totalMinutes % 60); // Залишок у хвилинах
+
+    let result = '';
+
+    if (days > 0) {
+        result += `${days} дн. `;
+    }
+    if (hours > 0) {
+        result += `${hours} год. `;
+    }
+    // Показуємо хвилини завжди, якщо немає ні днів, ні годин, або якщо вони є
+    if (minutes > 0 || result === '') {
+        result += `${minutes} хв.`;
+    }
+
+    return result.trim();
+}
 // Ініціалізація обробників подій для віджета
 document.addEventListener('DOMContentLoaded', () => {
     // Кнопка "Побудувати маршрут"
     const buildRouteBtn = document.querySelector('.build-route-btn');
     if (buildRouteBtn) {
         buildRouteBtn.addEventListener('click', () => {
-             const svgMap = document.getElementById('map-container');
-             const toggleBtn = document.getElementById('toggle-map-type');
-             
-             // Якщо зараз SVG карта, перемикаємо на реальну
-             if (svgMap && svgMap.classList.contains('active')) {
-                 if (toggleBtn) toggleBtn.click();
-             }
-             
-             // Малюємо лінію
-             window.updateRouteLine();
-             
-             // Прокручуємо до карти (якщо ми на великій сторінці)
-             const leafletElem = document.getElementById('leaflet-map');
-             if (leafletElem) {
-                 leafletElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-             }
+            const svgMap = document.getElementById('map-container');
+            const toggleBtn = document.getElementById('toggle-map-type');
+
+            if (svgMap && svgMap.classList.contains('active')) {
+                if (toggleBtn) toggleBtn.click(); // Це викличе window.updateRouteLine() через 300ms
+            } else {
+                // Ми вже на реальній карті, відмальовуємо одразу
+                window.updateRouteLine();
+            }
+
+            // Прокручуємо до карти (якщо ми на великій сторінці)
+            const leafletElem = document.getElementById('leaflet-map');
+            if (leafletElem) {
+                leafletElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         });
     }
+
 
     // Обробник для закриття віджета
     const closeWidgetBtn = document.getElementById('close-widget-btn');
@@ -1559,7 +1671,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (widget) widget.classList.add('hidden');
         });
     }
-    
+
     // Спроба отримати геолокацію користувача
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -1577,4 +1689,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Робимо функції глобальними для виклику з onclick
 window.renderRouteItems = renderRouteItems;
-window.updateRouteTimes = updateRouteTimes;
+window.updateRouteTimes = updateRouteTimes;

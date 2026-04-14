@@ -812,7 +812,7 @@ input.input-error {
 .popular-events {
     background-color: #FFB300;
     padding: 70px 20px;
-    margin-top: 50px;
+    margin-top: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1375,3 +1375,133 @@ input.input-error {
     width: 14px !important;
     height: 14px !important;
 }
+
+/* ==========================================
+   HOTEL BOOKING SECTION
+========================================== */
+.hotel-booking-section {
+    background-color: #1ca1ff;
+    padding: 60px 40px 80px 40px;
+    color: white;
+    text-align: center;
+}
+
+.hotel-header {
+    margin-bottom: 40px;
+}
+
+.hotel-header h2 {
+    font-size: 38px;
+    font-weight: 800;
+    margin: 0 0 10px 0;
+    color: #1a1a1a;
+}
+
+.hotel-header p {
+    font-size: 18px;
+    margin: 0;
+    color: #1a1a1a;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.hotel-grid-wrapper {
+    overflow: hidden;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    padding: 20px 0;
+}
+
+.hotel-grid {
+    display: flex;
+    gap: 30px;
+    width: max-content;
+    animation: scrollHotels 30s linear infinite;
+}
+
+.hotel-grid:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scrollHotels {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-50% - 15px)); }
+}
+
+.hotel-card {
+    background: #f2eff9;
+    border-radius: 24px;
+    padding: 18px;
+    width: 320px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    text-align: left;
+    transition: transform 0.3s ease;
+    box-sizing: border-box;
+}
+
+.hotel-card:hover {
+    transform: translateY(-5px);
+}
+
+.hotel-image-wrapper {
+    width: 100%;
+    height: 180px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.hotel-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hotel-info {
+    padding: 0 5px;
+}
+
+.hotel-info h3 {
+    margin: 0 0 10px 0;
+    font-size: 20px;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.hotel-rating {
+    color: #ffb300;
+    font-size: 16px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 4px;
+}
+
+.hotel-location {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1a1a1a;
+    font-size: 12px;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.hotel-location i {
+    color: #2854C5;
+    font-size: 16px;
+}
+
+.hotel-link {
+    color: #4da6ff;
+    text-decoration: underline;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.hotel-link:hover {
+    color: #2854C5;
+}

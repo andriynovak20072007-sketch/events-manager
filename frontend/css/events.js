@@ -46,12 +46,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // --- 2. ЛОГІКА ЗАВАНТАЖЕННЯ ДАНИХ (API) ---
 
-    const fallbackEvents = [
-        { event_id: 'fest1', title: 'Фестиваль "Summer Fest"', region: 'Львів, Стадіон "Прайм"', event_day: '2026-04-28', start_time: '18:00', price: '450', currency: 'UAH', custom_image: 'images/fest1..png' },
-        { event_id: 'fest2', title: 'Фестиваль "Fest"', region: 'Київ, Стадіон "Прайм"', event_day: '2026-05-30', start_time: '19:00', price: '500', currency: 'UAH', custom_image: 'images/fest2.png' },
-        { event_id: 'fest3', title: 'Музичний "Summer"', region: 'Одеса, Пляж "Аркадія"', event_day: '2026-06-15', start_time: '20:00', price: '300', currency: 'UAH', custom_image: 'images/fest3.png' },
-        { event_id: 'fest4', title: 'Концерт "Арт-Зима"', region: 'Харків, "Арена"', event_day: '2026-12-05', start_time: '19:30', price: '400', currency: 'UAH', custom_image: 'images/fest2.png' }
+    const allMockEvents = [
+        { id: 'fest1', title: 'Фестиваль "Summer Fest"', location: 'Львів, Стадіон "Прайм"', eventDate: '2026-04-28', start_time: '18:00', price: 500, img: 'images/fest1..png' },
+        { id: 'fest2', title: 'Фестиваль "Fest"', location: 'Київ, Стадіон "Прайм"', eventDate: '2026-05-30', start_time: '19:00', price: 1200, img: 'images/fest2.png' },
+        { id: 'fest3', title: 'Музичний "Summer"', location: 'Одеса, Пляж "Аркадія"', eventDate: '2026-06-15', start_time: '20:00', price: 0, img: 'images/fest3.png' },
+        { id: 'lecture1', title: 'ІТ Конференція "CodeX"', location: 'Львів, Арена Львів', eventDate: '2026-05-20', start_time: '10:00', price: 800, img: 'images/event-1.webp' },
+        { id: 'lecture2', title: 'Майстер-клас "UX Story"', location: 'Одеса, IT Hub', eventDate: '2026-06-11', start_time: '16:00', price: 400, img: 'images/event-2.jpg' },
+        { id: 'lecture3', title: 'Лекція "Наука в ІТ"', location: 'Київ, UNIT.City', eventDate: '2026-06-06', start_time: '14:00', price: 650, img: 'images/event-3.jpg' },
+        { id: 'concert1', title: 'Концерт "Нічний Джем"', location: 'Київ, МВЦ', eventDate: '2026-05-12', start_time: '19:00', price: 900, img: 'images/event-1.webp' },
+        { id: 'concert2', title: 'Рок-фестиваль "City Beat"', location: 'Харків, Парк Горького', eventDate: '2026-05-18', start_time: '20:00', price: 1100, img: 'images/event-2.jpg' },
+        { id: 'concert3', title: 'Jazz Night "Odessa Vibes"', location: 'Одеса, Клуб "Море"', eventDate: '2026-06-03', start_time: '19:30', price: 700, img: 'images/event-3.jpg' },
+        { id: 'sport1', title: 'Матч "Динамо" - "Шахтар"', location: 'Київ, НСК "Олімпійський"', eventDate: '2026-05-08', start_time: '17:00', price: 1400, img: 'images/event-1.webp' },
+        { id: 'sport2', title: 'Біг по парку "Lviv Run"', location: 'Львів, Стрийський парк', eventDate: '2026-05-22', start_time: '09:00', price: 250, img: 'images/event-2.jpg' },
+        { id: 'sport3', title: 'Велокрос у Харкові', location: 'Харків, Парк Шевченка', eventDate: '2026-05-27', start_time: '11:00', price: 300, img: 'images/event-3.jpg' }
     ];
+
+    const fallbackEvents = allMockEvents.map(e => ({
+        event_id: e.id,
+        title: e.title,
+        region: e.location,
+        event_day: e.eventDate,
+        start_time: e.start_time,
+        price: e.price,
+        currency: 'UAH',
+        custom_image: e.img,
+        description: 'Чудова подія для вас і ваших друзів! Долучайтеся та отримуйте незабутні емоції.'
+    }));
 
     let eventsData = [];
     try {
@@ -74,36 +94,53 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Якщо ми на сторінці окремої події і є ID
     if (eventId) {
+        // Утиліта для візуального оновлення DOM сторінки події
+        const updateEventPage = (data) => {
+            const titleEl = document.querySelector('.event-page-title');
+            if (titleEl) titleEl.innerText = data.title;
+            
+            const metaSpans = document.querySelectorAll('.meta-row span');
+            if (metaSpans.length >= 2) {
+                metaSpans[0].innerText = data.region || 'Регіон не вказано'; 
+                const dateObj = new Date(data.event_day);
+                const formattedDate = dateObj.toLocaleDateString("uk-UA");
+                metaSpans[1].innerText = `${formattedDate}, ${data.start_time}`; 
+            }
+            
+            const posterImg = document.querySelector('.event-poster-img');
+            if (posterImg) {
+                // Виводимо картинку події, якщо знайдена (або залишаємо заглушку)
+                posterImg.src = data.custom_image || 'images/fest1..png'; 
+            }
+            
+            const buyBtn = document.querySelector('.buy-ticket-main-btn');
+            if (buyBtn) {
+               const priceString = data.price > 0 ? `${data.price} ${data.currency || 'UAH'}` : 'Безкоштовно';
+               buyBtn.innerText = `Придбати квиток | Від ${priceString}`;
+            }
+
+            const descpriptionEl = document.querySelector('.event-details-text p');
+            if (descpriptionEl && data.description) descpriptionEl.innerText = data.description;
+        };
+
         try {
-            const res = await fetch(`http://localhost:5000/events/${eventId}`);
+            const res = await fetch(`http://localhost:5000/api/events/${eventId}`);
             if (res.ok) {
                 const data = await res.json();
-                
-                const titleEl = document.querySelector('.event-page-title');
-                if (titleEl) titleEl.innerText = data.title;
-                
-                const metaSpans = document.querySelectorAll('.meta-row span');
-                if (metaSpans.length >= 2) {
-                    metaSpans[0].innerText = data.region || 'Регіон не вказано'; 
-                    const dateObj = new Date(data.event_day);
-                    const formattedDate = dateObj.toLocaleDateString("uk-UA");
-                    metaSpans[1].innerText = `${formattedDate}, ${data.start_time}`; 
-                }
-                
-                const posterImg = document.querySelector('.event-poster-img');
-                if (posterImg) posterImg.src = 'images/fest1..png'; // Заглушка
-                
-                const buyBtn = document.querySelector('.buy-ticket-main-btn');
-                if (buyBtn) {
-                   const priceString = data.price > 0 ? `${data.price} ${data.currency || 'UAH'}` : 'Безкоштовно';
-                   buyBtn.innerText = `Придбати квиток | Від ${priceString}`;
-                }
-
-                const descpriptionEl = document.querySelector('.event-details-text p');
-                if (descpriptionEl && data.description) descpriptionEl.innerText = data.description;
+                updateEventPage(data);
+            } else {
+                throw new Error('API повернув помилку або подія не знайдена');
             }
         } catch(e) {
-            console.error("Помилка завантаження події: ", e);
+            console.warn("Помилка БД, використовуємо заглушку: ", e.message);
+            // Шукаємо в локальних моках, якщо бекенд не віддав інфу
+            const fallbackData = fallbackEvents.find(ev => String(ev.event_id) === String(eventId));
+            if (fallbackData) {
+                updateEventPage(fallbackData);
+            } else {
+                const titleEl = document.querySelector('.event-page-title');
+                if (titleEl) titleEl.innerText = 'Подію не знайдено :(';
+            }
         }
     } 
     // Якщо ми на головній сторінці (рендеримо сітку)
@@ -214,120 +251,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Отримуємо елементи пошуку зі сторінки
-const searchInput = document.getElementById('title-search-input');
-const searchMessage = document.getElementById('search-message');
 
-
-/*
- Обробка помилок і порожнього результату (за назвою)
- Обробка null/порожнього результату (пошук)
-*/
-function showSearchMessage(text, isError = false) {
-  if (!searchMessage) return;
-
-  searchMessage.textContent = text;
-  searchMessage.style.display = 'block';
-  searchMessage.style.color = isError ? 'red' : '#333';
-}
-
-
-//Очищає повідомлення перед новим пошуком
-function clearSearchMessage() {
-  if (!searchMessage) return;
-
-  searchMessage.textContent = '';
-  searchMessage.style.display = 'none';
-}
-
-
-/*
-Обробка null/порожнього результату (пошук)
-Обробка помилок і порожнього результату (за назвою)
-*/
-function handleSearchResults(events) {
-
-  // Якщо API повернув null або undefined
-  if (events == null) {
-    showSearchMessage('Подій не знайдено');
-    return;
-  }
-
-  // Якщо API повернув не масив (помилка формату)
-  if (!Array.isArray(events)) {
-    showSearchMessage('Неправильний формат даних пошуку', true);
-    return;
-  }
-
-  // Якщо масив пустий
-  if (events.length === 0) {
-    showSearchMessage('Подій не знайдено');
-    return;
-  }
-
-  // Якщо все ок — прибираємо повідомлення
-  clearSearchMessage();
-
-  // відображення списку подій
-  console.log('Знайдені події:', events);
-}
-
-
-// якщо сталася помилка запиту (fetch, сервер, мережа)
-function handleSearchError() {
-  showSearchMessage('Сталася помилка під час пошуку', true);
-}
-
-
-/*
-- викликає API
-- отримує дані
-- передає їх у handleSearchResults
-- при помилці викликає handleSearchError
-*/
-async function searchByTitle(title) {
-  try {
-    clearSearchMessage();
-
-    const response = await fetch(`/events?title=${encodeURIComponent(title)}`);
-
-    // Якщо сервер повернув помилку
-    if (!response.ok) {
-      throw new Error('Помилка запиту');
-    }
-
-    const data = await response.json();
-
-    // Якщо API повернув null
-    if (data == null) {
-      handleSearchResults(null);
-      return;
-    }
-
-    handleSearchResults(data);
-
-  } catch (error) {
-    console.error('Search error:', error);
-    handleSearchError();
-  }
-}
-
-
-/*
-- якщо поле пусте → показує повідомлення
-- якщо є текст → запускає пошук
-*/
-if (searchInput) {
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const value = searchInput.value.trim();
-
-      if (value === '') {
-        showSearchMessage('Введіть назву події');
-        return;
-      }
-
-      searchByTitle(value);
-    }
-  });
-}
