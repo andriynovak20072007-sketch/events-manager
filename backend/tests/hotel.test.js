@@ -1,7 +1,4 @@
 const request = require('supertest');
-
-// 🔴 ВАЖЛИВО: перевір шлях!
-// якщо у тебе server.js або index.js — зміни тут
 const app = require('../app'); 
 
 describe('EVENTS MANAGER - FULL TEST SUITE', () => {
