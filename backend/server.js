@@ -13,6 +13,7 @@ const categoriesRoutes = require('./routes/categories');
 const commentsRoutes = require('./routes/comments');
 const infoRoutes = require('./routes/info');
 const favoritesRoutes = require('./routes/favorites'); // 🟢 ДОДАНО: Маршрут обраного
+const hotelsRoutes = require('./routes/hotels');
 
 const app = express();
 
@@ -39,6 +40,8 @@ app.use('/api/comments', commentsRoutes);
 app.use('/api/info', infoRoutes);
 app.use('/api/favorites', favoritesRoutes); // 🟢 ДОДАНО: Ендпоінт для обраного
 app.use('/api/routes', require('./routes/routes'));
+app.use('/api/routes', require('./routes/routes'));
+app.use('/api/hotels', hotelsRoutes);
 
 // Базовий тестовий роут для перевірки працездатності
 app.get('/', (req, res) => {
