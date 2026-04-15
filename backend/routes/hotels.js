@@ -56,14 +56,19 @@ router.get('/', async (req, res) => {
         const data = await response.json();
 
         // Форматуємо відповідь для нашого фронтенду (залишаємо тільки потрібне)
-        const hotels = data.elements.map(hotel => ({
-            id: hotel.id,
-            name: hotel.tags.name || "Готель (назва не вказана)",
-            lat: hotel.lat,
-            lng: hotel.lon,
-            // 🟢 ДОДАНО: Використовуємо нашу функцію для перевірки посилання
-            website: validateAndFormatUrl(hotel.tags.website)
-        }));
+        const hotels = data.elements.map(hotel => {
+            const hotelName = hotel.tags.name || "Готель (назва не вказана)";
+            return {
+                id: hotel.id,
+                name: hotelName,
+                lat: hotel.lat,
+                lng: hotel.lon,
+                // 🟢 ДОДАНО: Використовуємо нашу функцію для перевірки посилання
+                website: validateAndFormatUrl(hotel.tags.website),
+                // 🟢 ДОДАНО: Посилання на пошук готелю на Booking.com
+                bookingLink: `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotelName)}`
+            };
+        });
 
         // Віддаємо масив готелів клієнту
         res.json(hotels);
@@ -72,6 +77,27 @@ router.get('/', async (req, res) => {
         console.error("Помилка пошуку готелів:", err.message);
         res.status(500).json({ error: "Помилка сервера при пошуку готелів" });
     }
+});
+
+// =======================================================
+// DELETE /api/hotels/:id
+// Логіка видалення (приховування) готелю зі списку
+// =======================================================
+router.delete('/:id', (req, res) => {
+    const hotelId = req.params.id;
+    
+    // Оскільки ми отримуємо готелі зовнішнім API і не зберігаємо у власній БД в цій таблиці,
+    // логіка видалення тут слугує для того, щоб фронтенд міг відправити запит 
+    // на приховування чи видалення готелю зі свого збереженого списку/стейту.
+    if (!hotelId) {
+        return res.status(400).json({ error: "Не вказано ID готелю для видалення" });
+    }
+
+    // Повертаємо успішну відповідь, імітуючи видалення
+    res.json({ 
+        message: `Готель з ID ${hotelId} успішно видалено`,
+        deletedId: hotelId 
+    });
 });
 
 module.exports = router;
