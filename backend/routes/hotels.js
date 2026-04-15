@@ -1,6 +1,29 @@
 const express = require('express');
 const router = express.Router();
 
+// ==========================================
+// ХЕЛПЕР: Валідація та форматування URL
+// ==========================================
+function validateAndFormatUrl(url) {
+    if (!url) return null; // Якщо сайту немає, повертаємо null
+
+    let formattedUrl = url.trim();
+
+    // Якщо хтось вписав просто "www.hotel.lviv.ua" без протоколу
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = 'https://' + formattedUrl; 
+    }
+
+    try {
+        // Вбудований парсер Node.js. Якщо URL некоректний - він викине помилку
+        new URL(formattedUrl); 
+        return formattedUrl;
+    } catch (err) {
+        // Якщо це був просто текст типу "немає сайту"
+        return null; 
+    }
+}
+
 // =======================================================
 // GET /api/hotels?lat=49.8397&lng=24.0297&radius=2000
 // =======================================================
@@ -38,7 +61,8 @@ router.get('/', async (req, res) => {
             name: hotel.tags.name || "Готель (назва не вказана)",
             lat: hotel.lat,
             lng: hotel.lon,
-            website: hotel.tags.website || null
+            // 🟢 ДОДАНО: Використовуємо нашу функцію для перевірки посилання
+            website: validateAndFormatUrl(hotel.tags.website)
         }));
 
         // Віддаємо масив готелів клієнту
