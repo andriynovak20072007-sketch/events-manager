@@ -1501,6 +1501,9 @@ window.removeFromRoute = function (index) {
     if (window.routeEvents.length === 0) {
         const widget = document.getElementById('route-planner-widget');
         if (widget) widget.classList.add('hidden');
+        
+        const hotelSection = document.querySelector('.hotel-booking-section');
+        if (hotelSection) hotelSection.style.display = 'none';
     }
 
     if (typeof window.updateRouteLine === 'function') {
@@ -1647,6 +1650,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const svgMap = document.getElementById('map-container');
             const toggleBtn = document.getElementById('toggle-map-type');
 
+            const hotelSection = document.querySelector('.hotel-booking-section');
+            if (hotelSection) hotelSection.style.display = 'block';
+
             if (svgMap && svgMap.classList.contains('active')) {
                 if (toggleBtn) toggleBtn.click(); // Це викличе window.updateRouteLine() через 300ms
             } else {
@@ -1669,6 +1675,9 @@ document.addEventListener('DOMContentLoaded', () => {
         closeWidgetBtn.addEventListener('click', () => {
             const widget = document.getElementById('route-planner-widget');
             if (widget) widget.classList.add('hidden');
+
+            const hotelSection = document.querySelector('.hotel-booking-section');
+            if (hotelSection) hotelSection.style.display = 'none';
         });
     }
 

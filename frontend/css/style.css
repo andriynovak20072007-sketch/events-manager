@@ -1384,6 +1384,7 @@ input.input-error {
     padding: 60px 40px 80px 40px;
     color: white;
     text-align: center;
+    display: none;
 }
 
 .hotel-header {
