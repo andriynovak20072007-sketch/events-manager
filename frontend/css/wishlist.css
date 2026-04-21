@@ -479,6 +479,7 @@ body {
   outline: none;
   width: 100%;
   font-family: 'Montserrat', sans-serif;
+  padding-left: 20px;
 }
 
 .search-box .search-icon {
