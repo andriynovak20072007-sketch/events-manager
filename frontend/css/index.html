@@ -549,6 +549,26 @@
     </div>
   </footer>
 
+  <div id="userPanelOverlay" class="panel-overlay"></div>
+
+<aside id="userPanel" class="user-panel">
+  <div class="panel-header">
+    <h2>Профіль</h2>
+    <button id="closePanelBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  
+  <nav class="panel-nav">
+    <a href="#" class="panel-link"><i class="fa-regular fa-heart"></i> Обране</a>
+    <a href="#" class="panel-link"><i class="fa-regular fa-calendar-check"></i> Мої події</a>
+    <a href="#" class="panel-link"><i class="fa-solid fa-plus"></i> Створити подію</a>
+  </nav>
+  
+  <div class="panel-footer">
+    <button class="panel-auth-btn login-btn" onclick="openAuthFromPanel('login')">Увійти</button>
+    <button class="panel-auth-btn register-btn" onclick="openAuthFromPanel('register')">Зареєструватися</button>
+  </div>
+</aside>
+
   <script src="map.js"></script>
   <script src="script.js"></script>
   <script src="events.js"></script>

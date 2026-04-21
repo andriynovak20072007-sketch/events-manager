@@ -337,11 +337,39 @@ const authModal = document.getElementById("authModal");
 const profileBtn = document.getElementById("profileBtn");
 const closeModalBtn = document.getElementById("closeModalBtn");
 
-// Відкрити форму по кліку на іконку
-if (profileBtn && authModal) {
-  profileBtn.addEventListener("click", () => {
-    authModal.style.display = "flex";
-  });
+// Логіка для бічної панелі користувача
+const userPanel = document.getElementById('userPanel');
+const userPanelOverlay = document.getElementById('userPanelOverlay');
+const closePanelBtn = document.getElementById('closePanelBtn');
+// profileBtn вже знайдений вище у твоєму коді
+
+function toggleUserPanel() {
+  if (userPanel && userPanelOverlay) {
+    userPanel.classList.toggle('open');
+    if (userPanel.classList.contains('open')) {
+      userPanelOverlay.classList.add('active');
+    } else {
+      userPanelOverlay.classList.remove('active');
+    }
+  }
+}
+
+// Відкриваємо панель по кліку на іконку в хедері
+if (profileBtn) profileBtn.addEventListener('click', toggleUserPanel);
+
+// Закриваємо по кліку на хрестик або на темний фон
+if (closePanelBtn) closePanelBtn.addEventListener('click', toggleUserPanel);
+if (userPanelOverlay) userPanelOverlay.addEventListener('click', toggleUserPanel);
+
+// Функція для кнопок внизу панелі (відкриває модалку і потрібну форму)
+function openAuthFromPanel(formType) {
+  toggleUserPanel(); // Спочатку ховаємо бічну панель
+  
+  const authModal = document.getElementById("authModal");
+  if (authModal) {
+    authModal.style.display = "flex"; // Показуємо модалку
+    showForm(formType); // Викликаємо твою функцію перемикання форм (login або register)
+  }
 }
 
 // Закрити форму по кліку на хрестик
@@ -465,4 +493,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // бо він може знадобитися на головній сторінці, 
 // хоча тепер дубльована в map.js.
 // Залишимо script.js для загальних функцій сайту.
-
+
