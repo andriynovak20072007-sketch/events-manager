@@ -494,3 +494,31 @@ document.addEventListener('DOMContentLoaded', () => {
 // хоча тепер дубльована в map.js.
 // Залишимо script.js для загальних функцій сайту.
 
+// Мої події (My events accordion in User Panel)
+document.addEventListener('DOMContentLoaded', () => {
+    const myEventsToggle = document.getElementById('my-events-toggle');
+    const myEventsDropdown = document.getElementById('my-events-dropdown');
+    
+    if (myEventsToggle && myEventsDropdown) {
+        myEventsToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isOpen = myEventsDropdown.style.display === 'flex';
+            
+            if (isOpen) {
+                myEventsDropdown.style.display = 'none';
+                const icon = myEventsToggle.querySelector('.chevron-icon');
+                if(icon) icon.style.transform = 'rotate(0deg)';
+                myEventsToggle.style.backgroundColor = '';
+                myEventsToggle.style.color = '';
+            } else {
+                myEventsDropdown.style.display = 'flex';
+                myEventsToggle.style.flexDirection = 'row';
+                const icon = myEventsToggle.querySelector('.chevron-icon');
+                if(icon) icon.style.transform = 'rotate(180deg)';
+                myEventsToggle.style.backgroundColor = '#F0F9FF';
+                myEventsToggle.style.color = '#00AAFF';
+                myEventsToggle.style.borderRadius = '8px';
+            }
+        });
+    }
+});
