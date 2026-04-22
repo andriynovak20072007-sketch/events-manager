@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
+const upload = require('../middleware/upload'); // 🟢 Підключаємо Multer для роботи з файлами
 
 // ==========================================
 // ПАТЕРН 1: Singleton / Service Pattern
@@ -174,13 +175,13 @@ router.get('/filter', async (req, res) => {
 });
 
 // ==========================================
-// 3. Дані для побудови маршруту на карті ТА розрахунок відстані (Оновлення)
+// 3. Дані для побудови маршруту на карті ТА розрахунок відстані
 // ==========================================
 router.get('/route-data', async (req, res) => {
     const { ids } = req.query;
     if (!ids) return res.status(400).send("Не вказано ID подій");
     
-    // Зберігаємо оригінальний порядок ID (наприклад: "3,1,5" -> перша подія 3, друга 1, третя 5)
+    // Зберігаємо оригінальний порядок ID
     const idArray = ids.split(',').map(Number);
     
     try {
@@ -191,8 +192,7 @@ router.get('/route-data', async (req, res) => {
         
         let events = result.rows;
 
-        // ВАЖЛИВО: Оператор ANY в PostgreSQL перемішує результати.
-        // Нам потрібно відсортувати події рівно в тому порядку, в якому юзер хоче їх відвідати
+        // Сортуємо події рівно в тому порядку, в якому юзер хоче їх відвідати
         events.sort((a, b) => idArray.indexOf(a.event_id) - idArray.indexOf(b.event_id));
 
         // Витягуємо лише валідні координати для сервісу
@@ -217,7 +217,6 @@ router.get('/route-data', async (req, res) => {
             }
         }
 
-        // Віддаємо на фронтенд самі події та інформацію про поїздку між ними
         res.json({
             route_points: events,
             routing_info: routingInfo
@@ -234,26 +233,22 @@ router.get('/route-data', async (req, res) => {
 // ==========================================
 class EventSearchBuilder {
     constructor() {
-        // Базовий запит (1=1 дозволяє легко додавати AND умови далі)
         this.query = 'SELECT * FROM events WHERE 1=1';
         this.values = [];
         this.paramIndex = 1;
     }
 
-    // 1. Реалізувати API пошуку за назвою
     searchByTitle(title) {
         if (title) {
             this.query += ` AND title ILIKE $${this.paramIndex}`;
-            this.values.push(`%${title}%`); // ILIKE забезпечує пошук без урахування регістру
+            this.values.push(`%${title}%`);
             this.paramIndex++;
         }
         return this;
     }
 
-    // 2. Реалізувати API пошуку за тегами/ключовими словами
     searchByKeyword(keyword) {
         if (keyword) {
-            // Шукаємо ключове слово і в назві, і в описі
             this.query += ` AND (title ILIKE $${this.paramIndex} OR description ILIKE $${this.paramIndex})`;
             this.values.push(`%${keyword}%`);
             this.paramIndex++;
@@ -261,7 +256,6 @@ class EventSearchBuilder {
         return this;
     }
 
-    // 3. Реалізувати API фільтрації по даті
     filterByDate(date) {
         if (date) {
             this.query += ` AND event_day = $${this.paramIndex}`;
@@ -271,7 +265,6 @@ class EventSearchBuilder {
         return this;
     }
 
-    // 4. Реалізувати API фільтрації по місту (використовуємо поле region)
     filterByCity(city) {
         if (city) {
             this.query += ` AND region ILIKE $${this.paramIndex}`;
@@ -281,7 +274,6 @@ class EventSearchBuilder {
         return this;
     }
 
-    // 5. Реалізувати API фільтрації по категорії
     filterByCategory(categoryId) {
         if (categoryId) {
             this.query += ` AND category_id = $${this.paramIndex}`;
@@ -292,7 +284,6 @@ class EventSearchBuilder {
     }
 
     build() {
-        // Додаємо сортування за замовчуванням: найближчі події першими
         this.query += ' ORDER BY event_day ASC, start_time ASC';
         return { text: this.query, values: this.values };
     }
@@ -303,11 +294,9 @@ class EventSearchBuilder {
 // Обробляє: пошук за назвою, ключовими словами, датою, містом, категорією
 // =======================================================
 router.get('/search', async (req, res) => {
-    // Зчитуємо параметри з URL (наприклад: /api/events/search?city=Львів&date=2024-05-20)
     const { title, keyword, date, city, category_id } = req.query;
 
     try {
-        // Використовуємо наш патерн Будівельник для формування запиту
         const builder = new EventSearchBuilder()
             .searchByTitle(title)
             .searchByKeyword(keyword)
@@ -316,11 +305,8 @@ router.get('/search', async (req, res) => {
             .filterByCategory(category_id);
 
         const { text, values } = builder.build();
-
-        // Виконуємо згенерований запит у БД
         const result = await pool.query(text, values);
 
-        // Обробка пустого результату 
         if (result.rows.length === 0) {
             return res.status(404).json({ msg: "За вашим запитом подій не знайдено" });
         }
@@ -355,7 +341,7 @@ router.post('/', async (req, res) => {
         region, is_private, price, currency 
     } = req.body;
 
-    // Балідація
+    // Валідація
     if (!title || title.length < 5) return res.status(400).json({ error: "Назва коротка" });
     if (!region) return res.status(400).json({ error: "Вкажіть область" });
 
@@ -375,6 +361,45 @@ router.post('/', async (req, res) => {
     }
 });
 
+// ==========================================
+// 🟢 НОВИЙ МАРШРУТ: POST /events/:id/image - Завантаження фото
+// ==========================================
+router.post('/:id/image', upload.single('image'), async (req, res) => {
+    const eventId = req.params.id;
+
+    // Перевіряємо, чи файл взагалі прийшов
+    if (!req.file) {
+        return res.status(400).json({ error: "Файл не завантажено або неправильний формат" });
+    }
+
+    // Формуємо шлях до картинки, який запишемо в БД
+    const imageUrl = `/uploads/${req.file.filename}`;
+
+    try {
+        // Оновлюємо подію в базі даних
+        const query = `
+            UPDATE events 
+            SET image_url = $1 
+            WHERE event_id = $2 
+            RETURNING *`;
+        
+        const result = await pool.query(query, [imageUrl, eventId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Подію не знайдено" });
+        }
+
+        res.json({ 
+            message: "Фото успішно додано", 
+            image_url: imageUrl,
+            event: result.rows[0] 
+        });
+
+    } catch (err) {
+        console.error("Помилка завантаження фото:", err.message);
+        res.status(500).json({ error: "Помилка бази даних" });
+    }
+});
 
 // ==========================================
 // 6. ВИДАЛЕННЯ ПОДІЇ (DELETE)
@@ -401,12 +426,5 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ error: "Внутрішня помилка сервера при видаленні" });
     }
 });
-
-module.exports = router;
-
-
-
-
-
 
 module.exports = router;
