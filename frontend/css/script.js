@@ -499,7 +499,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const myEventsToggle = document.getElementById('my-events-toggle');
     const myEventsDropdown = document.getElementById('my-events-dropdown');
     
+    // Initialize mock data if localStorage is empty
+    if (!localStorage.getItem('myEvents')) {
+        const mockData = [
+            { id: "fest1", title: "Фестиваль \"Summer Fest\"", status: "Активна", statusIcon: "fa-check-circle", statusColor: "#10B981" },
+            { id: "codex1", title: "ІТ Конференція \"CodeX\"", status: "На модерації", statusIcon: "fa-clock", statusColor: "#F59E0B" }
+        ];
+        localStorage.setItem('myEvents', JSON.stringify(mockData));
+    }
+
+    function renderMyEvents() {
+        if (!myEventsDropdown) return;
+        myEventsDropdown.innerHTML = '';
+        const myEvents = JSON.parse(localStorage.getItem('myEvents') || '[]');
+        
+        if (myEvents.length === 0) {
+            myEventsDropdown.innerHTML = '<div style="font-size: 13px; color: #64748B; text-align: center; padding: 10px 0;">У вас ще немає створених подій.</div>';
+            return;
+        }
+
+        myEvents.forEach(event => {
+            const card = document.createElement('div');
+            card.className = 'my-event-card';
+            card.style.paddingBottom = '10px';
+            card.style.borderBottom = '1px solid #E2E8F0';
+            card.innerHTML = `
+                <div style="color: #1E293B; font-weight: 600; font-size: 14px; margin-bottom: 4px;">${event.title}</div>
+                <div style="font-size: 12px; color: ${event.statusColor}; margin-bottom: 8px; font-weight: 500;"><i class="fa-solid ${event.statusIcon}"></i> ${event.status}</div>
+                <div style="display: flex; gap: 8px;">
+                  <a href="create-event.html?id=${event.id}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #00AAFF; text-decoration: none; padding: 5px 10px; border: 1px solid #BAE6FD; border-radius: 6px; background: white; transition: all 0.2s; cursor: pointer;">
+                    <i class="fa-solid fa-pen-to-square"></i> Редагувати
+                  </a>
+                  <button type="button" class="delete-my-event-btn" data-id="${event.id}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #EF4444; border: 1px solid #FECACA; border-radius: 6px; background: white; padding: 5px 10px; cursor: pointer; transition: all 0.2s;">
+                    <i class="fa-solid fa-trash"></i> Видалити
+                  </button>
+                </div>
+            `;
+            myEventsDropdown.appendChild(card);
+        });
+
+        // Add delete logic
+        document.querySelectorAll('.delete-my-event-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const eventId = this.getAttribute('data-id');
+                const events = JSON.parse(localStorage.getItem('myEvents') || '[]');
+                const filteredEvents = events.filter(e => e.id !== eventId);
+                localStorage.setItem('myEvents', JSON.stringify(filteredEvents));
+                renderMyEvents();
+            });
+        });
+    }
+
     if (myEventsToggle && myEventsDropdown) {
+        renderMyEvents();
+        
         myEventsToggle.addEventListener('click', (e) => {
             e.preventDefault();
             const isOpen = myEventsDropdown.style.display === 'flex';
@@ -511,6 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 myEventsToggle.style.backgroundColor = '';
                 myEventsToggle.style.color = '';
             } else {
+                renderMyEvents(); // Re-render when opening
                 myEventsDropdown.style.display = 'flex';
                 myEventsToggle.style.flexDirection = 'row';
                 const icon = myEventsToggle.querySelector('.chevron-icon');

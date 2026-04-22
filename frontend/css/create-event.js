@@ -128,6 +128,26 @@ document.addEventListener('DOMContentLoaded', () => {
       // Simulate API call
       setTimeout(() => {
         const isEditMode = new URLSearchParams(window.location.search).get('id');
+        
+        // Save to localStorage
+        let myEvents = JSON.parse(localStorage.getItem('myEvents') || '[]');
+        const eventTitle = document.querySelector('input[placeholder="Назва події"]').value.trim();
+        const eventId = isEditMode ? isEditMode : 'ev_' + Date.now();
+        const eventData = {
+            id: eventId,
+            title: eventTitle,
+            status: isEditMode ? 'Змінено' : 'На модерації',
+            statusIcon: isEditMode ? 'fa-check-circle' : 'fa-clock',
+            statusColor: isEditMode ? '#10B981' : '#F59E0B'
+        };
+        const eventIndex = myEvents.findIndex(e => e.id === eventId);
+        if (eventIndex > -1) {
+            myEvents[eventIndex] = eventData;
+        } else {
+            myEvents.push(eventData);
+        }
+        localStorage.setItem('myEvents', JSON.stringify(myEvents));
+
         submitBtn.innerHTML = isEditMode ? '<i class="fa-solid fa-check"></i> Зміни збережено!' : '<i class="fa-solid fa-check"></i> Успішно відправлено!';
         submitBtn.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
         submitBtn.style.boxShadow = '0 4px 14px 0 rgba(16, 185, 129, 0.39)';
@@ -350,6 +370,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const submitEventBtn = document.getElementById('submit-event-btn');
     if (submitEventBtn) submitEventBtn.innerHTML = 'Зберегти зміни <i class="fa-solid fa-arrow-right"></i>';
+
+    const submitWrapper = document.querySelector('.submit-wrapper');
+    if (submitWrapper && !document.getElementById('delete-event-btn')) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.id = 'delete-event-btn';
+      deleteBtn.className = 'large-blue';
+      deleteBtn.style.background = '#EF4444';
+      deleteBtn.style.boxShadow = '0 4px 14px 0 rgba(239, 68, 68, 0.39)';
+      deleteBtn.style.marginLeft = '15px';
+      deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Видалити подію';
+      deleteBtn.onclick = function() {
+        if(confirm('Ви впевнені, що хочете видалити цю подію?')) {
+          // Remove from localStorage
+          const isEditMode = new URLSearchParams(window.location.search).get('id');
+          if (isEditMode) {
+              const events = JSON.parse(localStorage.getItem('myEvents') || '[]');
+              const filteredEvents = events.filter(e => e.id !== isEditMode);
+              localStorage.setItem('myEvents', JSON.stringify(filteredEvents));
+          }
+          alert('Подію успішно видалено!');
+          window.location.href = 'index.html';
+        }
+      };
+      submitWrapper.appendChild(deleteBtn);
+      submitWrapper.style.display = 'flex';
+    }
 
     // 9.2 Mock Data (Simulate fetching from DB)
     const mockEventData = {
