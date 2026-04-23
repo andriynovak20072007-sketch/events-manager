@@ -89,9 +89,14 @@ router.get('/', async (req, res) => {
 
     try {
         // SQL запит з LEFT JOIN для динамічного підрахунку середнього рейтингу
+        // ТА динамічного визначення статусу (Завершена/Активна)
         let queryText = `
             SELECT e.*, 
-                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating 
+                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating,
+                   CASE 
+                       WHEN (e.event_day + e.start_time) < NOW() THEN 'завершена'
+                       ELSE 'активна'
+                   END as status
             FROM events e
             LEFT JOIN ratings r ON e.event_id = r.event_id
         `;

@@ -15,6 +15,11 @@ const infoRoutes = require('./routes/info');
 const favoritesRoutes = require('./routes/favorites'); 
 const hotelsRoutes = require('./routes/hotels');
 
+// ==========================================
+// ІНІЦІАЛІЗАЦІЯ ФОНОВИХ ЗАВДАНЬ (CRON JOBS)
+// ==========================================
+require('./cron/cleanup');
+
 const app = express();
 
 // ==========================================
