@@ -349,6 +349,7 @@ router.post('/', async (req, res) => {
     // Валідація
     if (!title || title.length < 5) return res.status(400).json({ error: "Назва коротка" });
     if (!region) return res.status(400).json({ error: "Вкажіть область" });
+    if (price !== undefined && price < 0) return res.status(400).json({ error: "Ціна не може бути від'ємною" });
 
     try {
         const query = `

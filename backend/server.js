@@ -12,7 +12,7 @@ const eventsRoutes = require('./routes/events');
 const categoriesRoutes = require('./routes/categories');
 const commentsRoutes = require('./routes/comments');
 const infoRoutes = require('./routes/info');
-const favoritesRoutes = require('./routes/favorites'); 
+const favoritesRoutes = require('./routes/favorite'); 
 const hotelsRoutes = require('./routes/hotels');
 
 // ==========================================
@@ -43,6 +43,7 @@ app.use(session({
 // ==========================================
 app.use('/api/users', usersRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/events', eventsRoutes); // Також доступно без /api префікса (для тестів)
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/info', infoRoutes);
@@ -71,6 +72,13 @@ app.use((err, req, res, next) => {
 // 5. ЗАПУСК СЕРВЕРА
 // ==========================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server працює на порту ${PORT}`);
-});
+
+// Запускаємо сервер ТІЛЬКИ якщо це не тести
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server працює на порту ${PORT}`);
+    });
+}
+
+// ОБОВ'ЯЗКОВО ділимося додатком з іншими файлами (для Supertest)
+module.exports = app;
