@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель - Event Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="moderation.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="index.html" style="text-decoration: none;">
+                <img src="images/Frame 37.png" class="logo-image" alt="logo">
+            </a>
+            <div class="divider"></div>
+            <h2 style="margin-left: 20px; font-size: 18px; color: var(--blue-dark);">Адмін-панель</h2>
+        </div>
+        <div class="header-right">
+            <div class="language-btn">UA</div>
+            <div class="icon-btn" id="logoutBtn" title="Вийти з панелі" style="background: var(--red); color: white;">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </div>
+            <div class="icon-btn" id="profileBtn">
+                <img src="images/Frame 38.png" alt="icon">
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar" style="display: flex; flex-direction: column; justify-content: space-between; height: calc(100vh - 70px); position: sticky; top: 70px;">
+            <nav style="display: flex; flex-direction: column; gap: 5px;">
+                <a href="#" class="sidebar-link active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i> Дашборд
+                </a>
+                <a href="#" class="sidebar-link" data-tab="events">
+                    <i class="fa-solid fa-calendar-days"></i> Події
+                </a>
+                <a href="#" class="sidebar-link" data-tab="categories">
+                    <i class="fa-solid fa-layer-group"></i> Категорії
+                </a>
+                <a href="#" class="sidebar-link" data-tab="users">
+                    <i class="fa-solid fa-users"></i> Користувачі
+                </a>
+                <a href="#" class="sidebar-link" data-tab="reports">
+                    <i class="fa-solid fa-circle-exclamation"></i> Скарги
+                </a>
+                <a href="#" class="sidebar-link" data-tab="marketing">
+                    <i class="fa-solid fa-bullseye"></i> Маркетинг
+                </a>
+            </nav>
+
+            <nav style="display: flex; flex-direction: column; gap: 5px; border-top: 1px solid #eee; padding-top: 15px; margin-top: auto;">
+                <a href="#" class="sidebar-link" data-tab="logs">
+                    <i class="fa-solid fa-list-ul"></i> Журнал дій
+                </a>
+                <a href="#" class="sidebar-link" data-tab="settings">
+                    <i class="fa-solid fa-gear"></i> Налаштування
+                </a>
+                <a href="#" class="sidebar-link" id="logoutBtnAlt" style="color: #DC2626;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Вийти
+                </a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <!-- Розділ ДАШБОРД -->
+            <section id="dashboard-section" class="tab-content active">
+                <div class="admin-header-actions">
+                    <h1>Аналітика системи</h1>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card" data-tab="events">
+                        <div class="stat-icon" style="background: #E0E7FF; color: #4338CA;"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Всього подій</span>
+                            <h2 class="stat-value" id="stat-total-events">12</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card" data-tab="users">
+                        <div class="stat-icon" style="background: #DCFCE7; color: #16A34A;"><i class="fa-solid fa-user-plus"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Нові користувачі</span>
+                            <h2 class="stat-value">42</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card" data-tab="marketing">
+                        <div class="stat-icon" style="background: #FEF3C7; color: #D97706;"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Переходи на квитки</span>
+                            <h2 class="stat-value">1,250</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card" data-tab="reports">
+                        <div class="stat-icon" style="background: #FEE2E2; color: #DC2626;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Активні скарги</span>
+                            <h2 class="stat-value" id="stat-active-reports">2</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="padding: 30px; margin-top: 30px; background: white; border-radius: 20px; box-shadow: var(--shadow);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="font-size: 18px;">Графік активності (Тиждень)</h2>
+                    </div>
+                    <canvas id="activityChart" height="100"></canvas>
+                </div>
+            </section>
+
+            <!-- Розділ ПОДІЇ -->
+            <section id="events-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Керування подіями</h1>
+                    <div class="admin-filters">
+                        <div class="search-bar" style="position: relative; width: 300px;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #64748B;"></i>
+                            <input type="text" id="adminSearchInput" placeholder="Пошук..." style="width: 100%; padding: 10px 15px 10px 45px; border: 1px solid #E2E8F0; border-radius: 10px;">
+                        </div>
+                        <select id="statusFilter" class="admin-select">
+                            <option value="all">Всі статуси</option>
+                            <option value="pending">На розгляді</option>
+                            <option value="approved">Схвалено</option>
+                            <option value="rejected">Відхилено</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="admin-table-wrapper card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Подія</th>
+                                <th>Організатор</th>
+                                <th>Статус</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminEventsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Розділ КАТЕГОРІЇ -->
+            <section id="categories-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Категорії</h1>
+                    <button class="main-btn" id="addCategoryBtn" style="width: auto; padding: 10px 20px;">
+                        <i class="fa-solid fa-plus"></i> Додати категорію
+                    </button>
+                </div>
+                <div class="admin-table-wrapper card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Назва</th>
+                                <th>Кількість подій</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCategoriesBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Розділ КОРИСТУВАЧІ -->
+            <section id="users-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Користувачі</h1>
+                    <div class="search-bar" style="position: relative; width: 300px;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #64748B;"></i>
+                        <input type="text" id="userSearchInput" placeholder="Пошук користувачів..." style="width: 100%; padding: 10px 15px 10px 45px; border: 1px solid #E2E8F0; border-radius: 10px;">
+                    </div>
+                </div>
+                <div class="admin-table-wrapper card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Користувач</th>
+                                <th>Email</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Розділ СКАРГИ -->
+            <section id="reports-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Скарги</h1>
+                </div>
+                <div class="admin-table-wrapper card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Об'єкт</th>
+                                <th>Причина</th>
+                                <th>Автор скарги</th>
+                                <th>Дата</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminReportsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Розділ ЖУРНАЛ ДІЙ -->
+            <section id="logs-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Журнал активності</h1>
+                </div>
+                <div class="admin-table-wrapper card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Час</th>
+                                <th>Користувач</th>
+                                <th>Дія</th>
+                                <th>Об'єкт</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminLogsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Розділ МАРКЕТИНГ -->
+            <section id="marketing-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Статистика переходів (Квитки)</h1>
+                </div>
+                <div class="admin-table-wrapper card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Подія</th>
+                                <th>Кількість кліків</th>
+                                <th>Унікальні користувачі</th>
+                                <th>Конверсія</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminMarketingBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Розділ НАЛАШТУВАННЯ -->
+            <section id="settings-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Налаштування системи</h1>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div class="card" style="padding: 30px; background: white; border-radius: 20px;">
+                        <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-sliders"></i> Загальні</h3>
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <label class="checkbox">
+                                <input type="checkbox" checked> Автоматичне схвалення подій
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox"> Email-сповіщення адміну
+                            </label>
+                            <label class="checkbox" checked>
+                                <input type="checkbox" checked> Реєстрація відкрита
+                            </label>
+                            <button id="saveSettingsBtn" class="main-btn" style="width: 100%;">Зберегти</button>
+                        </div>
+                    </div>
+                    <div class="card" style="padding: 30px; background: white; border-radius: 20px;">
+                        <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-bullhorn"></i> Глобальне оголошення</h3>
+                        <textarea id="globalAnnounceText" placeholder="Текст оголошення для всіх користувачів..." style="width: 100%; height: 100px; padding: 15px; border: 1px solid #E2E8F0; border-radius: 12px; font-family: inherit; margin-bottom: 15px; resize: none;"></textarea>
+                        <button id="sendAnnounceBtn" class="main-btn" style="width: 100%; background: var(--blue-dark);">Опублікувати для всіх</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модалка для КАТЕГОРІЙ -->
+    <div id="categoryModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal" id="closeCatModal" style="position: absolute; right: 25px; top: 20px; font-size: 28px; cursor: pointer;">&times;</span>
+            <h2 style="margin-bottom: 25px; color: var(--blue-dark);">Нова категорія</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="text" id="newCatName" placeholder="Введіть назву категорії..." 
+                       style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #E2E8F0; outline: none; font-size: 16px;">
+                <button id="saveCatBtn" class="main-btn" style="width: 100%; border-radius: 12px; height: 50px;">
+                    Створити категорію
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="moderation.js"></script>
+</body>
+</html>
