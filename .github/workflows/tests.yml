@@ -1,5 +1,9 @@
 name: Backend Integration Tests
 
+# 🟢 Додаємо цю змінну, щоб GitHub використовував нову версію і не сварився
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  
 # Коли запускати тести? При кожному пуші в гілку main або master
 on:
   push:
