@@ -3,110 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Manager</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Ваші улюблені події та популярні рекомендації в Event Manager.">
+  <title>Обране | Event Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-
-   <link rel="stylesheet" href="wishlist.css">
-   <script src="wishlist.js" ></script>
+  <link rel="stylesheet" href="wishlist.css">
+  <script src="wishlist.js" defer></script>
 </head>
 
 <body>
 <header class="header">
-    <div class="header-left">
+    <div class="header-left" onclick="window.location.href='index.html'" style="cursor: pointer;">
       <img src="images/Frame 37.png" class="logo-image" alt="logo">
       <div class="divider"></div>
     </div>
 
     <div class="header-center">
-      <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" placeholder="Пошук подій ...">
-      </div>
-
-      <button class="add-event-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
-
-      <div class="header-filters">
-        <div class="filter-pill date-filter">
-          <label for="header-date" style="display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%;">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span id="header-date-text">Дата</span>
-            <input type="date" id="header-date" style="position: absolute; opacity: 0; width: 0; height: 0;">
-          </label>
-        </div>
-
-        <div class="filter-pill city-filter">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          Місто
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-
-        <button class="filter-pill">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="3" y1="9" x2="21" y2="9"></line>
-            <line x1="3" y1="15" x2="21" y2="15"></line>
-          </svg>
-          Категорії
-        </button>
-      </div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-link">Головна</a>
+            <a href="wishlist.html" class="nav-link active">Обране</a>
+            <a href="my-events.html" class="nav-link">Мої події</a>
+        </nav>
     </div>
 
     <div class="header-right">
       <div class="language-btn">UA</div>
-      <div class="icon-btn">
+      <div class="icon-btn" onclick="window.location.href='create-event.html'" title="Створити подію">
+        <i class="fa-solid fa-plus"></i>
+      </div>
+      <div class="icon-btn" id="profileBtn">
         <img src="images/Frame 39.png" alt="icon">
         <span class="red-dot"></span>
       </div>
-      <div class="icon-btn" id="profileBtn">
-        <img src="images/Frame 38.png" alt="icon">
-      </div>
     </div>
-  </header>
+</header>
 
-  <!-- Main Content -->
-  <main class="main">
-    <!-- Selected Events Section -->
-    <section class="section">
-      <div class="container">
-        <h1 class="main-title">Обрані події</h1>
-
-        <div class="events-grid" id="selectedEvents"></div>
-
-        <div class="divider"></div>
-
-        <!-- Popular Events Section -->
-        <div class="popular-header">
-          <h2 class="section-title">Популярні події</h2>
-          <p class="section-subtitle">Перегляньте, що зараз популярно</p>
+<main class="content-container">
+    <!-- Bento Header Section -->
+    <section class="header-bento-grid">
+        <div class="bento-main">
+            <div class="bento-blobs">
+                <div class="blob"></div>
+                <div class="blob"></div>
+                <div class="blob"></div>
+            </div>
+            <div class="bento-content">
+                <h1>Улюблені заходи</h1>
+                <p>Ваш персональний список подій, які ви не хочете пропустити. Керуйте обраним та плануйте своє дозвілля.</p>
+            </div>
+            <div class="bento-decoration">
+                <i class="fa-solid fa-heart"></i>
+            </div>
         </div>
 
-        <div class="events-grid-popular" id="popularEvents"></div>
-      </div>
+        <div class="bento-stats">
+            <div class="bento-card total">
+                <div class="b-icon"><i class="fa-solid fa-heart"></i></div>
+                <div class="b-info">
+                    <span class="b-val" id="favoriteCount">0</span>
+                    <span class="b-lab">В обраному</span>
+                </div>
+            </div>
+            <div class="bento-card soon">
+                <div class="b-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="b-info">
+                    <span class="b-val">3</span>
+                    <span class="b-lab">Незабаром</span>
+                </div>
+            </div>
+            <div class="bento-card recommended">
+                <div class="b-icon"><i class="fa-solid fa-star"></i></div>
+                <div class="b-info">
+                    <span class="b-val">5+</span>
+                    <span class="b-lab">Рекомендовано</span>
+                </div>
+            </div>
+        </div>
     </section>
-  </main>
+
+    <!-- Search and Filters -->
+    <div class="premium-controls">
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="wishlistSearch" placeholder="Пошук в обраному...">
+        </div>
+        <div class="filter-group">
+            <div class="filter-indicator"></div>
+            <button class="filter-btn active" data-filter="all">Всі</button>
+            <button class="filter-btn" data-filter="upcoming">Майбутні</button>
+            <button class="filter-btn" data-filter="past">Завершені</button>
+        </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="wishlist-grid-wrapper">
+        <h2 class="section-heading">Ваш список обраного</h2>
+        <div id="selectedEvents" class="wishlist-grid"></div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Popular Section -->
+    <div class="popular-section">
+        <div class="popular-header-row">
+            <div class="popular-title-group">
+                <h2 class="section-heading">Популярне зараз</h2>
+                <p class="section-subtext">Те, що найбільше цікавить інших користувачів</p>
+            </div>
+            <button class="view-all-btn" onclick="window.location.href='events.html'">Всі події <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div id="popularEvents" class="popular-grid"></div>
+    </div>
+</main>
 
 <footer class="site-footer">
   <div class="footer-top">
-    
     <div class="footer-column">
       <h4>Event Manager</h4>
       <a href="#">Підтримка</a>
@@ -122,7 +134,7 @@
     </div>
     
     <div class="footer-column">
-      <h4>Слідкуйте за<br>нами</h4>
+      <h4>Слідкуйте за нами</h4>
       <a href="#" class="social-link">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -138,7 +150,6 @@
         </svg>
       </a>
     </div>
-
   </div>
   
   <div class="footer-bottom">
@@ -147,6 +158,26 @@
   </div>
 </footer>
 
-<script src="events.js"></script>
+<!-- Side Panels -->
+<div id="userPanelOverlay" class="panel-overlay"></div>
+<aside id="userPanel" class="user-panel">
+    <div class="panel-header">
+        <h2>Профіль</h2>
+        <button id="closePanelBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <nav class="panel-nav">
+        <a href="wishlist.html" class="panel-link active"><i class="fa-regular fa-heart"></i> Обране</a>
+        <a href="my-events.html" class="panel-link"><i class="fa-regular fa-calendar-check"></i> Мої події</a>
+        <a href="create-event.html" class="panel-link"><i class="fa-solid fa-plus"></i> Створити подію</a>
+        <a href="moderation.html" class="panel-link admin-link">
+            <i class="fa-solid fa-user-shield"></i> Модерація
+        </a>
+    </nav>
+    <div class="panel-footer">
+        <button class="panel-auth-btn login-btn">Увійти</button>
+        <button class="panel-auth-btn register-btn">Зареєструватися</button>
+    </div>
+</aside>
+
 </body>
 </html>

@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мої події | Event Manager</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="my-events.css">
+    <script src="my-events.js" defer></script>
 </head>
 <body>
     <header class="header">
         <div class="header-left" onclick="window.location.href='index.html'" style="cursor: pointer;">
-            <img src="images/Frame 37.png" class="logo-image" alt="logo">
-            <div class="divider"></div>
+          <img src="images/Frame 37.png" class="logo-image" alt="logo">
+          <div class="divider"></div>
         </div>
 
         <div class="header-center">
@@ -25,14 +26,14 @@
         </div>
 
         <div class="header-right">
-            <div class="language-btn">UA</div>
-            <div class="icon-btn" onclick="window.location.href='create-event.html'" title="Створити подію">
-                <i class="fa-solid fa-plus"></i>
-            </div>
-            <div class="icon-btn" id="profileBtn">
-                <img src="images/Frame 39.png" alt="icon">
-                <span class="red-dot"></span>
-            </div>
+          <div class="language-btn">UA</div>
+          <div class="icon-btn" onclick="window.location.href='create-event.html'" title="Створити подію">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <div class="icon-btn" id="profileBtn">
+            <img src="images/Frame 39.png" alt="icon">
+            <span class="red-dot"></span>
+          </div>
         </div>
     </header>
 
@@ -81,7 +82,7 @@
             </div>
         </section>
 
-        <div class="events-controls">
+        <div class="premium-controls">
             <div class="search-bar">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="eventSearch" placeholder="Пошук ваших подій...">
@@ -118,7 +119,7 @@
                 <a href="#">Про сайт</a>
             </div>
             <div class="footer-column">
-                <h4>Слідкуйте за<br>нами</h4>
+                <h4>Слідкуйте за нами</h4>
                 <a href="#" class="social-link">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <defs>
@@ -161,27 +162,5 @@
             <button class="panel-auth-btn register-btn">Зареєструватися</button>
         </div>
     </aside>
-
-    <script src="my-events.js"></script>
-    <script>
-        // Profile Panel Logic
-        const profileBtn = document.getElementById('profileBtn');
-        const userPanel = document.getElementById('userPanel');
-        const overlay = document.getElementById('userPanelOverlay');
-        const closeBtn = document.getElementById('closePanelBtn');
-
-        profileBtn.addEventListener('click', () => {
-            userPanel.classList.add('open');
-            overlay.classList.add('active');
-        });
-
-        const closePanel = () => {
-            userPanel.classList.remove('open');
-            overlay.classList.remove('active');
-        };
-
-        closeBtn.addEventListener('click', closePanel);
-        overlay.addEventListener('click', closePanel);
-    </script>
 </body>
 </html>
