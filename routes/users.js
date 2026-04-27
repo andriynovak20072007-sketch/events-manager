@@ -22,6 +22,22 @@ const isValidEmail = (email) => {
 };
 
 // ==========================================
+// ПАТЕРН: Data Transfer Object (DTO)
+// Використовується для безпечної передачі даних користувача клієнту
+// без розкриття чутливої інформації (паролі, токени)
+// ==========================================
+class UserDTO {
+    constructor(user) {
+        this.id = user.user_id;
+        this.username = user.username;
+        this.email = user.email;
+        this.role = user.role;
+        this.created_at = user.created_at;
+        // Додатково можна додати поля, якщо вони з'являться (аватар тощо)
+    }
+}
+
+// ==========================================
 // 1. РОУТ РЕЄСТРАЦІЇ (POST /users/register)
 // ==========================================
 router.post('/register', async (req, res) => {
@@ -208,5 +224,29 @@ router.post('/logout', (req, res) => {
         res.json({ message: "Ви успішно вийшли з системи." });
     });
 });
+
+// ==========================================
+// 7. ОТРИМАННЯ ДАНИХ КОРИСТУВАЧА (GET /users/:id)
+// ==========================================
+router.get('/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const result = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Користувача не знайдено" });
+        }
+
+        // Використовуємо DTO патерн для форматування вихідних даних
+        const userDTO = new UserDTO(result.rows[0]);
+
+        res.json(userDTO);
+    } catch (err) {
+        console.error('Помилка отримання даних користувача:', err.message);
+        res.status(500).json({ error: "Внутрішня помилка сервера при отриманні профілю." });
+    }
+});
+
 
 module.exports = router;
