@@ -1,13 +1,12 @@
 /* 
-  Wishlist Page Specific Styles
+  My Events Page Specific Styles
   Inherits Premium Design System from style.css
 */
 
-.wishlist-grid, .popular-grid {
+.my-events-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 35px;
-    margin-bottom: 80px;
 }
 
 /* Event Card Customizations */
@@ -30,38 +29,37 @@
     height: 240px;
     background-size: cover;
     background-position: center;
-    position: relative;
 }
 
-.favorite-badge {
+.status-badge {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 45px;
-    height: 45px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #EF4444;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.3s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    z-index: 10;
-}
-
-.favorite-badge:hover {
-    background: #EF4444;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
     color: white;
-    transform: scale(1.1) rotate(15deg);
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.card-content { padding: 35px; }
-.card-content h3 { font-size: 24px; font-weight: 800; margin: 0 0 15px 0; }
+.status-approved { background: rgba(16, 185, 129, 0.85); backdrop-filter: blur(5px); }
+.status-pending { background: rgba(245, 158, 11, 0.85); backdrop-filter: blur(5px); }
 
-.event-info-list {
+.card-content {
+    padding: 35px;
+}
+
+.card-content h3 {
+    margin: 0 0 15px 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-premium);
+}
+
+.event-info {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -79,17 +77,18 @@
 
 .info-item i { color: var(--primary-premium); width: 20px; }
 
-.card-footer {
+.card-actions {
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
-.btn-view, .btn-action {
+.btn-edit, .btn-delete {
     padding: 14px;
     border-radius: 18px;
     border: none;
     font-weight: 700;
+    font-size: 14px;
     cursor: pointer;
     transition: 0.3s;
     display: flex;
@@ -98,40 +97,17 @@
     gap: 10px;
 }
 
-.btn-view { background: var(--primary-grad); color: white; }
-.btn-view:hover { box-shadow: 0 8px 20px rgba(40, 84, 197, 0.3); }
-
-.btn-action { background: #F1F5F9; color: var(--text-premium); }
-.btn-action:hover { background: #E2E8F0; }
-
-/* Popular Section Styling */
-.popular-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 40px;
-}
-
-.section-subtext { color: var(--text-muted); margin-top: -20px; }
-
-.view-all-btn {
-    padding: 12px 25px;
-    border-radius: 50px;
-    border: 2px solid var(--primary-premium);
-    background: transparent;
-    color: var(--primary-premium);
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.view-all-btn:hover {
-    background: var(--primary-premium);
+.btn-edit {
+    background: var(--primary-grad);
     color: white;
 }
+.btn-edit:hover { box-shadow: 0 8px 20px rgba(40, 84, 197, 0.3); }
+
+.btn-delete {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+.btn-delete:hover { background: #FECACA; }
 
 /* Bento Background Blobs */
 .bento-blobs {
@@ -184,8 +160,8 @@
 }
 
 .bento-card.total { background: #EFF6FF; color: #1E40AF; }
-.bento-card.soon { background: #FFF1F2; color: #9F1239; }
-.bento-card.recommended { background: #F0FDF4; color: #166534; }
+.bento-card.approved { background: #F0FDF4; color: #166534; }
+.bento-card.pending { background: #FFFBEB; color: #92400E; }
 
 .b-icon {
     width: 52px;

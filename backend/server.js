@@ -12,8 +12,13 @@ const eventsRoutes = require('./routes/events');
 const categoriesRoutes = require('./routes/categories');
 const commentsRoutes = require('./routes/comments');
 const infoRoutes = require('./routes/info');
-const favoritesRoutes = require('./routes/favorites'); // 🟢 ДОДАНО: Маршрут обраного
+const favoritesRoutes = require('./routes/favorite'); 
 const hotelsRoutes = require('./routes/hotels');
+
+// ==========================================
+// ІНІЦІАЛІЗАЦІЯ ФОНОВИХ ЗАВДАНЬ (CRON JOBS)
+// ==========================================
+require('./cron/cleanup');
 
 const app = express();
 
@@ -22,6 +27,9 @@ const app = express();
 // ==========================================
 app.use(cors());
 app.use(express.json()); // Дозволяє серверу читати JSON з req.body
+
+// 🟢 ДОДАНО: Робимо папку 'uploads' публічною, щоб фронтенд міг читати фотографії
+app.use('/uploads', express.static('uploads'));
 
 app.use(session({
     secret: process.env.SESSION_SECRET || "fallback_secret_key",
@@ -35,12 +43,12 @@ app.use(session({
 // ==========================================
 app.use('/api/users', usersRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/events', eventsRoutes); // Також доступно без /api префікса (для тестів)
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/info', infoRoutes);
-app.use('/api/favorites', favoritesRoutes); // 🟢 ДОДАНО: Ендпоінт для обраного
-app.use('/api/routes', require('./routes/routes'));
-app.use('/api/routes', require('./routes/routes'));
+app.use('/api/favorites', favoritesRoutes); 
+app.use('/api/routes', require('./routes/routes')); // Виправив дублювання
 app.use('/api/hotels', hotelsRoutes);
 
 // Базовий тестовий роут для перевірки працездатності
@@ -64,6 +72,13 @@ app.use((err, req, res, next) => {
 // 5. ЗАПУСК СЕРВЕРА
 // ==========================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server працює на порту ${PORT}`);
-});
+
+// Запускаємо сервер ТІЛЬКИ якщо це не тести
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server працює на порту ${PORT}`);
+    });
+}
+
+// ОБОВ'ЯЗКОВО ділимося додатком з іншими файлами (для Supertest)
+module.exports = app;

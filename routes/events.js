@@ -152,6 +152,46 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// =======================================================
+// 4.1 GET /events/user/:userId - Отримання подій, які створив користувач
+// =======================================================
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const result = await pool.query(`
+            SELECT * FROM events 
+            WHERE creator_id = $1 
+            ORDER BY created_at DESC
+        `, [userId]);
+        
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Помилка отримання створених подій користувача:', err.message);
+        res.status(500).send("Server error");
+    }
+});
+
+// =======================================================
+// 4.2 GET /events/user/:userId/participating - Отримання подій, в яких користувач бере участь
+// =======================================================
+router.get('/user/:userId/participating', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const result = await pool.query(`
+            SELECT e.*, ep.status 
+            FROM events e
+            JOIN event_participants ep ON e.event_id = ep.event_id
+            WHERE ep.user_id = $1
+            ORDER BY e.event_day ASC, e.start_time ASC
+        `, [userId]);
+        
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Помилка отримання подій учасника:', err.message);
+        res.status(500).send("Server error");
+    }
+});
+
 // ==========================================
 // 5. СТВОРЕННЯ НОВОЇ ПОДІЇ (POST)
 // ==========================================

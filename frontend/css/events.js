@@ -117,6 +117,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (buyBtn) {
                const priceString = data.price > 0 ? `${data.price} ${data.currency || 'UAH'}` : 'Безкоштовно';
                buyBtn.innerText = `Придбати квиток | Від ${priceString}`;
+               
+               // Додаємо перехід на зовнішній сайт
+               buyBtn.addEventListener('click', () => {
+                   const bookingUrl = data.booking_url || 'https://karabas.com/ua/'; 
+                   window.open(bookingUrl, '_blank');
+               });
             }
 
             const descpriptionEl = document.querySelector('.event-details-text p');

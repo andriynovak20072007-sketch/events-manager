@@ -1,0 +1,42 @@
+name: Backend Integration Tests
+
+# 🟢 Додаємо цю змінну, щоб GitHub використовував нову версію і не сварився
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  
+# Коли запускати тести? При кожному пуші в гілку main або master
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    # Вказуємо, що всі команди треба виконувати в папці бекенду
+    defaults:
+      run:
+        working-directory: ./backend 
+
+    steps:
+    # 1. Завантажуємо твій код із репозиторію
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. Встановлюємо Node.js (наприклад, 18-ту версію)
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    # 3. Встановлюємо бібліотеки (Express, Jest тощо)
+    - name: Install Dependencies
+      run: npm install
+
+    # 4. Запускаємо наші інтеграційні тести
+    - name: Run Tests
+      run: NODE_ENV=test npx jest --forceExit
+      env:
+        NODE_ENV: test
