@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профіль - Event Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="profile.css">
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header-left">
+      <a href="index.html"><img src="images/Frame 37.png" class="logo-image" alt="logo"></a>
+      <div class="divider"></div>
+    </div>
+
+    <div class="header-center">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="Пошук подій ...">
+      </div>
+
+      <button class="add-event-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+
+      <div class="header-filters">
+        <div class="filter-pill date-filter">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span id="header-date-text">Дата</span>
+          <input type="date" id="header-date">
+        </div>
+
+        <div class="filter-pill city-filter">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span class="city-filter-text">Місто</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+
+        <div class="filter-pill category-filter">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="3" y1="15" x2="21" y2="15"></line>
+          </svg>
+          <span class="category-filter-text">Категорії</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="language-btn">UA</div>
+      <div class="icon-btn">
+        <img src="images/Frame 39.png" alt="icon">
+        <span class="red-dot"></span>
+      </div>
+      <div class="icon-btn" id="profileBtn">
+        <img src="images/Frame 38.png" alt="icon">
+      </div>
+    </div>
+  </header>
+
+  <main class="profile-container">
+    
+    <div class="profile-header">
+      <h1 class="profile-title">Профіль</h1>
+      <button class="edit-profile-btn">
+        <i class="fa-solid fa-bars"></i> Редагувати профіль
+      </button>
+    </div>
+
+    <div class="profile-content">
+      
+      <div class="profile-info-card">
+        <div class="profile-avatar">
+          <!-- Placeholder avatar image, using a generic user image or initial -->
+          <img src="https://picsum.photos/600/4001" alt="User Avatar">
+        </div>
+        
+        <div class="profile-details">
+          <div class="detail-block">
+            <h2>Користувач</h2>
+            <span class="profile-handle">@korn_fan1998</span>
+          </div>
+
+          <div class="detail-block">
+            <h3>Опис профілю</h3>
+            <p>Я є користувач ляляляля</p>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-block half">
+              <h3>Валюта</h3>
+              <div class="select-wrapper">
+                <select>
+                  <option>Гривня</option>
+                  <option>Долар</option>
+                  <option>Євро</option>
+                </select>
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+            
+            <div class="detail-block half">
+              <h3>Сповіщення</h3>
+              <div class="select-wrapper">
+                <select>
+                  <option>Всі сповіщення</option>
+                  <option>Тільки важливі</option>
+                  <option>Вимкнути</option>
+                </select>
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="profile-section">
+        <h2 class="section-title">Обрані події</h2>
+        <div class="events-grid">
+          
+          <div class="event-card">
+            <div class="event-image-wrapper">
+              <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=600&auto=format&fit=crop" alt="Event">
+              <button class="heart-btn active"><i class="fa-solid fa-heart"></i></button>
+            </div>
+            <div class="event-info">
+              <h3>Фестиваль "Summer Fest"</h3>
+              <p class="event-location"><i class="fa-solid fa-location-dot" style="color: var(--blue-dark);"></i> Львів, Стадіон "Прайм"</p>
+              <p class="event-date"><i class="fa-regular fa-calendar"></i> 28 квітня, 18:00</p>
+              <a href="#" class="learn-more">Дізнатися більше</a>
+            </div>
+          </div>
+
+          <div class="event-card">
+            <div class="event-image-wrapper">
+              <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=600&auto=format&fit=crop" alt="Event">
+              <button class="heart-btn active"><i class="fa-solid fa-heart"></i></button>
+            </div>
+            <div class="event-info">
+              <h3>Фестиваль "Summer Fest"</h3>
+              <p class="event-location"><i class="fa-solid fa-location-dot" style="color: var(--blue-dark);"></i> Львів, Стадіон "Прайм"</p>
+              <p class="event-date"><i class="fa-regular fa-calendar"></i> 28 квітня, 18:00</p>
+              <a href="#" class="learn-more">Дізнатися більше</a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="profile-section">
+        <h2 class="section-title">Обрані маршрути</h2>
+        
+        <div class="route-display">
+          <div class="route-line-container">
+            <div class="route-point start">
+              <i class="fa-solid fa-location-dot marker-icon blue"></i>
+            </div>
+            <div class="route-line-connector">
+              <i class="fa-solid fa-car car-icon"></i>
+            </div>
+            <div class="route-point end">
+              <i class="fa-solid fa-location-dot marker-icon yellow"></i>
+            </div>
+          </div>
+
+          <div class="route-cards">
+            <div class="route-info-card">
+              <h4>Лекція "Музика в нашому житті"</h4>
+              <p>Львів, НУЛП</p>
+              <p>28 квітня, 13:00</p>
+            </div>
+            <div class="route-info-card right">
+              <h4>Фестиваль "SummerFest"</h4>
+              <p>Львів, стадіон "Прайм"</p>
+              <p>28 квітня, 18:00</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <section class="profile-section">
+        <h2 class="section-title">Створені події</h2>
+        
+        <div class="created-event-item">
+          <div class="created-event-main">
+            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=600&auto=format&fit=crop" class="created-event-img" alt="Event">
+            <div class="created-event-details">
+              <h3>Фестиваль "Summer Fest"</h3>
+              <p class="event-location"><i class="fa-solid fa-location-dot" style="color: var(--blue-dark);"></i> Львів, Стадіон "Прайм"</p>
+              <p class="event-date"><i class="fa-regular fa-calendar"></i> 28 квітня, 18:00</p>
+            </div>
+          </div>
+          
+          <div class="created-event-actions">
+            <button class="action-btn view-btn">Переглянути подію</button>
+            <button class="action-btn edit-btn">Редагувати подію</button>
+            <button class="action-btn delete-btn">Видалити подію</button>
+          </div>
+        </div>
+
+      </section>
+
+      <div class="logout-section">
+        <span class="logout-text">Вихід з акаунта.</span>
+        <button class="logout-btn">Вийти</button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-column">
+        <h4>Event Manager</h4>
+        <a href="#">Підтримка</a>
+        <a href="#">Контакти</a>
+        <a href="#">Приватність & cookies</a>
+        <a href="#">Політика використання</a>
+      </div>
+      <div class="footer-column">
+        <h4>Розробники</h4>
+        <a href="#">Про команду</a>
+        <a href="#">Про сайт</a>
+      </div>
+      <div class="footer-column">
+        <h4>Слідкуйте за<br>нами</h4>
+        <a href="#" class="social-link">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="ig-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#fdf497" offset="0%" />
+                <stop stop-color="#fd5949" offset="50%" />
+                <stop stop-color="#d6249f" offset="100%" />
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="url(#ig-grad)" stroke-width="2.5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" stroke="url(#ig-grad)" stroke-width="2.5"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="url(#ig-grad)" stroke-width="2.5"
+              stroke-linecap="round"></line>
+          </svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Українська (Україна)</p>
+      <p>© CodeX 2026</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>
