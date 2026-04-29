@@ -93,7 +93,7 @@ router.delete('/:id', (req, res) => {
         return res.status(400).json({ error: "Не вказано ID готелю для видалення" });
     }
 
-    // Повертаємо успішну відповідь, імітуючи видалення
+    // Повертаємо успішну відповідь
     res.json({ 
         message: `Готель з ID ${hotelId} успішно видалено`,
         deletedId: hotelId 

@@ -141,7 +141,8 @@ ALTER TABLE events ADD COLUMN region VARCHAR(100);
 
 ALTER TABLE events 
 ADD COLUMN price NUMERIC(10, 2) DEFAULT 0.00,
-ADD COLUMN currency VARCHAR(3) DEFAULT 'UAH';
+ADD COLUMN currency VARCHAR(3) DEFAULT 'UAH',
+ADD COLUMN photo_url TEXT;
 
 -- 1. Створюємо розробницького користувача з паролем
 ALTER USER event_dev WITH PASSWORD 'dev_password_123';
@@ -157,3 +158,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO event_dev
 
 -- 5. Даємо доступ до генератора ID (щоб працював SERIAL)
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO event_dev;
+
+-- Оновлення таблиці подій для додавання статусу (planned, ongoing, completed, cancelled)
+ALTER TABLE events ADD COLUMN status VARCHAR(20) DEFAULT 'planned';

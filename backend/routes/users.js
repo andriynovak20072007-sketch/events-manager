@@ -185,5 +185,77 @@ router.post('/', async (req, res) => {
     }
 });
 
+// ==========================================
+// ПАТЕРН: Builder (Будівельник) для UPDATE запитів
+// Дозволяє динамічно формувати запит на оновлення тільки тих полів, які передані
+// ==========================================
+class UpdateQueryBuilder {
+    constructor(tableName, idColumn, idValue) {
+        this.tableName = tableName;
+        this.idColumn = idColumn;
+        this.idValue = idValue;
+        this.fields = [];
+        this.values = [];
+        this.paramIndex = 1;
+    }
+
+    set(column, value) {
+        if (value !== undefined && value !== null) {
+            this.fields.push(`${column} = $${this.paramIndex}`);
+            this.values.push(value);
+            this.paramIndex++;
+        }
+        return this;
+    }
+
+    build() {
+        if (this.fields.length === 0) return null;
+
+        // Додаємо ID як останній параметр
+        this.values.push(this.idValue);
+        
+        const query = `
+            UPDATE ${this.tableName}
+            SET ${this.fields.join(', ')}
+            WHERE ${this.idColumn} = $${this.paramIndex}
+            RETURNING user_id, username, email, role, created_at`;
+            
+        return { text: query, values: this.values };
+    }
+}
+
+// ==========================================
+// 6. ОНОВЛЕННЯ ПРОФІЛЮ КОРИСТУВАЧА (PUT)
+// ==========================================
+router.put('/:id', async (req, res) => {
+    const userId = req.params.id;
+    const { username, email, role } = req.body;
+
+    // Використовуємо патерн Builder
+    const builder = new UpdateQueryBuilder('users', 'user_id', userId)
+        .set('username', username)
+        .set('email', email)
+        .set('role', role);
+
+    const builtQuery = builder.build();
+
+    if (!builtQuery) {
+        return res.status(400).json({ error: "Немає даних для оновлення" });
+    }
+
+    try {
+        const result = await pool.query(builtQuery.text, builtQuery.values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Користувача не знайдено" });
+        }
+
+        res.json({ msg: "Профіль успішно оновлено", user: result.rows[0] });
+    } catch (err) {
+        console.error('Помилка при оновленні профілю:', err.message);
+        res.status(500).json({ error: "Внутрішня помилка сервера при оновленні профілю" });
+    }
+});
+
 // Експорт роутера МАЄ БУТИ В САМОМУ КІНЦІ ФАЙЛУ
 module.exports = router;
