@@ -1,7 +1,8 @@
 .admin-container {
     display: flex;
-    min-height: calc(100vh - 70px);
+    min-height: calc(100vh - 80px);
     background: #F8F9FD;
+    margin-top: 80px;
 }
 
 /* Sidebar */

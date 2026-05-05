@@ -204,4 +204,121 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Notification Dropdown Logic
+    const notifBtn = document.getElementById('notifBtn');
+    const notifDropdown = document.getElementById('notifDropdown');
+    const redDot = document.querySelector('.red-dot');
+    
+    if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notifDropdown.classList.toggle('hidden');
+        });
+
+        // Mark all as read
+        const markAllRead = notifDropdown.querySelector('.mark-all-read');
+        markAllRead.addEventListener('click', () => {
+            const unreadItems = notifDropdown.querySelectorAll('.notif-item.unread');
+            unreadItems.forEach(item => {
+                item.classList.remove('unread');
+                const dot = item.querySelector('.unread-dot');
+                if(dot) dot.remove();
+            });
+            if(redDot) redDot.style.display = 'none';
+            showToast('Всі сповіщення прочитано', '#2854C5');
+        });
+
+        // Category Filtering Logic
+        const catBtns = notifDropdown.querySelectorAll('.notif-cat-btn');
+        catBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const category = btn.getAttribute('data-cat');
+                
+                // Update active button
+                catBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Filter items
+                const items = notifDropdown.querySelectorAll('.notif-item');
+                items.forEach(item => {
+                    if (category === 'all' || item.getAttribute('data-category') === category) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Individual item click
+        const notifItems = notifDropdown.querySelectorAll('.notif-item');
+        notifItems.forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.remove('unread');
+                const dot = item.querySelector('.unread-dot');
+                if(dot) dot.remove();
+                
+                const stillUnread = notifDropdown.querySelectorAll('.notif-item.unread').length;
+                if(stillUnread === 0 && redDot) redDot.style.display = 'none';
+                
+                // Do NOT close when clicking items if you want user to see others, 
+                // but usually notifications close after selection. Let's keep it consistent.
+                notifDropdown.classList.add('hidden');
+            });
+        });
+
+        // City Dropdown Logic
+        const cityFilter = document.querySelector('.city-filter');
+        const cityDropdown = document.querySelector('.city-dropdown');
+        const cityText = document.querySelector('.city-filter-text');
+        
+        if (cityFilter && cityDropdown) {
+            cityFilter.addEventListener('click', (e) => {
+                e.stopPropagation();
+                cityDropdown.classList.toggle('hidden');
+            });
+
+            cityDropdown.querySelectorAll('.city-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    cityText.textContent = opt.textContent;
+                    cityDropdown.classList.add('hidden');
+                    showToast(`Місто змінено на: ${opt.textContent}`, '#00AAFF');
+                });
+            });
+
+            cityDropdown.querySelector('.city-reset').addEventListener('click', () => {
+                cityText.textContent = 'Місто';
+                cityDropdown.classList.add('hidden');
+            });
+        }
+
+        // Date Filter Logic
+        const dateInput = document.getElementById('header-date');
+        const dateText = document.getElementById('header-date-text');
+        if (dateInput && dateText) {
+            dateInput.addEventListener('change', (e) => {
+                dateText.textContent = e.target.value;
+                showToast(`Дату обрано: ${e.target.value}`, '#4B7BEC');
+            });
+        }
+
+        // Close all on outside click
+        window.addEventListener('click', (e) => {
+            if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== notifBtn) {
+                notifDropdown.classList.add('hidden');
+            }
+            if (cityDropdown && !cityDropdown.contains(e.target) && !cityFilter.contains(e.target)) {
+                cityDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    // Currency Sync
+    const currencySelect = document.getElementById('currency-select');
+    if (currencySelect) {
+        const savedCurrency = localStorage.getItem('currency') || 'uah';
+        currencySelect.value = savedCurrency;
+    }
 });

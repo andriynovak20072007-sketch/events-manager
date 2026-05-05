@@ -92,7 +92,13 @@
     </div>
 
     <div class="header-right">
-      <div class="language-btn">UA</div>
+      <div class="language-dropdown-wrapper">
+        <div class="language-btn">UA <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></div>
+        <div class="language-dropdown hidden">
+          <button type="button" class="lang-option active">UA - Українська</button>
+          <button type="button" class="lang-option">EN - English</button>
+        </div>
+      </div>
       <div class="icon-btn">
         <img src="images/Frame 39.png" alt="icon">
         <span class="red-dot"></span>
@@ -576,6 +582,7 @@
 </aside>
 
   <script src="map.js"></script>
+  <script src="lang.js"></script>
   <script src="script.js"></script>
   <script src="events.js"></script>
   <script src="hotel.js"></script>

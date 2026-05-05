@@ -71,7 +71,13 @@
     </div>
 
     <div class="header-right">
-      <div class="language-btn">UA</div>
+      <div class="language-dropdown-wrapper">
+        <div class="language-btn">UA <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></div>
+        <div class="language-dropdown hidden">
+          <button type="button" class="lang-option active">UA - Українська</button>
+          <button type="button" class="lang-option">EN - English</button>
+        </div>
+      </div>
       <div class="icon-btn">
         <img src="images/Frame 39.png" alt="icon">
         <span class="red-dot"></span>
@@ -345,7 +351,8 @@
 </footer>
 
 <script src="hotel.js"></script>
-<script src="script.js"></script>
+<script src="lang.js"></script>
+  <script src="script.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
@@ -404,5 +411,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 </script>
+
+<div id="userPanelOverlay" class="panel-overlay"></div>
+
+<aside id="userPanel" class="user-panel">
+  <div class="panel-header">
+    <h2>Профіль</h2>
+    <button id="closePanelBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  
+  <nav class="panel-nav">
+    <a href="wishlist.html" class="panel-link"><i class="fa-regular fa-heart"></i> Обране</a>
+    
+    <!-- My Events Dropdown -->
+    <a href="my-events.html" class="panel-link"><i class="fa-regular fa-calendar-check"></i> Мої події</a>
+
+    <a href="create-event.html" class="panel-link"><i class="fa-solid fa-plus"></i> Створити подію</a>
+    <a href="moderation.html" class="panel-link" style="color: var(--blue-dark); font-weight: 700; border-top: 1px solid #eee; margin-top: 10px; padding-top: 15px;">
+      <i class="fa-solid fa-user-shield"></i> Модерація
+    </a>
+  </nav>
+  
+  <div class="panel-footer">
+    <button class="panel-auth-btn login-btn" onclick="openAuthFromPanel('login')">Увійти</button>
+    <button class="panel-auth-btn register-btn" onclick="openAuthFromPanel('register')">Зареєструватися</button>
+  </div>
+</aside>
 </body>
 </html>

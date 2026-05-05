@@ -271,6 +271,11 @@ body {
     gap: 12px;
 }
 
+.language-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
 .language-btn {
     padding: 6px 16px;
     background: #E9E7F4;
@@ -278,6 +283,54 @@ body {
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: 0.2s;
+}
+
+.language-btn:hover {
+    background: #E0DEEC;
+}
+
+.language-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: white;
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 160px;
+    z-index: 1000;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.lang-option {
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: 0.2s;
+}
+
+.lang-option:hover {
+    background: #F0F7FF;
+    color: var(--blue-dark);
+}
+
+.lang-option.active {
+    background: #F0F7FF;
+    color: var(--blue-dark);
 }
 
 .icon-btn {

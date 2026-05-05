@@ -20,20 +20,113 @@
     </div>
 
     <div class="header-center">
-        <nav class="nav-menu">
-            <a href="index.html" class="nav-link">Головна</a>
-            <a href="wishlist.html" class="nav-link">Обране</a>
-            <a href="my-events.html" class="nav-link">Мої події</a>
-            <a href="profile.html" class="nav-link active">Профіль</a>
-        </nav>
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="Пошук подій ...">
+      </div>
+
+      <div class="header-filters">
+        <div class="filter-pill date-filter">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span id="header-date-text">Дата</span>
+          <input type="date" id="header-date">
+        </div>
+
+        <div class="filter-pill city-filter">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span class="city-filter-text">Місто</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <div class="city-dropdown hidden">
+            <button type="button" class="city-option">Львів</button>
+            <button type="button" class="city-option">Київ</button>
+            <button type="button" class="city-option">Одеса</button>
+            <button type="button" class="city-option">Харків</button>
+            <button type="button" class="city-reset">Усі міста</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="header-right">
-      <div class="language-btn">UA</div>
-      <div class="icon-btn">
-        <img src="images/Frame 39.png" alt="icon">
-        <span class="red-dot"></span>
+      <div class="language-dropdown-wrapper">
+        <div class="language-btn">UA <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></div>
+        <div class="language-dropdown hidden">
+          <button type="button" class="lang-option active">UA - Українська</button>
+          <button type="button" class="lang-option">EN - English</button>
+        </div>
       </div>
+      <div class="notifications-wrapper" style="position: relative;">
+        <div class="icon-btn" id="notifBtn">
+          <img src="images/Frame 39.png" alt="icon">
+          <span class="red-dot"></span>
+        </div>
+        
+        <!-- Premium Notifications Dropdown -->
+        <div id="notifDropdown" class="notif-dropdown hidden">
+          <div class="notif-header">
+            <h3>Сповіщення</h3>
+            <button class="mark-all-read">Прочитати всі</button>
+          </div>
+          
+          <div class="notif-categories">
+            <button class="notif-cat-btn active" data-cat="all">Все</button>
+            <button class="notif-cat-btn" data-cat="events">Заходи</button>
+            <button class="notif-cat-btn" data-cat="tickets">Квитки</button>
+            <button class="notif-cat-btn" data-cat="system">Система</button>
+          </div>
+
+          <div class="notif-list">
+            <div class="notif-item unread" data-category="events">
+              <div class="notif-icon" style="background: rgba(40, 84, 197, 0.1); color: var(--primary-premium);">
+                <i class="fa-solid fa-calendar-check"></i>
+              </div>
+              <div class="notif-content">
+                <p>Ваш захід <b>"Summer Fest"</b> розпочнеться через 2 години!</p>
+                <span>Тільки що</span>
+              </div>
+              <div class="unread-dot"></div>
+            </div>
+            
+            <div class="notif-item unread" data-category="tickets">
+              <div class="notif-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                <i class="fa-solid fa-ticket"></i>
+              </div>
+              <div class="notif-content">
+                <p>Ви успішно придбали квиток на <b>Концерт Океан Ельзи</b></p>
+                <span>15 хв тому</span>
+              </div>
+              <div class="unread-dot"></div>
+            </div>
+
+            <div class="notif-item" data-category="system">
+              <div class="notif-icon" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;">
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <div class="notif-content">
+                <p>Користувач <b>@rock_star</b> додав ваш захід до обраного</p>
+                <span>1 год тому</span>
+              </div>
+            </div>
+          </div>
+          <div class="notif-footer">
+            <a href="#">Переглянути всі сповіщення</a>
+          </div>
+        </div>
+      </div>
+
       <div class="icon-btn" id="profileBtn">
         <img src="images/Frame 38.png" alt="icon">
       </div>
@@ -74,10 +167,10 @@
             <div class="detail-block half">
               <h3>Валюта</h3>
               <div class="select-wrapper">
-                <select>
-                  <option>Гривня</option>
-                  <option>Долар</option>
-                  <option>Євро</option>
+                <select id="currency-select" onchange="if(typeof setCurrency === 'function') setCurrency(this.value)">
+                  <option value="uah">Гривня (₴)</option>
+                  <option value="usd">Долар ($)</option>
+                  <option value="eur">Євро (€)</option>
                 </select>
                 <i class="fa-solid fa-chevron-down"></i>
               </div>
@@ -266,7 +359,210 @@
     </div>
   </div>
 
+  <script src="lang.js"></script>
   <script src="script.js"></script>
+  <script src="profile.js"></script>
+
+<div id="authModal" class="modal-overlay" style="display: none;">
+    <div class="form-wrapper">
+      <span class="close-modal" id="closeModalBtn">&times;</span>
+
+      <form id="registrationForm" class="register-form" novalidate>
+        <div class="form-content register active">
+          <h1>Створити профіль</h1>
+          <input type="email" id="reg-email" placeholder="e-mail..." required>
+          <p class="error" id="email-error"></p>
+
+          <div class="password-wrapper">
+            <input type="password" id="reg-password" placeholder="Пароль..." required>
+            <span class="toggle-password">
+              <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                </path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </span>
+          </div>
+          <p class="error" id="password-error"></p>
+
+          <input type="text" id="reg-username" placeholder="@ім’я користувача" required>
+          <p class="error" id="username-error"></p>
+
+          <label class="checkbox">
+            <input type="checkbox"> Запам’ятати мене
+          </label>
+
+          <button type="submit" class="main-btn">Створити профіль</button>
+
+          <p class="or">або</p>
+
+          <button type="button" class="google-login">
+            <img src="images/гугл.webp" class="google-icon" alt="Google">
+            Ввійти з Google
+          </button>
+
+          <p class="login-link">
+            Вже маєте аккаунт?
+            <a href="#" class="switch-login">Увійти</a>
+          </p>
+        </div>
+
+        <div class="form-content login">
+          <h1>Вітаємо знову!</h1>
+          <input type="email" id="login-email" placeholder="e-mail..." required>
+          <p class="error" id="login-email-error"></p>
+
+          <div class="password-wrapper">
+            <input type="password" id="login-password" placeholder="Пароль..." required>
+            <span class="toggle-password">
+              <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                </path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </span>
+          </div>
+          <p class="error" id="login-password-error"></p>
+
+          <div class="checkbox-forgot">
+            <label class="checkbox">
+              <input type="checkbox"> Запам’ятати мене
+            </label>
+            <a href="#" class="forgot-password">Забули пароль?</a>
+          </div>
+
+          <button type="submit" class="main-btn">Увійти</button>
+
+          <p class="or">або</p>
+
+          <button type="button" class="google-login">
+            <img src="images/гугл.webp" class="google-icon" alt="Google">
+            Ввійти з Google
+          </button>
+
+          <p class="login-link">
+            Не маєте аккаунт?
+            <a href="#" class="switch-register">Створити</a>
+          </p>
+        </div>
+
+        <div class="form-content forgot">
+          <h1>Відновлення пароля</h1>
+          <input type="email" id="forgot-email" placeholder="e-mail..." required>
+          <p class="error" id="forgot-email-error"></p>
+          <button type="button" id="forgot-submit" class="main-btn">Скинути пароль</button>
+          <p class="login-link">
+            <a href="#" class="back-login">Повернутися до входу</a>
+          </p>
+        </div>
+
+        <div class="form-content verify">
+          <h1>Введіть код</h1>
+          <div class="code-inputs">
+            <input maxlength="1" class="code-box">
+            <input maxlength="1" class="code-box">
+            <input maxlength="1" class="code-box">
+            <input maxlength="1" class="code-box">
+          </div>
+          <button type="submit" class="main-btn">Підтвердити</button>
+          <p class="login-link">
+            <a href="#" class="back-login">Повернутися до входу</a>
+          </p>
+        </div>
+
+        <div class="form-content reset-password">
+          <h1>Підтвердження пароля</h1>
+          <div class="password-wrapper">
+            <input type="password" id="new-password" placeholder="Новий пароль..." required>
+            <span class="toggle-password">
+              <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                </path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </span>
+          </div>
+          <p class="error" id="new-password-error"></p>
+
+          <div class="password-wrapper">
+            <input type="password" id="confirm-password" placeholder="Підтвердження..." required>
+            <span class="toggle-password">
+              <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                </path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </span>
+          </div>
+          <p class="error" id="confirm-password-error"></p>
+
+          <button type="submit" class="main-btn">Підтвердити</button>
+          <p class="login-link">
+            <a href="#" class="back-login">Повернутися до входу</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<div id="userPanelOverlay" class="panel-overlay"></div>
+
+<aside id="userPanel" class="user-panel">
+  <div class="panel-header">
+    <h2>Профіль</h2>
+    <button id="closePanelBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  
+  <nav class="panel-nav">
+    <a href="wishlist.html" class="panel-link"><i class="fa-regular fa-heart"></i> Обране</a>
+    
+    <!-- My Events Dropdown -->
+    <a href="my-events.html" class="panel-link"><i class="fa-regular fa-calendar-check"></i> Мої події</a>
+
+    <a href="create-event.html" class="panel-link"><i class="fa-solid fa-plus"></i> Створити подію</a>
+    <a href="moderation.html" class="panel-link" style="color: var(--blue-dark); font-weight: 700; border-top: 1px solid #eee; margin-top: 10px; padding-top: 15px;">
+      <i class="fa-solid fa-user-shield"></i> Модерація
+    </a>
+  </nav>
+  
+  <div class="panel-footer">
+    <button class="panel-auth-btn login-btn" onclick="openAuthFromPanel('login')">Увійти</button>
+    <button class="panel-auth-btn register-btn" onclick="openAuthFromPanel('register')">Зареєструватися</button>
+  </div>
+</aside>
+  <script src="lang.js"></script>
   <script src="profile.js"></script>
 </body>
 </html>
