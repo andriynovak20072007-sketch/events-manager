@@ -48,6 +48,44 @@ jest.mock('../db', () => ({
             });
         }
 
+        // --- Обробка запитів для users ---
+
+        // SELECT користувача за ID
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('users') && trimmedSql.includes('user_id')) {
+            const userId = values[0];
+            // Імітуємо: юзер з ID=1 існує, решта — ні
+            if (parseInt(userId) === 1) {
+                return Promise.resolve({
+                    rows: [{
+                        user_id: 1,
+                        username: 'testuser',
+                        email: 'test@example.com',
+                        role: 'user',
+                        password_hash: '$2b$10$fakehash',
+                        created_at: '2026-01-01T00:00:00.000Z'
+                    }]
+                });
+            }
+            return Promise.resolve({ rows: [] });
+        }
+
+        // UPDATE користувача (профіль)
+        if (trimmedSql.startsWith('UPDATE') && trimmedSql.includes('users')) {
+            const lastValue = values[values.length - 1]; // user_id — завжди останній параметр
+            if (parseInt(lastValue) === 1) {
+                return Promise.resolve({
+                    rows: [{
+                        user_id: 1,
+                        username: values[0] || 'testuser',
+                        email: values[1] || 'test@example.com',
+                        role: values[2] || 'user',
+                        created_at: '2026-01-01T00:00:00.000Z'
+                    }]
+                });
+            }
+            return Promise.resolve({ rows: [] });
+        }
+
         // --- Обробка запитів для events (існуюча логіка) ---
         if (trimmedSql.startsWith('INSERT')) {
             return Promise.resolve({
@@ -280,6 +318,65 @@ describe('Тестування збереження мовних налашту�
         const uk = res.body.data.find(l => l.code === 'uk');
         expect(uk).toBeDefined();
         expect(uk.label).toEqual('Українська');
+    });
+
+});
+
+// =======================================================
+// ТЕСТУВАННЯ НАЛАШТУВАНЬ ПРОФІЛЮ (GET/PUT /api/users/:id)
+// =======================================================
+
+describe('Тестування налаштувань профілю користувача', () => {
+
+    it('TC-15: Отримання профілю існуючого користувача (GET)', async () => {
+        const res = await request(app)
+            .get('/api/users/1');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.id).toEqual(1);
+        expect(res.body.username).toEqual('testuser');
+        expect(res.body.email).toEqual('test@example.com');
+        expect(res.body.role).toEqual('user');
+    });
+
+    it('TC-16: Профіль неіснуючого користувача повертає 404', async () => {
+        const res = await request(app)
+            .get('/api/users/999');
+
+        expect(res.statusCode).toEqual(404);
+        expect(res.body.error).toBeDefined();
+    });
+
+    it('TC-17: Успішне оновлення профілю (PUT)', async () => {
+        const res = await request(app)
+            .put('/api/users/1')
+            .send({ username: 'new_name', email: 'new@example.com' });
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.msg).toContain('оновлено');
+        expect(res.body.user).toBeDefined();
+        expect(res.body.user.username).toEqual('new_name');
+    });
+
+    it('TC-18: Оновлення без даних повертає 400', async () => {
+        const res = await request(app)
+            .put('/api/users/1')
+            .send({});
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.error).toContain('Немає даних');
+    });
+
+    it('TC-19: DTO приховує password_hash від клієнта (GET)', async () => {
+        const res = await request(app)
+            .get('/api/users/1');
+
+        expect(res.statusCode).toEqual(200);
+        // UserDTO НЕ повинен повертати хеш пароля
+        expect(res.body.password_hash).toBeUndefined();
+        // Але має повертати безпечні поля
+        expect(res.body.id).toBeDefined();
+        expect(res.body.email).toBeDefined();
     });
 
 });
