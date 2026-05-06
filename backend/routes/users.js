@@ -1,187 +1,250 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db'); // Твоє підключення до бази PostgreSQL
+const pool = require('../db');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
-// ==========================================
-// ПАТЕРН: Singleton / Service Pattern
-// Виносимо логіку конвертації в окремий сервіс
-// ==========================================
-class CurrencyService {
-    constructor() {
-        // Базова валюта - UAH (Єдине джерело правди)
-        this.rates = {
-            'UAH': 1.00,
-            'USD': 40.50,
-            'EUR': 44.20
-        };
+// РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ РїРѕС€С‚Рё (РґР»СЏ СЂРѕР·СЂРѕР±РєРё РїРѕСЃРёР»Р°РЅРЅСЏ РїСЂРѕСЃС‚Рѕ РІРёРІРѕРґРёС‚СЊСЃСЏ РІ РєРѕРЅСЃРѕР»СЊ СЃРµСЂРІРµСЂР°)
+const transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    auth: {
+        user: 'test_user',
+        pass: 'test_pass'
     }
+});
 
-    // Метод конвертації будь-якої валюти в будь-яку
-    convert(amount, fromCurrency, toCurrency) {
-        if (!amount || amount <= 0) return 0;
-        
-        const fromRate = this.rates[(fromCurrency || 'UAH').toUpperCase()] || 1;
-        const toRate = this.rates[toCurrency.toUpperCase()];
+// Р”РѕРїРѕРјС–Р¶РЅР° С„СѓРЅРєС†С–СЏ: РїРµСЂРµРІС–СЂРєР° РїСЂР°РІРёР»СЊРЅРѕРіРѕ С„РѕСЂРјР°С‚Сѓ email
+const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
 
-        if (!toRate) return amount; // Якщо валюту не знайдено, повертаємо як є
-
-        // Математика: переводимо в гривню, а потім у цільову валюту
-        const amountInBase = amount * fromRate;
-        return (amountInBase / toRate).toFixed(2);
+// ==========================================
+// РџРђРўР•Р Рќ: Data Transfer Object (DTO)
+// Р’РёРєРѕСЂРёСЃС‚РѕРІСѓС”С‚СЊСЃСЏ РґР»СЏ Р±РµР·РїРµС‡РЅРѕС— РїРµСЂРµРґР°С‡С– РґР°РЅРёС… РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РєР»С–С”РЅС‚Сѓ
+// Р±РµР· СЂРѕР·РєСЂРёС‚С‚СЏ С‡СѓС‚Р»РёРІРѕС— С–РЅС„РѕСЂРјР°С†С–С— (РїР°СЂРѕР»С–, С‚РѕРєРµРЅРё)
+// ==========================================
+class UserDTO {
+    constructor(user) {
+        this.id = user.user_id;
+        this.username = user.username;
+        this.email = user.email;
+        this.role = user.role;
+        this.created_at = user.created_at;
+        // Р”РѕРґР°С‚РєРѕРІРѕ РјРѕР¶РЅР° РґРѕРґР°С‚Рё РїРѕР»СЏ, СЏРєС‰Рѕ РІРѕРЅРё Р·'СЏРІР»СЏС‚СЊСЃСЏ (Р°РІР°С‚Р°СЂ С‚РѕС‰Рѕ)
     }
 }
-// Створюємо єдиний екземпляр сервісу (Singleton)
-const currencyService = new CurrencyService();
 
-// =======================================================
-// 1. GET /events - Отримання всіх подій (Фільтр по регіону + Конвертація)
-// =======================================================
-router.get('/', async (req, res) => {
-    // Зчитуємо параметри з запиту
-    const { region, target_currency } = req.query;
-
+// ==========================================
+// 1. Р РћРЈРў Р Р•Р„РЎРўР РђР¦Р†Р‡ (POST /users/register)
+// ==========================================
+router.post('/register', async (req, res) => {
     try {
-        let queryText = 'SELECT * FROM events';
-        let queryParams = [];
+        const { username, email, password } = req.body;
 
-        // ТВОЯ ЛОГІКА: Якщо клієнт передав ?region=..., додаємо фільтрацію
-        if (region) {
-            queryText += ' WHERE region = $1';
-            queryParams.push(region);
+        // Р’РђР›Р†Р”РђР¦Р†РЇ 1: РћР±РѕРІ'СЏР·РєРѕРІС– РїРѕР»СЏ
+        if (!username || !email || !password) {
+            return res.status(400).json({ error: "Р’СЃС– РїРѕР»СЏ (username, email, password) С” РѕР±РѕРІ'СЏР·РєРѕРІРёРјРё" });
         }
 
-        const result = await pool.query(queryText, queryParams);
-        let events = result.rows;
-
-        // ЛОГІКА КОМАНДИ: Якщо користувач попросив іншу валюту
-        if (target_currency) {
-            events = events.map(event => {
-                if (event.price > 0) {
-                    return {
-                        ...event,
-                        // Використовуємо сервіс для розрахунку нової ціни
-                        display_price: currencyService.convert(event.price, event.currency, target_currency),
-                        display_currency: target_currency.toUpperCase()
-                    };
-                }
-                return event;
-            });
+        // Р’РђР›Р†Р”РђР¦Р†РЇ 2: РџСЂР°РІРёР»СЊРЅС–СЃС‚СЊ email
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ error: "РќРµРєРѕСЂРµРєС‚РЅРёР№ С„РѕСЂРјР°С‚ email Р°РґСЂРµСЃРё" });
         }
 
-        res.json(events);
-    } catch (err) {
-        console.error('Помилка отримання подій:', err.message);
-        res.status(500).send("Server error");
-    }
-});
+        // Р’РђР›Р†Р”РђР¦Р†РЇ 3: Р”РѕРІР¶РёРЅР° РїР°СЂРѕР»СЏ
+        if (password.length < 6) {
+            return res.status(400).json({ error: "РџР°СЂРѕР»СЊ РјР°С” РјС–СЃС‚РёС‚Рё С‰РѕРЅР°Р№РјРµРЅС€Рµ 6 СЃРёРјРІРѕР»С–РІ" });
+        }
 
-// ==========================================
-// 2. ЛОГІКА СПІВСТАВЛЕННЯ З ОБЛАСТЯМИ
-// ==========================================
-router.get('/filter', async (req, res) => {
-    const { region } = req.query;
-    try {
-        const result = await pool.query(
-            'SELECT * FROM events WHERE region = $1 AND is_private = FALSE ORDER BY event_day ASC', 
-            [region]
+        // РџР•Р Р•Р’Р†Р РљРђ РќРђ Р”РЈР‘Р›Р†РљРђРў
+        const userExists = await pool.query(
+            'SELECT * FROM users WHERE email = $1 OR username = $2', 
+            [email, username]
         );
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Помилка фільтрації за областю");
-    }
-});
+        
+        if (userExists.rows.length > 0) {
+            const existingUser = userExists.rows[0];
+            if (existingUser.email === email) {
+                return res.status(400).json({ error: "РљРѕСЂРёСЃС‚СѓРІР°С‡ Р· С‚Р°РєРёРј email РІР¶Рµ Р·Р°СЂРµС”СЃС‚СЂРѕРІР°РЅРёР№" });
+            }
+            if (existingUser.username === username) {
+                return res.status(400).json({ error: "Р¦Рµ С–Рј'СЏ РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РІР¶Рµ Р·Р°Р№РЅСЏС‚Рµ" });
+            }
+        }
 
-// ==========================================
-// 3. ЛОГІКА ДЛЯ МАРШРУТІВ (Точки А, Б, С)
-// ==========================================
-router.get('/route-data', async (req, res) => {
-    const { ids } = req.query;
-    if (!ids) return res.status(400).send("Не вказано ID подій для маршруту");
-    
-    const idArray = ids.split(',').map(Number);
-    try {
-        const result = await pool.query(
-            'SELECT event_id, title, latitude, longitude, region FROM events WHERE event_id = ANY($1)',
-            [idArray]
+        // РҐР•РЁРЈР’РђРќРќРЇ РџРђР РћР›РЇ
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        // Р“Р•РќР•Р РђР¦Р†РЇ РўРћРљР•РќРђ РђРљРўРР’РђР¦Р†Р‡
+        const activationToken = crypto.randomBytes(32).toString('hex');
+
+        // Р—Р‘Р•Р Р•Р–Р•РќРќРЇ Р’ Р‘РђР—РЈ Р”РђРќРРҐ
+        const newUser = await pool.query(
+            'INSERT INTO users (username, email, password_hash, activation_token) VALUES ($1, $2, $3, $4) RETURNING user_id, username, email',
+            [username, email, passwordHash, activationToken]
         );
-        res.json(result.rows);
+
+        const activationLink = `http://localhost:5000/users/activate/${activationToken}`;
+        
+        // РЎРёРјСѓР»СЏС†С–СЏ РІС–РґРїСЂР°РІРєРё Р»РёСЃС‚Р° (РІРёРІРѕРґРёРјРѕ РІ РєРѕРЅСЃРѕР»СЊ)
+        console.log(`\n=== РќРћР’РР™ РљРћР РРЎРўРЈР’РђР§ Р—РђР Р•Р„РЎРўР РћР’РђРќРР™ ===`);
+        console.log(`Email: ${email}`);
+        console.log(`РџРѕСЃРёР»Р°РЅРЅСЏ РґР»СЏ Р°РєС‚РёРІР°С†С–С—: ${activationLink}`);
+        console.log(`=========================================\n`);
+
+        res.status(201).json({ 
+            message: "Р РµС”СЃС‚СЂР°С†С–СЏ СѓСЃРїС–С€РЅР°! РџРµСЂРµРІС–СЂС‚Рµ РєРѕРЅСЃРѕР»СЊ СЃРµСЂРІРµСЂР° РґР»СЏ Р°РєС‚РёРІР°С†С–С— Р°РєР°СѓРЅС‚Р°.",
+            user: newUser.rows[0]
+        });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Помилка підготовки даних маршруту");
+        console.error(err.message);
+        res.status(500).json({ error: "Р’РЅСѓС‚СЂС–С€РЅСЏ РїРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё СЂРµС”СЃС‚СЂР°С†С–С—." });
     }
 });
 
-// =======================================================
-// 4. GET /events/:id - Отримання однієї події за ID
-// ВАЖЛИВО: Цей маршрут має бути СУВОРО ПІСЛЯ /filter та /route-data!
-// =======================================================
+// ==========================================
+// 2. Р РћРЈРў РђРљРўРР’РђР¦Р†Р‡ (GET /users/activate/:token)
+// ==========================================
+router.get('/activate/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const userResult = await pool.query('SELECT * FROM users WHERE activation_token = $1', [token]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(400).json({ error: "РџРѕСЃРёР»Р°РЅРЅСЏ РЅРµРґС–Р№СЃРЅРµ Р°Р±Рѕ Р°РєР°СѓРЅС‚ РІР¶Рµ Р°РєС‚РёРІРѕРІР°РЅРѕ." });
+        }
+
+        // РћРЅРѕРІР»СЋС”РјРѕ СЃС‚Р°С‚СѓСЃ РЅР° is_active = TRUE
+        await pool.query(
+            'UPDATE users SET is_active = TRUE, activation_token = NULL WHERE activation_token = $1',
+            [token]
+        );
+
+        res.send("<h1>РђРєР°СѓРЅС‚ СѓСЃРїС–С€РЅРѕ Р°РєС‚РёРІРѕРІР°РЅРѕ! рџЋ‰</h1><p>РўРµРїРµСЂ РІРё РјРѕР¶РµС‚Рµ СѓРІС–Р№С‚Рё РІ СЃРёСЃС‚РµРјСѓ.</p>");
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "РџРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё Р°РєС‚РёРІР°С†С–С—." });
+    }
+});
+
+
+
+// ==========================================
+// 3. Р—РђРџРРў РќРђ Р’Р†Р”РќРћР’Р›Р•РќРќРЇ РџРђР РћР›РЇ
+// ==========================================
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ error: "РљРѕСЂРёСЃС‚СѓРІР°С‡Р° Р· С‚Р°РєРёРј email РЅРµ Р·РЅР°Р№РґРµРЅРѕ." });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expireTime = new Date(Date.now() + 3600000); // +1 РіРѕРґРёРЅР°
+
+        await pool.query(
+            'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE email = $3',
+            [resetToken, expireTime, email]
+        );
+
+        const resetLink = `http://localhost:5000/users/reset-password/${resetToken}`;
+        console.log(`\n=== Р’Р†Р”РќРћР’Р›Р•РќРќРЇ РџРђР РћР›РЇ ===\nEmail: ${email}\nРџРѕСЃРёР»Р°РЅРЅСЏ: ${resetLink}\n==========================\n`);
+
+        res.json({ message: "Р›РёСЃС‚ Р· С–РЅСЃС‚СЂСѓРєС†С–СЏРјРё РІС–РґРїСЂР°РІР»РµРЅРѕ РЅР° РІР°С€Сѓ РїРѕС€С‚Сѓ (РїРµСЂРµРІС–СЂС‚Рµ РєРѕРЅСЃРѕР»СЊ)." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "РџРѕРјРёР»РєР° СЃРµСЂРІРµСЂР°." });
+    }
+});
+
+
+// ==========================================
+// 5. Р›РћР“Р†Рќ РљРћР РРЎРўРЈР’РђР§Рђ (Р’РҐР†Р”)
+// ==========================================
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // 1. РџРµСЂРµРІС–СЂСЏС”РјРѕ, С‡Рё РїРµСЂРµРґР°РЅС– РґР°РЅС–
+        if (!email || !password) {
+            return res.status(400).json({ error: "Р‘СѓРґСЊ Р»Р°СЃРєР°, РІРІРµРґС–С‚СЊ email С‚Р° РїР°СЂРѕР»СЊ." });
+        }
+
+        // 2. РЁСѓРєР°С”РјРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РІ Р±Р°Р·С–
+        const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userRes.rows.length === 0) {
+            return res.status(400).json({ error: "РќРµРїСЂР°РІРёР»СЊРЅРёР№ email Р°Р±Рѕ РїР°СЂРѕР»СЊ." });
+        }
+
+        const user = userRes.rows[0];
+
+        // 3. РџРµСЂРµРІС–СЂСЏС”РјРѕ РїР°СЂРѕР»СЊ (РїРѕСЂС–РІРЅСЋС”РјРѕ РІРІРµРґРµРЅРёР№ РїР°СЂРѕР»СЊ Р· С…РµС€РµРј Сѓ Р±Р°Р·С–)
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(400).json({ error: "РќРµРїСЂР°РІРёР»СЊРЅРёР№ email Р°Р±Рѕ РїР°СЂРѕР»СЊ." });
+        }
+
+        // 4. Р—Р°РїРёСЃСѓС”РјРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РІ РЎР•РЎР†Р®
+        req.session.user = {
+            id: user.user_id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        };
+
+        res.json({ 
+            message: "Р’С…С–Рґ СѓСЃРїС–С€РЅРёР№!", 
+            user: req.session.user 
+        });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "РџРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё РІС…РѕРґС–." });
+    }
+});
+
+// ==========================================
+// 6. Р›РћР“РђРЈРў (Р’РРҐР†Р” Р— РЎРРЎРўР•РњР)
+// ==========================================
+router.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: "РџРѕРјРёР»РєР° РїСЂРё РІРёС…РѕРґС– Р· СЃРёСЃС‚РµРјРё." });
+        }
+        res.clearCookie('connect.sid'); // Р’РёРґР°Р»СЏС”РјРѕ РєСѓРєС– СЃРµСЃС–С—
+        res.json({ message: "Р’Рё СѓСЃРїС–С€РЅРѕ РІРёР№С€Р»Рё Р· СЃРёСЃС‚РµРјРё." });
+    });
+});
+
+// ==========================================
+// 7. РћРўР РРњРђРќРќРЇ Р”РђРќРРҐ РљРћР РРЎРўРЈР’РђР§Рђ (GET /users/:id)
+// ==========================================
 router.get('/:id', async (req, res) => {
     try {
-        const eventId = req.params.id;
-        
-        const result = await pool.query('SELECT * FROM events WHERE id = $1', [eventId]);
-        
+        const userId = req.params.id;
+
+        const result = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
+
         if (result.rows.length === 0) {
-            return res.status(404).json({ msg: "Подію не знайдено" });
+            return res.status(404).json({ error: "РљРѕСЂРёСЃС‚СѓРІР°С‡Р° РЅРµ Р·РЅР°Р№РґРµРЅРѕ" });
         }
-        
-        res.json(result.rows[0]);
+
+        // Р’РёРєРѕСЂРёСЃС‚РѕРІСѓС”РјРѕ DTO РїР°С‚РµСЂРЅ РґР»СЏ С„РѕСЂРјР°С‚СѓРІР°РЅРЅСЏ РІРёС…С–РґРЅРёС… РґР°РЅРёС…
+        const userDTO = new UserDTO(result.rows[0]);
+
+        res.json(userDTO);
     } catch (err) {
-        console.error('Помилка отримання події за ID:', err.message);
-        res.status(500).send("Server error");
-    }
-});
-
-// ==========================================
-// 5. СТВОРЕННЯ НОВОЇ ПОДІЇ (POST)
-// ==========================================
-router.post('/', async (req, res) => {
-    const { 
-        title, description, event_day, start_time, end_time, 
-        latitude, longitude, category_id, creator_id,
-        region, is_private, price, currency 
-    } = req.body;
-
-    // --- ВАЛІДАЦІЯ ---
-    if (!title || title.trim().length < 5) {
-        return res.status(400).json({ error: "Назва занадто коротка (мін. 5 симв.)" });
-    }
-    if (!description || description.trim().length < 10) {
-        return res.status(400).json({ error: "Опис має бути не менше 10 символів" });
-    }
-    if (!event_day || !start_time || !end_time) {
-        return res.status(400).json({ error: "Дата та час обов'язкові" });
-    }
-    if (!creator_id) {
-        return res.status(400).json({ error: "Не вказано ID творця події" });
-    }
-    if (!region) {
-        return res.status(400).json({ error: "Обов'язково вкажіть область (region)" });
-    }
-
-    // Валідація ціни та валюти
-    const eventPrice = price !== undefined ? parseFloat(price) : 0.00;
-    if (eventPrice < 0) {
-        return res.status(400).json({ error: "Ціна не може бути від'ємною" });
-    }
-    const eventCurrency = currency ? currency.toUpperCase() : 'UAH';
-
-    try {
-        const query = `
-            INSERT INTO events (title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, is_private, price, currency) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
-            RETURNING *`;
-        
-        const eventIsPrivate = is_private !== undefined ? is_private : true;
-        
-        const values = [title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, eventIsPrivate, eventPrice, eventCurrency];
-        
-        const result = await pool.query(query, values);
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Помилка при створенні події в базі даних" });
+        console.error('РџРѕРјРёР»РєР° РѕС‚СЂРёРјР°РЅРЅСЏ РґР°РЅРёС… РєРѕСЂРёСЃС‚СѓРІР°С‡Р°:', err.message);
+        res.status(500).json({ error: "Р’РЅСѓС‚СЂС–С€РЅСЏ РїРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё РѕС‚СЂРёРјР°РЅРЅС– РїСЂРѕС„С–Р»СЋ." });
     }
 });
 
@@ -225,7 +288,7 @@ class UpdateQueryBuilder {
 }
 
 // ==========================================
-// 6. ОНОВЛЕННЯ ПРОФІЛЮ КОРИСТУВАЧА (PUT)
+// 8. ОНОВЛЕННЯ ПРОФІЛЮ КОРИСТУВАЧА (PUT)
 // ==========================================
 router.put('/:id', async (req, res) => {
     const userId = req.params.id;
@@ -257,5 +320,4 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Експорт роутера МАЄ БУТИ В САМОМУ КІНЦІ ФАЙЛУ
 module.exports = router;

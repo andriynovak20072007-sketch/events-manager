@@ -754,45 +754,45 @@ async function fetchNotifications() {
                 if (!n.is_read) hasUnread = true;
                 
                 const item = document.createElement('div');
-                item.style.cssText = \`
+                item.style.cssText = `
                     padding: 10px;
                     border-bottom: 1px solid #f0f0f0;
-                    background: \${n.is_read ? 'transparent' : '#f0f9ff'};
+                    background: ${n.is_read ? 'transparent' : '#f0f9ff'};
                     border-radius: 6px;
                     margin-bottom: 5px;
                     cursor: pointer;
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-start;
-                \`;
+                `;
                 
                 let iconStr = '<i class="fa-solid fa-bell" style="color: #00AAFF;"></i>';
                 if (n.type === 'invite') iconStr = '<i class="fa-solid fa-envelope" style="color: #F59E0B;"></i>';
                 else if (n.type === 'system') iconStr = '<i class="fa-solid fa-gear" style="color: #8B5CF6;"></i>';
 
-                item.innerHTML = \`
+                item.innerHTML = `
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <div style="font-size: 16px;">\${iconStr}</div>
+                        <div style="font-size: 16px;">${iconStr}</div>
                         <div>
-                            <p style="margin: 0; font-size: 14px; color: #333;">\${n.message}</p>
-                            <span style="font-size: 11px; color: #999;">\${new Date(n.created_at).toLocaleString()}</span>
+                            <p style="margin: 0; font-size: 14px; color: #333;">${n.message}</p>
+                            <span style="font-size: 11px; color: #999;">${new Date(n.created_at).toLocaleString()}</span>
                         </div>
                     </div>
-                    <button class="del-notif" data-id="\${n.notification_id}" style="border: none; background: transparent; color: #EF4444; cursor: pointer; padding: 5px;">
+                    <button class="del-notif" data-id="${n.notification_id}" style="border: none; background: transparent; color: #EF4444; cursor: pointer; padding: 5px;">
                         <i class="fa-solid fa-trash"></i>
                     </button>
-                \`;
+                `;
 
                 item.addEventListener('click', async (e) => {
                     if (e.target.closest('.del-notif')) return;
                     if (!n.is_read) {
-                        await fetch(\`http://localhost:5000/api/notifications/\${n.notification_id}/read\`, { method: 'PUT' });
+                        await fetch(`http://localhost:5000/api/notifications/${n.notification_id}/read`, { method: 'PUT' });
                         fetchNotifications();
                     }
                 });
 
                 item.querySelector('.del-notif').addEventListener('click', async () => {
-                    await fetch(\`http://localhost:5000/api/notifications/\${n.notification_id}\`, { method: 'DELETE' });
+                    await fetch(`http://localhost:5000/api/notifications/${n.notification_id}`, { method: 'DELETE' });
                     fetchNotifications();
                 });
 
