@@ -615,3 +615,196 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ==========================================
+// ІНТЕГРАЦІЯ GOOGLE AUTH
+// ==========================================
+const googleScript = document.createElement('script');
+googleScript.src = "https://accounts.google.com/gsi/client";
+googleScript.async = true;
+googleScript.defer = true;
+document.head.appendChild(googleScript);
+
+googleScript.onload = function() {
+    google.accounts.id.initialize({
+        client_id: 'YOUR_GOOGLE_CLIENT_ID', // ЗАМІНИТИ НА РЕАЛЬНИЙ КЛІЄНТ ID
+        callback: handleGoogleLogin
+    });
+
+    const googleLoginBtns = document.querySelectorAll('.google-login');
+    googleLoginBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            google.accounts.id.prompt();
+        });
+    });
+};
+
+async function handleGoogleLogin(response) {
+    try {
+        const res = await fetch('http://localhost:5000/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: response.credential })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert("Вхід успішний!");
+            localStorage.setItem('user', JSON.stringify(data.user));
+            const authModal = document.getElementById("authModal");
+            if (authModal) authModal.style.display = "none";
+            window.dispatchEvent(new Event('userLoginStateChanged'));
+        } else {
+            alert("Помилка входу: " + (data.error || "Невідома помилка"));
+        }
+    } catch (err) {
+        console.error("Google Auth error:", err);
+        alert("Помилка з'єднання з сервером.");
+    }
+}
+
+// ==========================================
+// ІНТЕГРАЦІЯ СПОВІЩЕНЬ (NOTIFICATIONS)
+// ПАТЕРН: Observer (Фронтенд підписник)
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const iconBtns = document.querySelectorAll('.header-right .icon-btn');
+    let bellBtn = null;
+    
+    iconBtns.forEach(btn => {
+        const img = btn.querySelector('img');
+        if (img && img.src.includes('Frame 39')) {
+            bellBtn = btn;
+        }
+    });
+
+    if (bellBtn) {
+        const notifDropdown = document.createElement('div');
+        notifDropdown.className = 'notifications-dropdown hidden';
+        notifDropdown.style.cssText = `
+            position: absolute;
+            top: 60px;
+            right: 80px;
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 9999;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            display: none;
+        `;
+        
+        const notifHeader = document.createElement('h3');
+        notifHeader.textContent = "Сповіщення";
+        notifHeader.style.cssText = "margin-top: 0; margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px;";
+        notifDropdown.appendChild(notifHeader);
+
+        const notifList = document.createElement('div');
+        notifList.id = 'notif-list';
+        notifDropdown.appendChild(notifList);
+
+        document.body.appendChild(notifDropdown);
+
+        bellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = notifDropdown.style.display === 'none';
+            notifDropdown.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) fetchNotifications();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!notifDropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+        
+        window.addEventListener('userLoginStateChanged', fetchNotifications);
+        fetchNotifications();
+    }
+});
+
+async function fetchNotifications() {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return;
+    
+    const user = JSON.parse(userStr);
+    const notifList = document.getElementById('notif-list');
+    
+    try {
+        const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
+        if (!res.ok) return;
+        
+        const notifications = await res.json();
+        
+        if (notifList) {
+            notifList.innerHTML = '';
+            
+            if (notifications.length === 0) {
+                notifList.innerHTML = '<p style="color: #777; text-align: center; font-size: 14px;">Немає нових сповіщень</p>';
+                document.querySelectorAll('.red-dot').forEach(dot => dot.style.display = 'none');
+                return;
+            }
+            
+            let hasUnread = false;
+
+            notifications.forEach(n => {
+                if (!n.is_read) hasUnread = true;
+                
+                const item = document.createElement('div');
+                item.style.cssText = \`
+                    padding: 10px;
+                    border-bottom: 1px solid #f0f0f0;
+                    background: \${n.is_read ? 'transparent' : '#f0f9ff'};
+                    border-radius: 6px;
+                    margin-bottom: 5px;
+                    cursor: pointer;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                \`;
+                
+                let iconStr = '<i class="fa-solid fa-bell" style="color: #00AAFF;"></i>';
+                if (n.type === 'invite') iconStr = '<i class="fa-solid fa-envelope" style="color: #F59E0B;"></i>';
+                else if (n.type === 'system') iconStr = '<i class="fa-solid fa-gear" style="color: #8B5CF6;"></i>';
+
+                item.innerHTML = \`
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="font-size: 16px;">\${iconStr}</div>
+                        <div>
+                            <p style="margin: 0; font-size: 14px; color: #333;">\${n.message}</p>
+                            <span style="font-size: 11px; color: #999;">\${new Date(n.created_at).toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <button class="del-notif" data-id="\${n.notification_id}" style="border: none; background: transparent; color: #EF4444; cursor: pointer; padding: 5px;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                \`;
+
+                item.addEventListener('click', async (e) => {
+                    if (e.target.closest('.del-notif')) return;
+                    if (!n.is_read) {
+                        await fetch(\`http://localhost:5000/api/notifications/\${n.notification_id}/read\`, { method: 'PUT' });
+                        fetchNotifications();
+                    }
+                });
+
+                item.querySelector('.del-notif').addEventListener('click', async () => {
+                    await fetch(\`http://localhost:5000/api/notifications/\${n.notification_id}\`, { method: 'DELETE' });
+                    fetchNotifications();
+                });
+
+                notifList.appendChild(item);
+            });
+
+            document.querySelectorAll('.red-dot').forEach(dot => {
+                dot.style.display = hasUnread ? 'block' : 'none';
+            });
+        }
+    } catch (err) {
+        console.error("Помилка завантаження сповіщень", err);
+    }
+}
+

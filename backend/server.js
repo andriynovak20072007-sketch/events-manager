@@ -14,6 +14,8 @@ const commentsRoutes = require('./routes/comments');
 const infoRoutes = require('./routes/info');
 const favoritesRoutes = require('./routes/favorite'); 
 const hotelsRoutes = require('./routes/hotels');
+const authRoutes = require('./routes/auth');
+const notificationsRoutes = require('./routes/notifications');
 
 // ==========================================
 // ІНІЦІАЛІЗАЦІЯ ФОНОВИХ ЗАВДАНЬ (CRON JOBS)
@@ -50,6 +52,8 @@ app.use('/api/info', infoRoutes);
 app.use('/api/favorites', favoritesRoutes); 
 app.use('/api/routes', require('./routes/routes')); // Виправив дублювання
 app.use('/api/hotels', hotelsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Базовий тестовий роут для перевірки працездатності
 app.get('/', (req, res) => {
