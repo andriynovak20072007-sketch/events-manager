@@ -179,3 +179,18 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ==========================================
+-- 8. НАЛАШТУВАННЯ КОРИСТУВАЧІВ (USER SETTINGS)
+-- ПАТЕРН: Key-Value Store
+-- Гнучка таблиця для зберігання будь-яких налаштувань
+-- (валюта, мова, тема тощо) без потреби міграцій
+-- ==========================================
+CREATE TABLE IF NOT EXISTS user_settings (
+    setting_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    setting_key VARCHAR(50) NOT NULL,
+    setting_value VARCHAR(255) NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, setting_key) -- Один ключ на одного юзера (для UPSERT)
+);
+
