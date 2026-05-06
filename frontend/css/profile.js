@@ -2,6 +2,27 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     
+    // ==========================================
+    // ЗАВАНТАЖЕННЯ ДАНИХ КОРИСТУВАЧА З localStorage
+    // ==========================================
+    const userData = JSON.parse(localStorage.getItem('user'));
+    
+    if (!userData) {
+        // Якщо користувач не залогінений — перенаправляємо на головну
+        alert('Будь ласка, увійдіть в акаунт');
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Заповнюємо профіль реальними даними
+    const profileName = document.querySelector('.profile-details h2');
+    const profileHandle = document.getElementById('displayProfileHandle');
+    const profileDesc = document.getElementById('displayProfileDesc');
+
+    if (profileName) profileName.textContent = userData.username || 'Користувач';
+    if (profileHandle) profileHandle.textContent = '@' + (userData.username || 'user');
+    if (profileDesc) profileDesc.textContent = `Email: ${userData.email || 'Не вказано'}`;
+
     // Handle heart button toggles
     const heartBtns = document.querySelectorAll('.heart-btn');
     heartBtns.forEach(btn => {
