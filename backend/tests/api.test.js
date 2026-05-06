@@ -219,3 +219,67 @@ describe('Тестування збереження валютних налаш�
     });
 
 });
+
+// =======================================================
+// ТЕСТУВАННЯ МОВНИХ НАЛАШТУВАНЬ (GET/PUT /api/settings)
+// =======================================================
+
+describe('Тестування збереження мовних налаштувань', () => {
+
+    it('TC-10: Успішне збереження мови користувача (PUT)', async () => {
+        const res = await request(app)
+            .put('/api/settings/1/language')
+            .send({ language: 'en' });
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data.language).toEqual('en');
+        expect(res.body.msg).toContain('збережено');
+    });
+
+    it('TC-11: Отримання збереженої мови (GET)', async () => {
+        await request(app)
+            .put('/api/settings/1/language')
+            .send({ language: 'pl' });
+
+        const res = await request(app)
+            .get('/api/settings/1/language');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data.language).toEqual('pl');
+        expect(res.body.data.user_id).toEqual(1);
+    });
+
+    it('TC-12: Відхилення невалідної мови (PUT → 400)', async () => {
+        const res = await request(app)
+            .put('/api/settings/1/language')
+            .send({ language: 'jp' });
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.error).toContain('Непідтримувана мова');
+    });
+
+    it('TC-13: Повернення дефолту (uk) якщо мову ще не обрано', async () => {
+        const res = await request(app)
+            .get('/api/settings/999/language');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.data.language).toEqual('uk');
+    });
+
+    it('TC-14: Отримання списку підтримуваних мов', async () => {
+        const res = await request(app)
+            .get('/api/settings/languages');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBeGreaterThanOrEqual(3);
+
+        const uk = res.body.data.find(l => l.code === 'uk');
+        expect(uk).toBeDefined();
+        expect(uk.label).toEqual('Українська');
+    });
+
+});
