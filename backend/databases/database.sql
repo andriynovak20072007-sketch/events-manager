@@ -158,4 +158,24 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO event_dev
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO event_dev;
 
 ALTER TABLE events ADD COLUMN image_url VARCHAR(255);
->>>>>>> 8b80f773fcb62d1ec7c9145f477c55789a06b36c:backend/databases/database.sql
+
+-- ==========================================
+-- ОНОВЛЕННЯ ДЛЯ GOOGLE AUTH
+-- ==========================================
+ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) UNIQUE;
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+
+-- ==========================================
+-- 7. СПОВІЩЕННЯ (NOTIFICATIONS)
+-- ПАТЕРН: Observer (в базі даних для зберігання подій)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL, -- 'system', 'invite', 'reminder'
+    message TEXT NOT NULL,
+    related_id INTEGER, -- ID події або іншого об'єкта
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
