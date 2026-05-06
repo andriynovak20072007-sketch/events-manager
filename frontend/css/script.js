@@ -521,16 +521,18 @@ document.addEventListener('DOMContentLoaded', () => {
         myEvents.forEach(event => {
             const card = document.createElement('div');
             card.className = 'my-event-card';
-            card.style.paddingBottom = '10px';
-            card.style.borderBottom = '1px solid #E2E8F0';
             card.innerHTML = `
-                <div style="color: #1E293B; font-weight: 600; font-size: 14px; margin-bottom: 4px;">${event.title}</div>
-                <div style="font-size: 12px; color: ${event.statusColor}; margin-bottom: 8px; font-weight: 500;"><i class="fa-solid ${event.statusIcon}"></i> ${event.status}</div>
-                <div style="display: flex; gap: 8px;">
-                  <a href="create-event.html?id=${event.id}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #00AAFF; text-decoration: none; padding: 5px 10px; border: 1px solid #BAE6FD; border-radius: 6px; background: white; transition: all 0.2s; cursor: pointer;">
+                <div class="my-event-info">
+                    <div class="my-event-title">${event.title}</div>
+                    <div class="my-event-status" style="color: ${event.statusColor}">
+                        <i class="fa-solid ${event.statusIcon}"></i> ${event.status}
+                    </div>
+                </div>
+                <div class="my-event-actions">
+                  <a href="create-event.html?id=${event.id}" class="my-event-action-btn edit">
                     <i class="fa-solid fa-pen-to-square"></i> Редагувати
                   </a>
-                  <button type="button" class="delete-my-event-btn" data-id="${event.id}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #EF4444; border: 1px solid #FECACA; border-radius: 6px; background: white; padding: 5px 10px; cursor: pointer; transition: all 0.2s;">
+                  <button type="button" class="my-event-action-btn delete delete-my-event-btn" data-id="${event.id}">
                     <i class="fa-solid fa-trash"></i> Видалити
                   </button>
                 </div>

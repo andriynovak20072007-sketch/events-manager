@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="events.css">
+  <!-- Vue 3 Framework -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
 
@@ -78,9 +80,8 @@
           <button type="button" class="lang-option">EN - English</button>
         </div>
       </div>
-      <div class="icon-btn">
-        <img src="images/Frame 39.png" alt="icon">
-        <span class="red-dot"></span>
+      <div class="notifications-wrapper" style="position: relative;">
+        <!-- Notification UI will be mounted here by Vue -->
       </div>
       <div class="icon-btn" id="profileBtn">
         <img src="images/Frame 38.png" alt="icon">
@@ -352,7 +353,8 @@
 
 <script src="hotel.js"></script>
 <script src="lang.js"></script>
-  <script src="script.js"></script>
+<script src="notifications-v2.js"></script>
+<script src="script.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);

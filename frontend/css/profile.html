@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="profile.css">
+  <!-- Vue 3 Framework -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 
 <body>
@@ -20,44 +22,12 @@
     </div>
 
     <div class="header-center">
-      <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" placeholder="Пошук подій ...">
-      </div>
-
-      <div class="header-filters">
-        <div class="filter-pill date-filter">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span id="header-date-text">Дата</span>
-          <input type="date" id="header-date">
-        </div>
-
-        <div class="filter-pill city-filter">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          <span class="city-filter-text">Місто</span>
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-          <div class="city-dropdown hidden">
-            <button type="button" class="city-option">Львів</button>
-            <button type="button" class="city-option">Київ</button>
-            <button type="button" class="city-option">Одеса</button>
-            <button type="button" class="city-option">Харків</button>
-            <button type="button" class="city-reset">Усі міста</button>
-          </div>
-        </div>
-      </div>
+      <nav class="header-nav">
+        <a href="index.html" class="nav-link">Головна</a>
+        <a href="wishlist.html" class="nav-link">Обране</a>
+        <a href="my-events.html" class="nav-link">Мої події</a>
+        <a href="profile.html" class="nav-link active">Профіль</a>
+      </nav>
     </div>
 
     <div class="header-right">
@@ -69,62 +39,7 @@
         </div>
       </div>
       <div class="notifications-wrapper" style="position: relative;">
-        <div class="icon-btn" id="notifBtn">
-          <img src="images/Frame 39.png" alt="icon">
-          <span class="red-dot"></span>
-        </div>
-        
-        <!-- Premium Notifications Dropdown -->
-        <div id="notifDropdown" class="notif-dropdown hidden">
-          <div class="notif-header">
-            <h3>Сповіщення</h3>
-            <button class="mark-all-read">Прочитати всі</button>
-          </div>
-          
-          <div class="notif-categories">
-            <button class="notif-cat-btn active" data-cat="all">Все</button>
-            <button class="notif-cat-btn" data-cat="events">Заходи</button>
-            <button class="notif-cat-btn" data-cat="tickets">Квитки</button>
-            <button class="notif-cat-btn" data-cat="system">Система</button>
-          </div>
-
-          <div class="notif-list">
-            <div class="notif-item unread" data-category="events">
-              <div class="notif-icon" style="background: rgba(40, 84, 197, 0.1); color: var(--primary-premium);">
-                <i class="fa-solid fa-calendar-check"></i>
-              </div>
-              <div class="notif-content">
-                <p>Ваш захід <b>"Summer Fest"</b> розпочнеться через 2 години!</p>
-                <span>Тільки що</span>
-              </div>
-              <div class="unread-dot"></div>
-            </div>
-            
-            <div class="notif-item unread" data-category="tickets">
-              <div class="notif-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
-                <i class="fa-solid fa-ticket"></i>
-              </div>
-              <div class="notif-content">
-                <p>Ви успішно придбали квиток на <b>Концерт Океан Ельзи</b></p>
-                <span>15 хв тому</span>
-              </div>
-              <div class="unread-dot"></div>
-            </div>
-
-            <div class="notif-item" data-category="system">
-              <div class="notif-icon" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;">
-                <i class="fa-solid fa-star"></i>
-              </div>
-              <div class="notif-content">
-                <p>Користувач <b>@rock_star</b> додав ваш захід до обраного</p>
-                <span>1 год тому</span>
-              </div>
-            </div>
-          </div>
-          <div class="notif-footer">
-            <a href="#">Переглянути всі сповіщення</a>
-          </div>
-        </div>
+        <!-- Notification UI will be mounted here by Vue -->
       </div>
 
       <div class="icon-btn" id="profileBtn">
@@ -563,6 +478,8 @@
   </div>
 </aside>
   <script src="lang.js"></script>
+  <script src="notifications-v2.js"></script>
+  <script src="script.js"></script>
   <script src="profile.js"></script>
 </body>
 </html>
