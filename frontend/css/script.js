@@ -1,4 +1,138 @@
 console.log("JS підключений");
+
+// ==========================================
+// КРАСИВЕ ПОВІДОМЛЕННЯ (замість alert)
+// ==========================================
+function showNotification(message, type = 'success') {
+    // Видаляємо попереднє повідомлення, якщо є
+    const existing = document.querySelector('.custom-notification');
+    if (existing) existing.remove();
+
+    const icons = {
+        success: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 12l2.5 2.5L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        error: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        info: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        warning: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 20h20L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 15v-4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+    };
+
+    const colors = {
+        success: { bg: 'linear-gradient(135deg, #10B981, #059669)', glow: 'rgba(16, 185, 129, 0.3)' },
+        error: { bg: 'linear-gradient(135deg, #EF4444, #DC2626)', glow: 'rgba(239, 68, 68, 0.3)' },
+        info: { bg: 'linear-gradient(135deg, #3B82F6, #2563EB)', glow: 'rgba(59, 130, 246, 0.3)' },
+        warning: { bg: 'linear-gradient(135deg, #F59E0B, #D97706)', glow: 'rgba(245, 158, 11, 0.3)' }
+    };
+
+    const notif = document.createElement('div');
+    notif.className = 'custom-notification';
+    notif.innerHTML = `
+        <div class="notif-icon">${icons[type] || icons.info}</div>
+        <div class="notif-text">${message}</div>
+        <button class="notif-close" onclick="this.parentElement.classList.add('notif-hide'); setTimeout(() => this.parentElement.remove(), 400)">&times;</button>
+        <div class="notif-progress"></div>
+    `;
+
+    // Додаємо стилі, якщо їх ще немає
+    if (!document.getElementById('notifStyles')) {
+        const style = document.createElement('style');
+        style.id = 'notifStyles';
+        style.textContent = `
+            .custom-notification {
+                position: fixed;
+                top: 30px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-20px);
+                background: white;
+                color: #1a1a2e;
+                padding: 16px 48px 16px 20px;
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                z-index: 100000;
+                font-family: 'Montserrat', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                min-width: 300px;
+                max-width: 500px;
+                animation: notifSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                overflow: hidden;
+                backdrop-filter: blur(20px);
+            }
+            .custom-notification.notif-hide {
+                animation: notifSlideOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+            }
+            .notif-icon {
+                flex-shrink: 0;
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+            }
+            .notif-text {
+                flex: 1;
+                line-height: 1.4;
+            }
+            .notif-close {
+                position: absolute;
+                top: 8px;
+                right: 12px;
+                background: none;
+                border: none;
+                font-size: 20px;
+                color: #999;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 8px;
+                transition: all 0.2s;
+            }
+            .notif-close:hover {
+                background: rgba(0,0,0,0.05);
+                color: #333;
+            }
+            .notif-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 3px;
+                border-radius: 0 0 16px 16px;
+                animation: notifProgress 4s linear forwards;
+            }
+            @keyframes notifSlideIn {
+                from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+            @keyframes notifSlideOut {
+                from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                to { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+            }
+            @keyframes notifProgress {
+                from { width: 100%; }
+                to { width: 0%; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Застосовуємо колір до іконки та прогрес-бару
+    const config = colors[type] || colors.info;
+    notif.querySelector('.notif-icon').style.background = config.bg;
+    notif.querySelector('.notif-progress').style.background = config.bg;
+    notif.style.boxShadow = `0 20px 60px rgba(0,0,0,0.15), 0 0 30px ${config.glow}`;
+
+    document.body.appendChild(notif);
+
+    // Автоматичне зникнення через 4 секунди
+    setTimeout(() => {
+        if (notif.parentElement) {
+            notif.classList.add('notif-hide');
+            setTimeout(() => notif.remove(), 400);
+        }
+    }, 4000);
+}
 const form = document.getElementById("registrationForm");
 
 // Форми 
@@ -230,7 +364,7 @@ if (forgotSubmitBtn) {
 
     if (!valid) return;
 
-    alert("Код відправлено на email");
+    showNotification("Код відправлено на email", "info");
     showForm("verify");
   });
 }
@@ -260,14 +394,14 @@ if (form) {
         });
         const data = await res.json();
         if (!res.ok) {
-          alert("Помилка реєстрації: " + (data.error || "Невідома помилка"));
+          showNotification("Помилка реєстрації: " + (data.error || "Невідома помилка"), "error");
         } else {
-          alert(data.message || "Реєстрація успішна! Перевірте консоль сервера для активації.");
+          showNotification(data.message || "Реєстрація успішна! 🎉", "success");
           showForm("login");
         }
       } catch (err) {
         console.error(err);
-        alert("Помилка з'єднання з сервером.");
+        showNotification("Помилка з'єднання з сервером.", "error");
       }
     }
 
@@ -290,9 +424,9 @@ if (form) {
         });
         const data = await res.json();
         if (!res.ok) {
-          alert("Помилка входу: " + (data.error || "Невідома помилка"));
+          showNotification("Помилка входу: " + (data.error || "Невідома помилка"), "error");
         } else {
-          alert("Вхід успішний!");
+          showNotification("Вхід успішний! Ласкаво просимо 👋", "success");
           localStorage.setItem('user', JSON.stringify(data.user));
           const authModal = document.getElementById("authModal");
           if (authModal) authModal.style.display = "none";
@@ -301,7 +435,7 @@ if (form) {
         }
       } catch (err) {
         console.error(err);
-        alert("Помилка з'єднання з сервером.");
+        showNotification("Помилка з'єднання з сервером.", "error");
       }
     }
 
@@ -311,7 +445,7 @@ if (form) {
       codeBoxes.forEach(box => code += box.value);
 
       if (code.length !== 4) {
-        alert("Введіть 4 цифри коду");
+        showNotification("Введіть 4 цифри коду", "warning");
         return;
       }
 
@@ -327,7 +461,7 @@ if (form) {
 
       if (!valid) return;
 
-      alert("Пароль змінено ✅");
+      showNotification("Пароль успішно змінено! 🔐", "success");
       showForm("login");
     }
   });
@@ -423,7 +557,7 @@ if (promoForm) {
     if (!validateEmail(promoEmail, promoEmailError)) valid = false;
 
     if (valid) {
-      alert("Ваша заявка успішно відправлена! Ми зв'яжемося з вами.");
+      showNotification("Ваша заявка успішно відправлена! Ми зв'яжемося з вами. 📩", "success");
       promoForm.reset();
     }
   });
@@ -627,7 +761,7 @@ document.head.appendChild(googleScript);
 
 googleScript.onload = function() {
     google.accounts.id.initialize({
-        client_id: 'YOUR_GOOGLE_CLIENT_ID', // ЗАМІНИТИ НА РЕАЛЬНИЙ КЛІЄНТ ID
+        client_id: '434377100313-pfs5ti7gdh0oi19o1vtd7oes099if5hs.apps.googleusercontent.com', 
         callback: handleGoogleLogin
     });
 
@@ -649,17 +783,17 @@ async function handleGoogleLogin(response) {
         const data = await res.json();
         
         if (res.ok) {
-            alert("Вхід успішний!");
+            showNotification("Вхід через Google успішний! 🎉", "success");
             localStorage.setItem('user', JSON.stringify(data.user));
             const authModal = document.getElementById("authModal");
             if (authModal) authModal.style.display = "none";
             window.dispatchEvent(new Event('userLoginStateChanged'));
         } else {
-            alert("Помилка входу: " + (data.error || "Невідома помилка"));
+            showNotification("Помилка входу: " + (data.error || "Невідома помилка"), "error");
         }
     } catch (err) {
         console.error("Google Auth error:", err);
-        alert("Помилка з'єднання з сервером.");
+        showNotification("Помилка з'єднання з сервером.", "error");
     }
 }
 
