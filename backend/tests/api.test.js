@@ -3,11 +3,53 @@ const request = require('supertest');
 // Мокаємо cron, щоб він не підключався до БД
 jest.mock('../cron/cleanup', () => { });
 
-// Мокаємо pool (БД), щоб тести працювали без реального PostgreSQL
+// google-auth-library мокається автоматично через __mocks__/google-auth-library.js
+
+// Внутрішнє сховище для імітації таблиці user_settings (In-Memory)
+const settingsStore = {};
+
 jest.mock('../db', () => ({
     query: jest.fn((sql, values) => {
-        // Для INSERT запитів — повертаємо об'єкт з переданими даними
-        if (typeof sql === 'string' && sql.trim().startsWith('INSERT')) {
+        const trimmedSql = typeof sql === 'string' ? sql.trim() : '';
+
+        // --- Обробка запитів для user_settings ---
+
+        // SELECT (отримання налаштування)
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('user_settings')) {
+            const userId = values[0];
+            const key = values[1];
+            const storeKey = `${userId}:${key}`;
+            
+            if (settingsStore[storeKey]) {
+                return Promise.resolve({
+                    rows: [{ setting_value: settingsStore[storeKey] }]
+                });
+            }
+            return Promise.resolve({ rows: [] });
+        }
+
+        // INSERT ON CONFLICT (UPSERT — збереження налаштування)
+        if (trimmedSql.startsWith('INSERT') && trimmedSql.includes('user_settings')) {
+            const userId = values[0];
+            const key = values[1];
+            const value = values[2];
+            const storeKey = `${userId}:${key}`;
+            
+            settingsStore[storeKey] = value;
+            
+            return Promise.resolve({
+                rows: [{
+                    setting_id: 1,
+                    user_id: userId,
+                    setting_key: key,
+                    setting_value: value,
+                    updated_at: new Date().toISOString()
+                }]
+            });
+        }
+
+        // --- Обробка запитів для events (існуюча логіка) ---
+        if (trimmedSql.startsWith('INSERT')) {
             return Promise.resolve({
                 rows: [{
                     event_id: 1,
@@ -27,12 +69,18 @@ jest.mock('../db', () => ({
                 }]
             });
         }
+
         return Promise.resolve({ rows: [] });
     }),
     connect: jest.fn()
 }));
 
 const app = require('../server');
+
+// Очищаємо in-memory store між тестами
+beforeEach(() => {
+    Object.keys(settingsStore).forEach(key => delete settingsStore[key]);
+});
 
 // =======================================================
 // ТЕСТУВАННЯ ФОРМИ СТВОРЕННЯ ПОДІЇ (POST /events)
@@ -101,6 +149,73 @@ describe('Тестування обробки даних з форми ство�
 
         expect(res.statusCode).toEqual(400);
         expect(res.body.error).toContain("Ціна не може бути від'ємною");
+    });
+
+});
+
+// =======================================================
+// ТЕСТУВАННЯ ВАЛЮТНИХ НАЛАШТУВАНЬ (GET/PUT /api/settings)
+// =======================================================
+
+describe('Тестування збереження валютних налаштувань', () => {
+
+    it('TC-05: Успішне збереження валюти користувача (PUT)', async () => {
+        const res = await request(app)
+            .put('/api/settings/1/currency')
+            .send({ currency: 'USD' });
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data.currency).toEqual('USD');
+        expect(res.body.msg).toContain('збережено');
+    });
+
+    it('TC-06: Отримання збереженої валюти (GET)', async () => {
+        // Спочатку зберігаємо
+        await request(app)
+            .put('/api/settings/1/currency')
+            .send({ currency: 'EUR' });
+
+        // Потім отримуємо
+        const res = await request(app)
+            .get('/api/settings/1/currency');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data.currency).toEqual('EUR');
+        expect(res.body.data.user_id).toEqual(1);
+    });
+
+    it('TC-07: Відхилення невалідної валюти (PUT → 400)', async () => {
+        const res = await request(app)
+            .put('/api/settings/1/currency')
+            .send({ currency: 'BTC' });
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.error).toContain('Непідтримувана валюта');
+    });
+
+    it('TC-08: Повернення дефолту (UAH) якщо налаштувань ще немає', async () => {
+        const res = await request(app)
+            .get('/api/settings/999/currency');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.data.currency).toEqual('UAH');
+    });
+
+    it('TC-09: Отримання списку підтримуваних валют', async () => {
+        const res = await request(app)
+            .get('/api/settings/currencies');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.data.length).toBeGreaterThanOrEqual(3);
+
+        const uah = res.body.data.find(c => c.code === 'UAH');
+        expect(uah).toBeDefined();
+        expect(uah.label).toContain('Гривня');
+        expect(uah.rate).toEqual(1);
     });
 
 });
