@@ -5,9 +5,27 @@ const upload = require('../middleware/upload'); // 🟢 Підключаємо M
 
 // ==========================================
 // ПАТЕРН 1: Singleton / Service Pattern
-// Логіка конвертації валют (імпортована зі спільного сервісу)
+// Логіка конвертації валют
 // ==========================================
-const currencyService = require('../services/CurrencyService');
+class CurrencyService {
+    constructor() {
+        this.rates = {
+            'UAH': 1.00,
+            'USD': 40.50,
+            'EUR': 44.20
+        };
+    }
+
+    convert(amount, fromCurrency, toCurrency) {
+        if (!amount || amount <= 0) return 0;
+        const fromRate = this.rates[(fromCurrency || 'UAH').toUpperCase()] || 1;
+        const toRate = this.rates[toCurrency.toUpperCase()];
+        if (!toRate) return amount;
+        const amountInBase = amount * fromRate;
+        return (amountInBase / toRate).toFixed(2);
+    }
+}
+const currencyService = new CurrencyService();
 
 // ==========================================
 // ПАТЕРН 1.1: Service Pattern
