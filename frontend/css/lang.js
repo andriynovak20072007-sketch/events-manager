@@ -253,6 +253,9 @@ function applyLanguage(lang) {
 
   walkAndTranslate(document.body, lang);
   applyCurrency();
+  
+  // Додано: Повідомляємо інші скрипти (наприклад, events.js), що мова змінилася
+  window.dispatchEvent(new Event('languageChanged'));
 }
 
 function applyCurrency() {

@@ -808,3 +808,195 @@ async function fetchNotifications() {
     }
 }
 
+// --- User Panel Calendar Dropdown ---
+document.addEventListener('DOMContentLoaded', () => {
+    const calendarBtn = document.getElementById('panelCalendarBtn');
+    const calendarPopup = document.getElementById('panelCalendarPopup');
+    const chevron = calendarBtn?.querySelector('.calendar-chevron');
+    
+    if (!calendarBtn || !calendarPopup) return;
+
+    // Toggle popup
+    calendarBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isHidden = calendarPopup.classList.contains('hidden');
+        
+        if (isHidden) {
+            calendarPopup.classList.remove('hidden');
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+        } else {
+            calendarPopup.classList.add('hidden');
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    // Calendar logic
+    const calPrev = document.getElementById('p-cal-prev');
+    const calNext = document.getElementById('p-cal-next');
+    const calMonthYear = document.getElementById('p-cal-month-year');
+    const calGrid = document.getElementById('p-cal-grid');
+
+    const monthsUA = [
+        'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+        'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
+    ];
+
+    let currentDate = new Date();
+    let selectedDate = null;
+    let eventsByDate = {};
+
+    async function fetchCalendarEvents() {
+        try {
+            const res = await fetch('http://localhost:5000/api/events');
+            if (res.ok) {
+                const data = await res.json();
+                processEventsData(data);
+            } else {
+                throw new Error("Failed to load");
+            }
+        } catch (e) {
+            const mock = [
+                { event_id: 'fest1', event_day: '2026-04-28', title: 'Фестиваль "Summer Fest"', start_time: '18:00', img: 'images/fest1..png' },
+                { event_id: 'fest2', event_day: '2026-05-30', title: 'Фестиваль "Fest"', start_time: '19:00', img: 'images/fest2.png' },
+                { event_id: 'fest3', event_day: '2026-06-15', title: 'Музичний "Summer"', start_time: '20:00', img: 'images/fest3.png' },
+                { event_id: 'lecture1', event_day: '2026-05-20', title: 'ІТ Конференція "CodeX"', start_time: '10:00', img: 'images/event-1.webp' },
+                { event_id: 'lecture2', event_day: '2026-06-11', title: 'Майстер-клас "UX Story"', start_time: '16:00', img: 'images/event-2.jpg' },
+                { event_id: 'lecture3', event_day: '2026-06-06', title: 'Лекція "Наука в ІТ"', start_time: '14:00', img: 'images/event-3.jpg' },
+                { event_id: 'concert1', event_day: '2026-05-12', title: 'Концерт "Нічний Джем"', start_time: '19:00', img: 'images/event-1.webp' },
+                { event_id: 'concert2', event_day: '2026-05-18', title: 'Рок-фестиваль "City Beat"', start_time: '20:00', img: 'images/event-2.jpg' },
+                { event_id: 'concert3', event_day: '2026-06-03', title: 'Jazz Night "Odessa Vibes"', start_time: '19:30', img: 'images/event-3.jpg' },
+                { event_id: 'sport1', event_day: '2026-05-08', title: 'Матч "Динамо" - "Шахтар"', start_time: '17:00', img: 'images/event-1.webp' },
+                { event_id: 'sport2', event_day: '2026-05-22', title: 'Біг по парку "Lviv Run"', start_time: '09:00', img: 'images/event-2.jpg' },
+                { event_id: 'sport3', event_day: '2026-05-27', title: 'Велокрос у Харкові', start_time: '11:00', img: 'images/event-3.jpg' }
+            ];
+            processEventsData(mock);
+        }
+    }
+
+    function processEventsData(data) {
+        eventsByDate = {};
+        data.forEach(ev => {
+            if (!ev.event_day) return;
+            const d = new Date(ev.event_day);
+            if (isNaN(d.getTime())) return;
+            const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            if (!eventsByDate[ds]) eventsByDate[ds] = [];
+            eventsByDate[ds].push(ev);
+        });
+        renderCalendar(currentDate);
+        
+        // Populate initially with today if there are events
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        updateEventsList(todayStr);
+    }
+
+    function updateEventsList(dateString) {
+        const eventsList = document.getElementById('p-cal-events-list');
+        const selectedDateTitle = document.getElementById('p-cal-selected-date-title');
+        if (!eventsList || !selectedDateTitle) return;
+
+        const parts = dateString.split('-');
+        selectedDateTitle.textContent = `Події на ${parts[2]}.${parts[1]}.${parts[0]}:`;
+
+        eventsList.innerHTML = '';
+        
+        const dayEvents = eventsByDate[dateString];
+        if (!dayEvents || dayEvents.length === 0) {
+            eventsList.innerHTML = '<div class="p-cal-no-events">Немає подій на цю дату</div>';
+            return;
+        }
+
+        dayEvents.forEach(ev => {
+            const item = document.createElement('a');
+            item.className = 'p-cal-event-item';
+            item.href = ev.event_id ? `events.html?event=${ev.event_id}` : '#';
+            
+            const img = ev.custom_image || ev.img || 'images/fest1..png';
+            const time = ev.start_time || 'Час не вказано';
+            const title = ev.title || 'Подія';
+
+            item.innerHTML = `
+                <div class="p-cal-event-icon" style="background-image: url('${img}')"></div>
+                <div class="p-cal-event-info">
+                    <span class="p-cal-event-title">${title}</span>
+                    <span class="p-cal-event-time"><i class="fa-regular fa-clock"></i> ${time}</span>
+                </div>
+            `;
+            eventsList.appendChild(item);
+        });
+    }
+
+    function renderCalendar(date) {
+        if (!calGrid) return;
+        calGrid.innerHTML = '';
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        
+        calMonthYear.textContent = `${monthsUA[month]} ${year}`;
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        let firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
+
+        for (let i = 0; i < firstDayIndex; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'p-cal-day empty';
+            calGrid.appendChild(emptyDiv);
+        }
+
+        const today = new Date();
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'p-cal-day';
+            
+            const numSpan = document.createElement('span');
+            numSpan.textContent = i;
+            dayDiv.appendChild(numSpan);
+
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            if (eventsByDate[dateString]) {
+                const dot = document.createElement('div');
+                dot.className = 'event-dot';
+                dayDiv.appendChild(dot);
+                
+                dayDiv.title = eventsByDate[dateString].map(e => e.title).join('\n');
+            }
+
+            if (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) {
+                dayDiv.classList.add('today');
+            }
+
+            if (selectedDate && year === selectedDate.getFullYear() && month === selectedDate.getMonth() && i === selectedDate.getDate()) {
+                dayDiv.classList.add('selected');
+            }
+
+            dayDiv.addEventListener('click', () => {
+                document.querySelectorAll('#p-cal-grid .p-cal-day').forEach(el => el.classList.remove('selected'));
+                dayDiv.classList.add('selected');
+                selectedDate = new Date(year, month, i);
+                
+                updateEventsList(dateString);
+            });
+
+            calGrid.appendChild(dayDiv);
+        }
+    }
+
+    fetchCalendarEvents();
+
+    calPrev?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar(currentDate);
+    });
+
+    calNext?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar(currentDate);
+    });
+});
+

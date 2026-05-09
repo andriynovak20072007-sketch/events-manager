@@ -2258,3 +2258,213 @@ input.input-error {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
 }
+
+/* Panel Calendar Popup Styles */
+.panel-calendar-popup {
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  margin: 10px 0 15px 0;
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.panel-calendar-popup.hidden {
+  display: none;
+}
+
+.p-calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.p-cal-btn {
+  background: #F1F5F9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.p-cal-btn:hover {
+  background: #2854C5;
+  color: white;
+}
+
+.p-cal-month {
+  font-weight: 700;
+  color: #0F172A;
+  font-size: 15px;
+  text-transform: capitalize;
+}
+
+.p-cal-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+  margin-bottom: 10px;
+}
+
+.p-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.p-cal-day {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.event-dot {
+  position: absolute;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  background-color: #00AAFF;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 170, 255, 0.5);
+}
+
+.p-cal-day.selected .event-dot {
+  background-color: white;
+  box-shadow: none;
+}
+
+.p-cal-day:hover:not(.empty) {
+  background: #F1F5F9;
+  color: #2854C5;
+  font-weight: 700;
+}
+
+.p-cal-day.empty {
+  cursor: default;
+}
+
+.p-cal-day.selected {
+  background: linear-gradient(135deg, #2854C5 0%, #00AAFF 100%);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(40, 84, 197, 0.3);
+}
+
+.p-cal-day.today {
+  border: 2px solid #00AAFF;
+  color: #00AAFF;
+  font-weight: 700;
+}
+
+.p-cal-day.today.selected {
+  border-color: transparent;
+  color: white;
+}
+
+/* Calendar Events List Styles */
+.p-cal-events-container {
+  margin-top: 15px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  padding-top: 10px;
+}
+
+.p-cal-events-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748B;
+  margin-bottom: 8px;
+}
+
+.p-cal-events-list {
+  max-height: 160px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 5px;
+}
+
+.p-cal-events-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.p-cal-events-list::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.p-cal-event-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #F8FAFC;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #0F172A;
+  transition: all 0.2s;
+}
+
+.p-cal-event-item:hover {
+  background: #EFF6FF;
+  transform: translateX(3px);
+}
+
+.p-cal-event-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+  background-color: #E2E8F0;
+}
+
+.p-cal-event-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.p-cal-event-title {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #1E293B;
+}
+
+.p-cal-event-time {
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.p-cal-no-events {
+  font-size: 12px;
+  color: #94A3B8;
+  text-align: center;
+  padding: 10px 0;
+}

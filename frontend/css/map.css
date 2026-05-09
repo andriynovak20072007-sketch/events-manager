@@ -231,6 +231,10 @@ body {
 .sidebar {
     width: 280px;
     flex-shrink: 0; /* Щоб сайдбар не стискався */
+    position: sticky;
+    top: 105px;
+    height: fit-content;
+    z-index: 100;
 }
 
 /* Робимо поле відносною системою координат */

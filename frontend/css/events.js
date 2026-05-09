@@ -157,31 +157,57 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (!eventsGrid) return;
             eventsGrid.innerHTML = '';
             
+            // Отримуємо поточну мову
+            const currentLang = localStorage.getItem('language') || 'ua';
+            const dateLocale = currentLang === 'en' ? 'en-US' : 'uk-UA';
+            
             if (eventsToRender.length === 0) {
-                eventsGrid.innerHTML = '<p>Подій не знайдено.</p>';
+                const noEventsMsg = currentLang === 'en' ? 'No events found.' : 'Подій не знайдено.';
+                eventsGrid.innerHTML = `<p>${noEventsMsg}</p>`;
                 return;
             }
 
             eventsToRender.forEach(ev => {
                 const card = document.createElement('div');
                 card.className = 'event-card';
+                
+                // Динамічне форматування дати
                 const dateObj = new Date(ev.event_day);
-                const dateSplit = dateObj.toLocaleDateString("uk-UA");
+                const dateSplit = dateObj.toLocaleDateString(dateLocale);
                 
+                // Переклад тексту "Безкоштовно"
                 const priceValue = parseFloat(ev.display_price || ev.price);
-                const priceText = priceValue > 0 ? `${priceValue} ${ev.display_currency || ev.currency || 'UAH'}` : 'Безкоштовно';
+                let priceText = "";
+                if (priceValue > 0) {
+                    priceText = `${priceValue} ${ev.display_currency || ev.currency || 'UAH'}`;
+                } else {
+                    priceText = currentLang === 'en' ? 'Free' : 'Безкоштовно';
+                }
                 
+                // Переклад допоміжних текстів
+                const learnMoreText = currentLang === 'en' ? 'Learn more' : 'Дізнатися більше';
+                
+                // Спроба перекласти заголовок та регіон, якщо вони є в словнику
+                let titleText = ev.title;
+                let regionText = ev.region || 'Не вказано';
+                
+                if (currentLang === 'en' && typeof translations !== 'undefined') {
+                    if (translations.en[ev.title]) titleText = translations.en[ev.title];
+                    if (translations.en[ev.region]) regionText = translations.en[ev.region];
+                    else if (ev.region === 'Не вказано') regionText = 'Not specified';
+                }
+
                 const imgSrc = ev.custom_image || 'images/fest1..png';
                 
                 card.innerHTML = `
                     <div style="background-image: url('${imgSrc}'); background-size: cover; background-position: center; border-radius: 18px; width: 100%; height: 200px; margin-bottom: 15px;"></div>
-                    <h3 class="event-name">${ev.title}</h3>
+                    <h3 class="event-name">${titleText}</h3>
                     <div class="event-detail">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2854C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        ${ev.region || 'Не вказано'}
+                        ${regionText}
                     </div>
                     <div class="event-detail">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -195,13 +221,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <div class="event-detail" style="font-weight: 600; color: var(--blue-dark); margin-bottom:15px; margin-top:5px;">
                         ${priceText}
                     </div>
-                    <a href="events.html?event=${ev.event_id}" class="event-link">Дізнатися більше</a>
+                    <a href="events.html?event=${ev.event_id}" class="event-link">${learnMoreText}</a>
                 `;
                 eventsGrid.appendChild(card);
             });
         };
 
         renderEvents(eventsData);
+
+        // Перемальовуємо картки при зміні мови
+        window.addEventListener('languageChanged', () => {
+            renderEvents(eventsData);
+        });
 
         // --- 3. ЛОГІКА ПОШУКУ ПОДІЙ ---
         const searchInput = document.getElementById('title-search-input') || document.querySelector('.search-box input');
