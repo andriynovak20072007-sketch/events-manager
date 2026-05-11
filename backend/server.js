@@ -22,6 +22,7 @@ const settingsRoutes = require('./routes/settings');
 // ІНІЦІАЛІЗАЦІЯ ФОНОВИХ ЗАВДАНЬ (CRON JOBS)
 // ==========================================
 require('./cron/cleanup');
+require('./cron/scheduler');
 
 const app = express();
 

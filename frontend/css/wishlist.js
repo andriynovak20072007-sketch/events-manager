@@ -290,3 +290,121 @@ toastStyle.textContent = `
     .custom-toast i { font-size: 1.2em; }
 `;
 document.head.appendChild(toastStyle);
+
+// ==========================================
+// MOBILE ENHANCEMENTS
+// Свайп для видалення, тач-оптимізація, підказки
+// ==========================================
+
+/**
+ * Ініціалізація свайпу для видалення карток на мобільних
+ * ПАТЕРН: Observer — слухаємо зміни в DOM щоб додати обробники на нові картки
+ */
+function initSwipeToDelete() {
+    // Працює тільки на тач-пристроях
+    if (!('ontouchstart' in window)) return;
+
+    const grid = document.getElementById('selectedEvents');
+    if (!grid) return;
+
+    // Observer для автоматичного додавання обробників на нові картки
+    const swipeObserver = new MutationObserver(() => {
+        grid.querySelectorAll('.event-card').forEach(card => {
+            if (card.dataset.swipeInit) return;
+            card.dataset.swipeInit = 'true';
+            addSwipeHandler(card);
+        });
+    });
+
+    swipeObserver.observe(grid, { childList: true });
+
+    // Ініціалізуємо для вже існуючих карток
+    grid.querySelectorAll('.event-card').forEach(card => {
+        if (card.dataset.swipeInit) return;
+        card.dataset.swipeInit = 'true';
+        addSwipeHandler(card);
+    });
+}
+
+/**
+ * Додає обробник свайпу до картки
+ * Свайп вліво → видалення з обраного
+ */
+function addSwipeHandler(card) {
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let isSwiping = false;
+
+    card.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isSwiping = false;
+    }, { passive: true });
+
+    card.addEventListener('touchmove', (e) => {
+        currentX = e.touches[0].clientX;
+        const diffX = startX - currentX;
+        const diffY = Math.abs(e.touches[0].clientY - startY);
+
+        // Тільки горизонтальний свайп (не скрол)
+        if (diffX > 20 && diffY < 30) {
+            isSwiping = true;
+            const translateX = Math.max(-120, -diffX);
+            card.style.transform = `translateX(${translateX}px)`;
+            card.style.transition = 'none';
+            card.style.opacity = Math.max(0.4, 1 - Math.abs(diffX) / 300);
+        }
+    }, { passive: true });
+
+    card.addEventListener('touchend', () => {
+        const diffX = startX - currentX;
+
+        if (isSwiping && diffX > 100) {
+            // Свайп достатній — видаляємо
+            card.style.transition = 'all 0.3s ease';
+            card.style.transform = 'translateX(-100%)';
+            card.style.opacity = '0';
+            
+            // Витягуємо ID з card.id (формат: "card-{eventId}")
+            const eventId = card.id.replace('card-', '');
+            setTimeout(() => {
+                selectedEvents = selectedEvents.filter(event => event.id !== eventId);
+                renderEvents();
+                showToast('Видалено з обраного');
+            }, 300);
+        } else {
+            // Повертаємо на місце
+            card.style.transition = 'all 0.3s ease';
+            card.style.transform = 'translateX(0)';
+            card.style.opacity = '1';
+        }
+        isSwiping = false;
+    }, { passive: true });
+}
+
+/**
+ * Показує підказку свайпу на першій картці (один раз)
+ */
+function showSwipeHint() {
+    if (!('ontouchstart' in window)) return;
+    if (localStorage.getItem('wishlist_swipe_hint_shown')) return;
+
+    setTimeout(() => {
+        const firstCard = document.querySelector('#selectedEvents .event-card');
+        if (firstCard) {
+            firstCard.classList.add('swipe-hint');
+            firstCard.addEventListener('animationend', () => {
+                firstCard.classList.remove('swipe-hint');
+            }, { once: true });
+            localStorage.setItem('wishlist_swipe_hint_shown', 'true');
+        }
+    }, 1500);
+}
+
+// Ініціалізація мобільних функцій
+document.addEventListener('DOMContentLoaded', () => {
+    initSwipeToDelete();
+    showSwipeHint();
+});
+
