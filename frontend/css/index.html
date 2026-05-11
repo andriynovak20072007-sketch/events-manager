@@ -268,7 +268,7 @@
   </div>
 
   <!-- ДОДАНО: Секція "Бронювання готелів" -->
-  <section class="hotel-booking-section">
+  <section class="hotel-booking-section" style="display: none;">
     <div class="hotel-header">
       <h2>Бронювання готелів</h2>
       <p>Готелі поряд, щоб комфортно насолоджуватися подіями</p>
@@ -277,6 +277,20 @@
     <div class="hotel-grid-wrapper">
       <div class="hotel-grid" id="hotels-grid">
         <!-- Готелі будуть згенеровані через JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ДОДАНО: Секція "Бронювання ресторанів" -->
+  <section class="restaurant-booking-section" style="display: none;">
+    <div class="hotel-header">
+      <h2>Ресторани та Кафе</h2>
+      <p>Найкращі заклади поруч із вашим маршрутом</p>
+    </div>
+    
+    <div class="hotel-grid-wrapper">
+      <div class="hotel-grid" id="restaurants-grid">
+        <!-- Ресторани будуть згенеровані через JS -->
       </div>
     </div>
   </section>
@@ -290,6 +304,37 @@
   </section>
 
   <div id="tooltip"></div>
+
+  <!-- Модальне вікно вибору опцій маршруту -->
+  <div id="routeOptionsModal" class="modal-overlay" style="display: none;">
+    <div class="form-wrapper" style="max-width: 400px; text-align: center; padding: 30px;">
+      <span class="close-modal" id="closeRouteOptionsBtn">&times;</span>
+      <h2 style="margin-bottom: 10px; color: var(--blue-dark);">Параметри маршруту</h2>
+      <p style="color: var(--text-color); font-size: 14px; margin-bottom: 20px;">Що ви хотіли б додати до вашого маршруту?</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+        <label class="option-checkbox" style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.3s;">
+          <input type="checkbox" id="checkHotels" style="width: 20px; height: 20px; cursor: pointer;">
+          <i class="fa-solid fa-bed" style="color: #2ECC71; font-size: 20px; width: 24px;"></i> 
+          <span style="font-weight: 500;">Готелі поруч</span>
+        </label>
+        <label class="option-checkbox" style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.3s;">
+          <input type="checkbox" id="checkRestaurants" style="width: 20px; height: 20px; cursor: pointer;">
+          <i class="fa-solid fa-utensils" style="color: #E67E22; font-size: 20px; width: 24px;"></i> 
+          <span style="font-weight: 500;">Ресторани поруч</span>
+        </label>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button id="confirmRouteOptionsBtn" class="main-btn" style="background-color: var(--primary-color); width: 100%;">
+          <i class="fa-solid fa-route" style="margin-right: 8px;"></i> Побудувати маршрут
+        </button>
+        <button id="justRouteBtn" class="main-btn" style="background-color: transparent; border: 1px solid #ddd; color: var(--text-color); width: 100%; box-shadow: none;">
+          Нічого, тільки маршрут
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div id="authModal" class="modal-overlay" style="display: none;">
     <div class="form-wrapper">
@@ -616,6 +661,7 @@
   <script src="notifications-v2.js"></script>
   <script src="events.js"></script>
   <script src="hotel.js"></script>
+  <script src="restaurants.js"></script>
 </body>
 
 </html>

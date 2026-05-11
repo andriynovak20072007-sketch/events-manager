@@ -1643,15 +1643,34 @@ function formatTime(totalMinutes) {
 }
 // Ініціалізація обробників подій для віджета
 document.addEventListener('DOMContentLoaded', () => {
-    // Кнопка "Побудувати маршрут"
+    // Кнопка "Побудувати маршрут" та модалка опцій
     const buildRouteBtn = document.querySelector('.build-route-btn');
-    if (buildRouteBtn) {
+    const routeOptionsModal = document.getElementById('routeOptionsModal');
+    
+    if (buildRouteBtn && routeOptionsModal) {
         buildRouteBtn.addEventListener('click', () => {
+            routeOptionsModal.style.display = 'flex';
+        });
+
+        const closeOptionsModal = () => {
+            routeOptionsModal.style.display = 'none';
+        };
+
+        const closeRouteOptionsBtn = document.getElementById('closeRouteOptionsBtn');
+        if (closeRouteOptionsBtn) {
+            closeRouteOptionsBtn.addEventListener('click', closeOptionsModal);
+        }
+
+        const buildRouteWithOption = (showHotels, showRestaurants) => {
+            closeOptionsModal();
             const svgMap = document.getElementById('map-container');
             const toggleBtn = document.getElementById('toggle-map-type');
-
+            
             const hotelSection = document.querySelector('.hotel-booking-section');
-            if (hotelSection) hotelSection.style.display = 'block';
+            const restaurantSection = document.querySelector('.restaurant-booking-section');
+
+            if (hotelSection) hotelSection.style.display = showHotels ? 'block' : 'none';
+            if (restaurantSection) restaurantSection.style.display = showRestaurants ? 'block' : 'none';
 
             if (svgMap && svgMap.classList.contains('active')) {
                 if (toggleBtn) toggleBtn.click(); // Це викличе window.updateRouteLine() через 300ms
@@ -1660,7 +1679,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.updateRouteLine();
             }
 
-            // Прокручуємо до карти (якщо ми на великій сторінці)
+            // Відмальовуємо додаткові маркери
+            setTimeout(() => {
+                if (showHotels && typeof renderHotelMarkers === 'function' && typeof hotelsList !== 'undefined') {
+                    renderHotelMarkers(hotelsList);
+                } else if (!showHotels && typeof leafletHotelMarkers !== 'undefined') {
+                    leafletHotelMarkers.forEach(m => m.remove());
+                    leafletHotelMarkers = [];
+                }
+
+                if (showRestaurants && typeof renderRestaurantMarkers === 'function' && typeof restaurantsList !== 'undefined') {
+                    renderRestaurantMarkers(restaurantsList);
+                } else if (!showRestaurants && typeof leafletRestaurantMarkers !== 'undefined') {
+                    leafletRestaurantMarkers.forEach(m => m.remove());
+                    leafletRestaurantMarkers = [];
+                }
+            }, 350);
+
+            // Прокручуємо до карти
+            const leafletElem = document.getElementById('leaflet-map');
+            if (leafletElem) {
+                leafletElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
+
+        const confirmRouteOptionsBtn = document.getElementById('confirmRouteOptionsBtn');
+        if (confirmRouteOptionsBtn) {
+            confirmRouteOptionsBtn.addEventListener('click', () => {
+                const checkHotels = document.getElementById('checkHotels');
+                const checkRestaurants = document.getElementById('checkRestaurants');
+                const showHotels = checkHotels ? checkHotels.checked : false;
+                const showRestaurants = checkRestaurants ? checkRestaurants.checked : false;
+                
+                buildRouteWithOption(showHotels, showRestaurants);
+            });
+        }
+
+        const justRouteBtn = document.getElementById('justRouteBtn');
+        if (justRouteBtn) {
+            justRouteBtn.addEventListener('click', () => {
+                const checkHotels = document.getElementById('checkHotels');
+                const checkRestaurants = document.getElementById('checkRestaurants');
+                if (checkHotels) checkHotels.checked = false;
+                if (checkRestaurants) checkRestaurants.checked = false;
+
+                buildRouteWithOption(false, false);
+            });
+        }
+
+    } else if (buildRouteBtn) {
+        // Fallback якщо модалка не знайдена в DOM
+        buildRouteBtn.addEventListener('click', () => {
+            const svgMap = document.getElementById('map-container');
+            const toggleBtn = document.getElementById('toggle-map-type');
+
+            const hotelSection = document.querySelector('.hotel-booking-section');
+            if (hotelSection) hotelSection.style.display = 'block';
+
+            if (svgMap && svgMap.classList.contains('active')) {
+                if (toggleBtn) toggleBtn.click(); 
+            } else {
+                window.updateRouteLine();
+            }
+
             const leafletElem = document.getElementById('leaflet-map');
             if (leafletElem) {
                 leafletElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1668,8 +1749,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    // Обробник для закриття віджета
+    // Обробник для закриття віджета маршруту
     const closeWidgetBtn = document.getElementById('close-widget-btn');
     if (closeWidgetBtn) {
         closeWidgetBtn.addEventListener('click', () => {
@@ -1678,6 +1758,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const hotelSection = document.querySelector('.hotel-booking-section');
             if (hotelSection) hotelSection.style.display = 'none';
+            
+            const restSection = document.querySelector('.restaurant-booking-section');
+            if (restSection) restSection.style.display = 'none';
         });
     }
 
