@@ -2,15 +2,103 @@ const request = require('supertest');
 
 // Мокаємо cron, щоб він не підключався до БД
 jest.mock('../cron/cleanup', () => { });
+jest.mock('../cron/scheduler', () => { });
 
 // google-auth-library мокається автоматично через __mocks__/google-auth-library.js
 
+// Мокаємо nodemailer, щоб не відправляти реальних листів
+jest.mock('nodemailer', () => ({
+    createTransport: jest.fn(() => ({
+        sendMail: jest.fn(() => Promise.resolve({ messageId: 'test-id' }))
+    }))
+}));
+
 // Внутрішнє сховище для імітації таблиці user_settings (In-Memory)
-const settingsStore = {};
+const mockSettingsStore = {};
+
+// Внутрішнє сховище для імітації таблиці notification_schedule (In-Memory)
+// Імена починаються з 'mock' — вимога Jest для доступу всередині jest.mock()
+const mockScheduleStore = {};
+let mockScheduleIdCounter = 1;
 
 jest.mock('../db', () => ({
     query: jest.fn((sql, values) => {
         const trimmedSql = typeof sql === 'string' ? sql.trim() : '';
+
+        // --- Обробка запитів для notification_schedule ---
+
+        // SELECT нагадувань для юзера (GET /:userId/reminders)
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('notification_schedule') && trimmedSql.includes('ns.user_id')) {
+            const userId = values[0];
+            const userReminders = Object.values(mockScheduleStore).filter(r => r.user_id == userId);
+            return Promise.resolve({
+                rows: userReminders.map(r => ({
+                    ...r,
+                    event_title: 'Тестова подія',
+                    event_day: '2026-12-25',
+                    start_time: '18:00'
+                }))
+            });
+        }
+
+        // INSERT нагадування (POST /reminders) — UPSERT
+        if (trimmedSql.startsWith('INSERT') && trimmedSql.includes('notification_schedule')) {
+            const eventId = values[0];
+            const userId = values[1];
+            const remindAt = values[2];
+            const type = values[3];
+            const channel = values[4] || 'all';
+            const key = `${eventId}:${userId}:${type}`;
+
+            if (mockScheduleStore[key]) {
+                // ON CONFLICT — update
+                mockScheduleStore[key].remind_at = remindAt;
+                mockScheduleStore[key].channel = channel;
+                mockScheduleStore[key].status = 'pending';
+                return Promise.resolve({ rows: [mockScheduleStore[key]] });
+            }
+
+            const newSchedule = {
+                schedule_id: mockScheduleIdCounter++,
+                event_id: eventId,
+                user_id: userId,
+                remind_at: remindAt,
+                type: type,
+                channel: channel,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+            mockScheduleStore[key] = newSchedule;
+            return Promise.resolve({ rows: [newSchedule] });
+        }
+
+        // DELETE нагадування (DELETE /reminders/:scheduleId)
+        if (trimmedSql.startsWith('DELETE') && trimmedSql.includes('notification_schedule')) {
+            const scheduleId = parseInt(values[0]);
+            const key = Object.keys(mockScheduleStore).find(k => mockScheduleStore[k].schedule_id === scheduleId);
+            if (key) {
+                const deleted = mockScheduleStore[key];
+                delete mockScheduleStore[key];
+                return Promise.resolve({ rows: [deleted] });
+            }
+            return Promise.resolve({ rows: [] });
+        }
+
+        // SELECT подію за ID (для POST /reminders — отримання event_day/start_time)
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('events') && trimmedSql.includes('event_id') && !trimmedSql.includes('user_id')) {
+            const eventId = values[0];
+            if (parseInt(eventId) === 1) {
+                return Promise.resolve({
+                    rows: [{
+                        event_id: 1,
+                        title: 'Тестова подія',
+                        event_day: '2026-12-25',
+                        start_time: '18:00:00'
+                    }]
+                });
+            }
+            return Promise.resolve({ rows: [] });
+        }
 
         // --- Обробка запитів для user_settings ---
 
@@ -20,9 +108,9 @@ jest.mock('../db', () => ({
             const key = values[1];
             const storeKey = `${userId}:${key}`;
             
-            if (settingsStore[storeKey]) {
+            if (mockSettingsStore[storeKey]) {
                 return Promise.resolve({
-                    rows: [{ setting_value: settingsStore[storeKey] }]
+                    rows: [{ setting_value: mockSettingsStore[storeKey] }]
                 });
             }
             return Promise.resolve({ rows: [] });
@@ -35,7 +123,7 @@ jest.mock('../db', () => ({
             const value = values[2];
             const storeKey = `${userId}:${key}`;
             
-            settingsStore[storeKey] = value;
+            mockSettingsStore[storeKey] = value;
             
             return Promise.resolve({
                 rows: [{
@@ -117,7 +205,9 @@ const app = require('../server');
 
 // Очищаємо in-memory store між тестами
 beforeEach(() => {
-    Object.keys(settingsStore).forEach(key => delete settingsStore[key]);
+    Object.keys(mockSettingsStore).forEach(key => delete mockSettingsStore[key]);
+    Object.keys(mockScheduleStore).forEach(key => delete mockScheduleStore[key]);
+    mockScheduleIdCounter = 1;
 });
 
 // =======================================================
@@ -377,6 +467,117 @@ describe('Тестування налаштувань профілю корис�
         // Але має повертати безпечні поля
         expect(res.body.id).toBeDefined();
         expect(res.body.email).toBeDefined();
+    });
+
+});
+
+// =======================================================
+// ТЕСТУВАННЯ ПЛАНУВАЛЬНИКА ПОДІЙ (SCHEDULER / QUEUE)
+// ПАТЕРН: Observer — тестуємо підписку, отримання, скасування нагадувань
+// =======================================================
+
+describe('Тестування планувальника сповіщень (Scheduler)', () => {
+
+    it('TC-20: Підписка на нагадування про подію (POST /reminders)', async () => {
+        const res = await request(app)
+            .post('/api/notifications/reminders')
+            .send({
+                event_id: 1,
+                user_id: 1,
+                type: '24h',
+                channel: 'all'
+            });
+
+        expect(res.statusCode).toEqual(201);
+        expect(res.body.msg).toContain('Нагадування заплановано');
+        expect(res.body.reminder).toBeDefined();
+        expect(res.body.reminder.event_id).toEqual(1);
+        expect(res.body.reminder.user_id).toEqual(1);
+        expect(res.body.reminder.type).toEqual('24h');
+        expect(res.body.reminder.status).toEqual('pending');
+        expect(res.body.event_title).toEqual('Тестова подія');
+        expect(res.body.strategy).toBeDefined();
+    });
+
+    it('TC-21: Відхилення нагадування без event_id або user_id (POST → 400)', async () => {
+        const res = await request(app)
+            .post('/api/notifications/reminders')
+            .send({ type: '1h' });
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.error).toContain('event_id');
+    });
+
+    it('TC-22: Отримання запланованих нагадувань (GET /:userId/reminders)', async () => {
+        // Спочатку створюємо нагадування
+        await request(app)
+            .post('/api/notifications/reminders')
+            .send({ event_id: 1, user_id: 1, type: '24h' });
+
+        // Отримуємо список
+        const res = await request(app)
+            .get('/api/notifications/1/reminders');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.reminders).toBeInstanceOf(Array);
+        expect(res.body.count).toBeGreaterThanOrEqual(1);
+    });
+
+    it('TC-23: Скасування нагадування (DELETE /reminders/:scheduleId)', async () => {
+        // Спочатку створюємо
+        const createRes = await request(app)
+            .post('/api/notifications/reminders')
+            .send({ event_id: 1, user_id: 1, type: '1h' });
+
+        const scheduleId = createRes.body.reminder.schedule_id;
+
+        // Видаляємо
+        const res = await request(app)
+            .delete(`/api/notifications/reminders/${scheduleId}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.msg).toContain('скасовано');
+        expect(res.body.deleted).toBeDefined();
+    });
+
+    it('TC-24: Отримання статусу планувальника (GET /scheduler/status)', async () => {
+        const res = await request(app)
+            .get('/api/notifications/scheduler/status');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.scheduler).toBeDefined();
+        expect(res.body.scheduler.isProcessing).toBeDefined();
+        expect(res.body.available_types).toBeInstanceOf(Array);
+        expect(res.body.available_types.length).toBeGreaterThanOrEqual(3);
+        
+        // Перевіряємо що всі 3 типи нагадувань доступні
+        const types = res.body.available_types.map(t => t.type);
+        expect(types).toContain('24h');
+        expect(types).toContain('1h');
+        expect(types).toContain('on_start');
+    });
+
+    it('TC-25: Захист від дублікатів — повторний POST оновлює, а не створює', async () => {
+        // Перше нагадування
+        const first = await request(app)
+            .post('/api/notifications/reminders')
+            .send({ event_id: 1, user_id: 1, type: '24h', channel: 'email' });
+
+        expect(first.statusCode).toEqual(201);
+
+        // Повторне — з іншим каналом
+        const second = await request(app)
+            .post('/api/notifications/reminders')
+            .send({ event_id: 1, user_id: 1, type: '24h', channel: 'in_app' });
+
+        expect(second.statusCode).toEqual(201);
+
+        // Перевіряємо що schedule_id такий самий (оновлення, не дублікат)
+        expect(second.body.reminder.schedule_id).toEqual(first.body.reminder.schedule_id);
+        // Але канал оновився
+        expect(second.body.reminder.channel).toEqual('in_app');
     });
 
 });
