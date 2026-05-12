@@ -50,11 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                     <div class="card-actions">
+                        <button class="btn-analytics" onclick="viewAnalytics('${ev.id}')">
+                            <i class="fa-solid fa-chart-line"></i> Аналітика
+                        </button>
                         <button class="btn-edit" onclick="editEvent('${ev.id}')">
                             <i class="fa-solid fa-pen-to-square"></i> Редагувати
-                        </button>
-                        <button class="btn-delete" onclick="deleteEvent('${ev.id}')">
-                            <i class="fa-solid fa-trash-can"></i> Видалити
                         </button>
                     </div>
                 </div>
@@ -148,6 +148,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Global actions
+    window.viewAnalytics = (id) => {
+        window.location.href = `moderation.html?id=${id}`;
+    };
+
     window.editEvent = (id) => {
         window.location.href = `create-event.html?id=${id}`;
     };
@@ -184,5 +188,14 @@ styleSheet.textContent = `
         to { opacity: 1; transform: translateY(0) scale(1); }
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .btn-analytics, .btn-edit { 
+        padding: 8px; border-radius: 12px; border: none; font-weight: 600; font-size: 13px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.3s;
+    }
+    .btn-analytics { background: #F5F3FF; color: #8B5CF6; }
+    .btn-analytics:hover { background: #8B5CF6; color: white; transform: translateY(-2px); }
+    .btn-edit { background: #F1F5F9; color: #64748B; }
+    .btn-edit:hover { background: #00AAFF; color: white; transform: translateY(-2px); }
 `;
 document.head.appendChild(styleSheet);

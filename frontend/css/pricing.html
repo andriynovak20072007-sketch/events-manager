@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тарифи | Event Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pricing.css">
+  <!-- Vue 3 Framework -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header-left">
+      <img src="images/Frame 37.png" class="logo-image" alt="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">
+      <div class="divider"></div>
+    </div>
+
+    <div class="header-center">
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link">Головна</a>
+        <a href="events.html" class="nav-link">Події</a>
+        <a href="pricing.html" class="nav-link active">Тарифи</a>
+        <a href="about.html" class="nav-link">Про нас</a>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <div class="language-dropdown-wrapper">
+        <div class="language-btn">UA <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></div>
+        <div class="language-dropdown hidden">
+          <button type="button" class="lang-option active">UA - Українська</button>
+          <button type="button" class="lang-option">EN - English</button>
+        </div>
+      </div>
+      <div class="notifications-wrapper" style="position: relative;">
+        <!-- Notification UI will be mounted here by Vue -->
+      </div>
+      <div class="icon-btn" id="profileBtn">
+        <img src="images/Frame 38.png" alt="icon">
+      </div>
+    </div>
+  </header>
+
+  <main class="pricing-container">
+    <div class="pricing-header">
+      <span class="pricing-badge">Оберіть свій план</span>
+      <h1>Прості та прозорі тарифи</h1>
+      <p>Оберіть план, який найкраще підходить для ваших потреб у створенні та управлінні подіями.</p>
+      
+      <div class="billing-toggle">
+        <span class="toggle-label active" id="monthly-label">Щомісячно</span>
+        <label class="switch">
+          <input type="checkbox" id="billing-switch">
+          <span class="slider round"></span>
+        </label>
+        <span class="toggle-label" id="yearly-label">Щорічно <span class="discount-badge">-20%</span></span>
+      </div>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Basic Plan -->
+      <div class="pricing-card">
+        <div class="card-header">
+          <h3>Стартовий</h3>
+          <p class="card-desc">Для індивідуальних організаторів</p>
+          <div class="price">
+            <span class="currency">₴</span>
+            <span class="amount" data-monthly="0" data-yearly="0">0</span>
+            <span class="period">/2 міс*</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: -30px; margin-bottom: 30px;">*далі за стандартним тарифом</p>
+        </div>
+        <div class="card-body">
+          <ul class="features">
+            <li><i class="fa-solid fa-check"></i> До 3 активних подій</li>
+            <li><i class="fa-solid fa-check"></i> Базова аналітика</li>
+            <li><i class="fa-solid fa-check"></i> Пошук по карті</li>
+            <li class="disabled"><i class="fa-solid fa-xmark"></i> Пріоритетне просування</li>
+            <li class="disabled"><i class="fa-solid fa-xmark"></i> Продаж квитків</li>
+            <li class="disabled"><i class="fa-solid fa-xmark"></i> Синя галочка довіри</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <button class="pricing-btn secondary" id="starter-btn">Обрати Безкоштовно</button>
+        </div>
+      </div>
+
+      <!-- Pro Plan -->
+      <div class="pricing-card featured">
+        <div class="featured-badge">Популярний</div>
+        <div class="card-header">
+          <h3>Pro Менеджер</h3>
+          <p class="card-desc">Для професійних організаторів</p>
+          <div class="price">
+            <span class="currency">₴</span>
+            <span class="amount" data-monthly="499" data-yearly="3900">499</span>
+            <span class="period">/міс</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <ul class="features">
+            <li><i class="fa-solid fa-check"></i> Безліміт активних подій</li>
+            <li><i class="fa-solid fa-check"></i> Розширена аналітика</li>
+            <li><i class="fa-solid fa-check"></i> Продаж квитків (комісія 2%)</li>
+            <li><i class="fa-solid fa-check"></i> Синя галочка довіри</li>
+            <li><i class="fa-solid fa-check"></i> Пріоритет у пошуку</li>
+            <li class="disabled"><i class="fa-solid fa-xmark"></i> Персональний менеджер</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <button class="pricing-btn primary" id="buy-pro-btn">Купити Pro</button>
+        </div>
+      </div>
+
+      <!-- Enterprise Plan -->
+      <div class="pricing-card">
+        <div class="card-header">
+          <h3>Бізнес</h3>
+          <p class="card-desc">Для великих івент-агентств</p>
+          <div class="price">
+            <span class="currency">₴</span>
+            <span class="amount" data-monthly="1299" data-yearly="9900">1299</span>
+            <span class="period">/міс</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <ul class="features">
+            <li><i class="fa-solid fa-check"></i> Все з Pro тарифу</li>
+            <li><i class="fa-solid fa-check"></i> Продаж квитків (без комісії)</li>
+            <li><i class="fa-solid fa-check"></i> Рекламні банери на головній</li>
+            <li><i class="fa-solid fa-check"></i> API інтеграція</li>
+            <li><i class="fa-solid fa-check"></i> Персональний менеджер 24/7</li>
+            <li><i class="fa-solid fa-check"></i> White-label рішення</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <button class="pricing-btn secondary" id="enterprise-btn">Зв'язатися з нами</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="pricing-faq">
+      <h2>Часті запитання</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>Чи можу я змінити план пізніше?</h4>
+          <p>Так, ви можете змінити свій тарифний план у будь-який час у налаштуваннях профілю.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Які методи оплати ви приймаєте?</h4>
+          <p>Ми приймаємо всі основні кредитні картки, Apple Pay та Google Pay.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Чи є приховані комісії?</h4>
+          <p>Ні, всі ціни прозорі. У тарифі Pro є лише невелика комісія за продаж квитків.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Як працює повернення коштів?</h4>
+          <p>Якщо вам не сподобався сервіс, ми повернемо кошти протягом перших 14 днів використання.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="modal-overlay" style="display: none;">
+    <div class="premium-modal-container payment-modal">
+      <span class="close-modal" id="closePaymentBtn">&times;</span>
+      
+      <div class="modal-icon-header payment-icon">
+        <i class="fa-solid fa-credit-card"></i>
+      </div>
+      
+      <h2>Оформлення підписки Pro</h2>
+      <p>Ви на крок ближче до професійного управління подіями.</p>
+      
+      <div class="payment-details">
+        <div class="detail-row">
+          <span>Тариф:</span>
+          <span class="bold">Pro Менеджер</span>
+        </div>
+        <div class="detail-row">
+          <span>Період:</span>
+          <span id="selected-period" class="bold">Щомісячно</span>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-row total">
+          <span>До оплати:</span>
+          <span id="total-amount" class="bold-price">₴499</span>
+        </div>
+      </div>
+
+      <form id="payment-form" class="payment-form">
+        <div class="input-group">
+          <label>Номер картки</label>
+          <div class="card-input-wrapper">
+            <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" id="card-number">
+            <i class="fa-brands fa-cc-visa"></i>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Термін дії</label>
+            <input type="text" placeholder="MM/YY" maxlength="5" id="card-expiry">
+          </div>
+          <div class="input-group">
+            <label>CVC</label>
+            <input type="password" placeholder="***" maxlength="3" id="card-cvc">
+          </div>
+        </div>
+        
+        <button type="submit" class="premium-btn-primary full-width" id="confirm-payment-btn">
+          <span class="btn-text">Оплатити зараз</span>
+          <div class="loader hidden"></div>
+        </button>
+      </form>
+      
+      <p class="secure-text"><i class="fa-solid fa-lock"></i> Ваші дані захищені 256-бітним шифруванням</p>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal-overlay" style="display: none;">
+    <div class="premium-modal-container success-modal">
+      <div class="success-checkmark">
+        <div class="check-icon">
+          <span class="icon-line line-tip"></span>
+          <span class="icon-line line-long"></span>
+          <div class="icon-circle"></div>
+          <div class="icon-fix"></div>
+        </div>
+      </div>
+      <h2>Оплата успішна!</h2>
+      <p>Вітаємо! Ваш статус оновлено до <strong>Pro Менеджера</strong>. Тепер ви маєте доступ до всіх преміальних можливостей.</p>
+      <button class="premium-btn-primary full-width" onclick="window.location.href='index.html'">Почати роботу</button>
+    </div>
+  </div>
+
+  <!-- Starter Modal -->
+  <div id="starterModal" class="modal-overlay" style="display: none;">
+    <div class="premium-modal-container starter-modal">
+      <span class="close-modal" id="closeStarterBtn">&times;</span>
+      
+      <div class="modal-icon-header starter-icon">
+        <i class="fa-solid fa-rocket"></i>
+      </div>
+      
+      <h2>Тариф Стартовий</h2>
+      <p>Спробуйте всі базові можливості безкоштовно протягом перших <strong>2 місяців</strong>. Далі ви зможете продовжити використання за стандартною ціною або перейти на Pro.</p>
+      
+      <div class="modal-info-box">
+        <p><i class="fa-solid fa-circle-info"></i> Хочете більше можливостей? Спробуйте <strong>Pro тариф</strong> для безлімітних подій та продажу квитків.</p>
+      </div>
+
+      <button class="premium-btn-primary full-width" id="starter-ok-btn">Зрозуміло</button>
+    </div>
+  </div>
+
+  <!-- Contact Modal -->
+  <div id="contactModal" class="modal-overlay" style="display: none;">
+    <div class="premium-modal-container contact-modal">
+      <span class="close-modal" id="closeContactBtn">&times;</span>
+      
+      <div class="modal-icon-header contact-icon">
+        <i class="fa-solid fa-headset"></i>
+      </div>
+      
+      <h2>Зв'язатися з нами</h2>
+      <p>Залиште свої контакти, і наш менеджер зв'яжеться з вами протягом 15 хвилин для обговорення корпоративного тарифу.</p>
+      
+      <form id="contact-form" class="payment-form">
+        <div class="input-group">
+          <label>Ваше ім'я</label>
+          <input type="text" placeholder="Іван Іванов" required>
+        </div>
+        <div class="input-group">
+          <label>Email або Телефон</label>
+          <input type="text" placeholder="example@mail.com" required>
+        </div>
+        <div class="input-group">
+          <label>Повідомлення (опціонально)</label>
+          <textarea placeholder="Мене цікавить корпоративний тариф для моєї компанії..." style="padding: 12px 15px; border: 2px solid #E2E8F0; border-radius: 12px; font-family: inherit; resize: none; height: 100px;"></textarea>
+        </div>
+        
+        <button type="submit" class="premium-btn-primary full-width">
+          Надіслати запит
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-column">
+        <h4>Event Manager</h4>
+        <a href="#">Підтримка</a>
+        <a href="#">Контакти</a>
+        <a href="#">Приватність & cookies</a>
+        <a href="#">Політика використання</a>
+      </div>
+      <div class="footer-column">
+        <h4>Розробники</h4>
+        <a href="#">Про команду</a>
+        <a href="#">Про сайт</a>
+      </div>
+      <div class="footer-column">
+        <h4>Слідкуйте за<br>нами</h4>
+        <a href="#" class="social-link">
+          <i class="fa-brands fa-instagram"></i>
+        </a>
+        <a href="#" class="social-link">
+          <i class="fa-brands fa-facebook"></i>
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Українська (Україна)</p>
+      <p>© CodeX 2026</p>
+    </div>
+  </footer>
+
+  <script src="pricing.js"></script>
+  <script src="notifications-v2.js"></script>
+</body>
+
+</html>

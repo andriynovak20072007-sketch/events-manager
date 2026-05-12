@@ -29,7 +29,7 @@ const restaurantsList = [
         ratingValue: 4.7,
         price: '1200',
         currency: 'UAH',
-        siteUrl: 'https://borysov.com.ua/'
+        siteUrl: 'https://borysov.com.ua/uk/kanapa'
     },
     {
         id: 'restaurant3',
@@ -61,7 +61,7 @@ const restaurantsList = [
         ratingValue: 4.6,
         price: '1000',
         currency: 'UAH',
-        siteUrl: '#'
+        siteUrl: 'https://borysov.com.ua/uk/nasha-dacha'
     }
 ];
 
@@ -183,20 +183,21 @@ function renderRestaurantCards() {
         `;
         
         html += `
-        <div class="hotel-card"> <!-- Перевикористовуємо стилі карток готелів -->
-          <div class="hotel-image-wrapper" style="background-color: #f0f0f0; display:flex; align-items:center; justify-content:center;">
-             <i class="fa-solid fa-utensils" style="font-size: 40px; color: #E67E22;"></i>
+        <div class="restaurant-card">
+          <div class="restaurant-image-wrapper">
+             <img src="images/restaurant${(index % 4) + 1}.png" alt="${rest.title}">
+             <div class="restaurant-price-badge">~${rest.price} ${rest.currency}</div>
           </div>
-          <div class="hotel-info">
+          <div class="restaurant-info">
             <h3>${rest.title}</h3>
-            <div class="hotel-rating">
+            <div class="restaurant-rating">
               ${ratingHtml}
             </div>
-            <div class="hotel-location">
+            <div class="restaurant-location">
               <i class="fa-solid fa-location-dot"></i>
               <span>${rest.location}</span>
             </div>
-            <a href="#" class="hotel-link">Дізнатися більше</a>
+            <a href="${rest.siteUrl}" target="_blank" class="restaurant-link">Забронювати столик</a>
           </div>
         </div>
         `;

@@ -127,6 +127,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const descpriptionEl = document.querySelector('.event-details-text p');
             if (descpriptionEl && data.description) descpriptionEl.innerText = data.description;
+
+            // --- TRACK VIEW (Analytics) ---
+            const utmSource = urlParams.get('utm_source') || 'direct';
+            const utmMedium = urlParams.get('utm_medium');
+            const utmCampaign = urlParams.get('utm_campaign');
+
+            fetch('/api/analytics/view', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    event_id: eventId,
+                    utm_source: utmSource,
+                    utm_medium: utmMedium,
+                    utm_campaign: utmCampaign
+                })
+            }).catch(err => console.warn('Analytics tracking error:', err));
         };
 
         try {

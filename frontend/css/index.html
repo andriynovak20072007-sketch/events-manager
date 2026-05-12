@@ -305,31 +305,57 @@
 
   <div id="tooltip"></div>
 
-  <!-- Модальне вікно вибору опцій маршруту -->
+  <!-- Модальне вікно вибору опцій маршруту (Premium Design) -->
   <div id="routeOptionsModal" class="modal-overlay" style="display: none;">
-    <div class="form-wrapper" style="max-width: 400px; text-align: center; padding: 30px;">
+    <div class="premium-modal-container">
       <span class="close-modal" id="closeRouteOptionsBtn">&times;</span>
-      <h2 style="margin-bottom: 10px; color: var(--blue-dark);">Параметри маршруту</h2>
-      <p style="color: var(--text-color); font-size: 14px; margin-bottom: 20px;">Що ви хотіли б додати до вашого маршруту?</p>
       
-      <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-        <label class="option-checkbox" style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.3s;">
-          <input type="checkbox" id="checkHotels" style="width: 20px; height: 20px; cursor: pointer;">
-          <i class="fa-solid fa-bed" style="color: #2ECC71; font-size: 20px; width: 24px;"></i> 
-          <span style="font-weight: 500;">Готелі поруч</span>
+      <div class="modal-icon-header">
+        <i class="fa-solid fa-map-location-dot"></i>
+      </div>
+      
+      <h2>Параметри маршруту</h2>
+      <p>Налаштуйте ваш ідеальний маршрут, додавши потрібні послуги поруч.</p>
+      
+      <div class="modal-options-list">
+        <label class="premium-option-checkbox">
+          <input type="checkbox" id="checkHotels" class="hidden-checkbox">
+          <div class="option-card">
+            <div class="option-icon-wrapper hotel-icon-bg">
+              <i class="fa-solid fa-bed"></i> 
+            </div>
+            <div class="option-text">
+              <span class="option-title">Готелі поруч</span>
+              <span class="option-desc">Забронюйте комфортне місце для відпочинку</span>
+            </div>
+            <div class="check-circle">
+              <i class="fa-solid fa-check"></i>
+            </div>
+          </div>
         </label>
-        <label class="option-checkbox" style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.3s;">
-          <input type="checkbox" id="checkRestaurants" style="width: 20px; height: 20px; cursor: pointer;">
-          <i class="fa-solid fa-utensils" style="color: #E67E22; font-size: 20px; width: 24px;"></i> 
-          <span style="font-weight: 500;">Ресторани поруч</span>
+        
+        <label class="premium-option-checkbox">
+          <input type="checkbox" id="checkRestaurants" class="hidden-checkbox">
+          <div class="option-card">
+            <div class="option-icon-wrapper restaurant-icon-bg">
+              <i class="fa-solid fa-utensils"></i> 
+            </div>
+            <div class="option-text">
+              <span class="option-title">Ресторани та Кафе</span>
+              <span class="option-desc">Найкращі заклади харчування по дорозі</span>
+            </div>
+            <div class="check-circle">
+              <i class="fa-solid fa-check"></i>
+            </div>
+          </div>
         </label>
       </div>
       
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <button id="confirmRouteOptionsBtn" class="main-btn" style="background-color: var(--primary-color); width: 100%;">
-          <i class="fa-solid fa-route" style="margin-right: 8px;"></i> Побудувати маршрут
+      <div class="modal-actions">
+        <button id="confirmRouteOptionsBtn" class="premium-btn-primary">
+          <i class="fa-solid fa-route"></i> Побудувати маршрут
         </button>
-        <button id="justRouteBtn" class="main-btn" style="background-color: transparent; border: 1px solid #ddd; color: var(--text-color); width: 100%; box-shadow: none;">
+        <button id="justRouteBtn" class="premium-btn-secondary">
           Нічого, тільки маршрут
         </button>
       </div>
@@ -573,6 +599,7 @@
       </div>
       <div class="footer-column">
         <h4>Розробники</h4>
+        <a href="pricing.html">Тарифи</a>
         <a href="#">Про команду</a>
         <a href="#">Про сайт</a>
       </div>
@@ -644,6 +671,7 @@
     <a href="my-events.html" class="panel-link"><i class="fa-regular fa-calendar-check"></i> Мої події</a>
 
     <a href="create-event.html" class="panel-link"><i class="fa-solid fa-plus"></i> Створити подію</a>
+    <a href="pricing.html" class="panel-link"><i class="fa-solid fa-tags"></i> Тарифи</a>
     <a href="moderation.html" class="panel-link" style="color: var(--blue-dark); font-weight: 700; border-top: 1px solid #eee; margin-top: 10px; padding-top: 15px;">
       <i class="fa-solid fa-user-shield"></i> Модерація
     </a>

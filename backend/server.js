@@ -57,6 +57,7 @@ app.use('/api/hotels', hotelsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/analytics', require('./routes/analytics'));
 
 // Базовий тестовий роут для перевірки працездатності
 app.get('/', (req, res) => {

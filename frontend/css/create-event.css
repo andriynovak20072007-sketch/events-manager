@@ -537,3 +537,162 @@
 .gallery-thumb-remove:hover {
   transform: scale(1.1);
 }
+/* Design Constructor (Pro Feature) */
+.design-controls-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 25px;
+  background: #F8FAFC;
+  padding: 25px;
+  border-radius: 20px;
+  border: 1px solid #E2E8F0;
+}
+
+.design-control-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.design-control-item label {
+  font-size: 14px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.banner-upload-box {
+  background: white;
+  border: 2px dashed #CBD5E1;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.banner-upload-box:hover {
+  border-color: #00AAFF;
+  background: #F0F9FF;
+}
+
+.banner-upload-box i {
+  font-size: 24px;
+  color: #94A3B8;
+}
+
+.banner-upload-box span {
+  font-size: 13px;
+  color: #64748B;
+}
+
+.color-picker-wrapper {
+  background: white;
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.color-picker-wrapper input[type="color"] {
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+#color-value {
+  font-size: 14px;
+  color: #1E293B;
+  font-family: monospace;
+}
+
+.theme-toggle-wrapper {
+  display: flex;
+  gap: 10px;
+  background: white;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+}
+
+.theme-btn {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: #64748B;
+}
+
+.theme-btn.active {
+  background: #00AAFF;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 170, 255, 0.2);
+}
+
+.pro-badge {
+  background: linear-gradient(135deg, #00AAFF 0%, #0077FF 100%);
+  color: white;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Lock Overlay for Free users */
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  border-radius: 12px;
+  display: none; /* Shown via JS if role is not pro */
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  cursor: not-allowed;
+}
+
+.lock-overlay i {
+  background: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+}

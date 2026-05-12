@@ -445,38 +445,131 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // --- ІНІЦІАЛІЗАЦІЯ ---
     async function init() {
-        try {
-            const res = await fetch('http://localhost:5000/api/events');
-            if (res.ok) {
-                const data = await res.json();
-                allEvents = data.map(e => ({ ...e, status: e.status || 'pending' }));
-            } else {
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        const userRole = localStorage.getItem('userRole') || 'free';
+
+        if (eventId) {
+            // MODE: EVENT ANALYTICS (Organizer)
+            document.querySelector('.header-left h2').innerText = 'Аналітика події';
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.event-only').forEach(el => el.classList.remove('hidden'));
+            
+            // Hide dashboard sections that aren't for organizers
+            const adminStats = document.querySelectorAll('.stat-card[data-tab="users"], .stat-card[data-tab="reports"]');
+            adminStats.forEach(el => el.style.display = 'none');
+
+            // Fetch Event Data
+            try {
+                const res = await fetch(`/api/analytics/${eventId}/summary`);
+                const stats = await res.json();
+                document.getElementById('stat-total-events').innerText = stats.views;
+                document.querySelector('.stat-label').innerText = 'Перегляди';
+                // Adjust other cards for events
+                const ticketsCard = document.querySelector('.stat-card[data-tab="users"]'); // Reusing slot
+                const revenueCard = document.querySelector('.stat-card[data-tab="marketing"]');
+                
+                document.getElementById('stat-total-events').innerText = stats.views.toLocaleString();
+                document.querySelectorAll('.stat-value')[2].innerText = stats.tickets.toLocaleString(); // Marketing slot
+                document.querySelectorAll('.stat-label')[2].innerText = 'Квитки';
+
+                // Handle Pro+ for Event
+                if (userRole === 'pro_plus') {
+                    loadEventDetailedData(eventId);
+                } else {
+                    document.getElementById('sales-lock').classList.remove('hidden');
+                    document.getElementById('traffic-lock').classList.remove('hidden');
+                    renderMockEventCharts();
+                }
+            } catch (e) { console.error(e); }
+
+        } else {
+            // MODE: ADMIN PANEL
+            try {
+                const res = await fetch('http://localhost:5000/api/events');
+                if (res.ok) {
+                    const data = await res.json();
+                    allEvents = data.map(e => ({ ...e, status: e.status || 'pending' }));
+                } else {
+                    allEvents = [...mockEvents];
+                }
+            } catch (e) {
                 allEvents = [...mockEvents];
             }
-        } catch (e) {
-            allEvents = [...mockEvents];
+
+            const sourceEvents = allEvents.length > 0 ? allEvents : mockEvents;
+
+            marketingData = sourceEvents.map(ev => ({
+                title: ev.title || ev.event_name || 'Без назви',
+                clicks: Math.floor(Math.random() * 500) + 20,
+                unique: Math.floor(Math.random() * 150) + 10,
+                conv: (Math.random() * 15 + 2).toFixed(1) + '%'
+            }));
+
+            updateDashboardStats();
+            renderEventsTable(allEvents.length > 0 ? allEvents : mockEvents);
+
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab && activeTab.id === 'marketing-section') {
+                renderMarketing();
+            }
+
+            initChart();
         }
+    }
 
-        // Об'єднуємо реальні події та моки для гарантованого відображення
-        const sourceEvents = allEvents.length > 0 ? allEvents : mockEvents;
+    async function loadEventDetailedData(eventId) {
+        try {
+            const res = await fetch(`/api/analytics/${eventId}/detailed?user_id=${localStorage.getItem('userId') || 1}`);
+            const data = await res.json();
+            
+            // Render Sales Chart
+            const salesCtx = document.getElementById('eventSalesChart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: data.daily_sales.map(d => new Date(d.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Дохід (₴)',
+                        data: data.daily_sales.map(d => d.amount),
+                        borderColor: '#00AAFF',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(0, 170, 255, 0.1)'
+                    }]
+                }
+            });
 
-        marketingData = sourceEvents.map(ev => ({
-            title: ev.title || ev.event_name || 'Без назви',
-            clicks: Math.floor(Math.random() * 500) + 20,
-            unique: Math.floor(Math.random() * 150) + 10,
-            conv: (Math.random() * 15 + 2).toFixed(1) + '%'
-        }));
+            // Render Traffic Chart
+            const trafficCtx = document.getElementById('eventTrafficChart').getContext('2d');
+            new Chart(trafficCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.utm_stats.map(s => s.utm_source),
+                    datasets: [{
+                        data: data.utm_stats.map(s => s.count),
+                        backgroundColor: ['#00AAFF', '#10B981', '#F59E0B', '#8B5CF6']
+                    }]
+                }
+            });
 
-        updateDashboardStats();
-        renderEventsTable(allEvents.length > 0 ? allEvents : mockEvents);
+            // Render UTM Table
+            const tbody = document.getElementById('event-utm-tbody');
+            tbody.innerHTML = data.utm_stats.map(s => `
+                <tr>
+                    <td><strong>${s.utm_source}</strong></td>
+                    <td>${s.count}</td>
+                    <td>${(Math.random() * 10 + 2).toFixed(1)}%</td>
+                </tr>
+            `).join('');
 
-        // Якщо користувач вже на вкладці маркетингу, оновлюємо її
-        const activeTab = document.querySelector('.tab-content.active');
-        if (activeTab && activeTab.id === 'marketing-section') {
-            renderMarketing();
-        }
+        } catch (e) { console.error(e); }
+    }
 
-        initChart();
+    function renderMockEventCharts() {
+        // Mock data for blurred charts
+        const salesCtx = document.getElementById('eventSalesChart').getContext('2d');
+        new Chart(salesCtx, { type: 'line', data: { labels: ['1','2','3'], datasets: [{ data: [10, 20, 15], borderColor: '#ccc' }] } });
     }
 
     init();

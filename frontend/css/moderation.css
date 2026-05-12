@@ -308,3 +308,52 @@
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Pro+ Analytics Styles */
+.pro-plus-badge {
+    background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.lock-content {
+    text-align: center;
+    background: white;
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    max-width: 250px;
+}
+
+.lock-content i {
+    font-size: 40px;
+    color: #8B5CF6;
+    margin-bottom: 15px;
+}
+
+.lock-content h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.hidden {
+    display: none !important;
+}

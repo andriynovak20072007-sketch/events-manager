@@ -536,4 +536,79 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 500); // Slight delay for UI elements to be attached
     }
   }
+  // ==========================================
+  // 10. DESIGN CONSTRUCTOR LOGIC (PRO FEATURE)
+  // ==========================================
+  const colorPicker = document.getElementById('button-color-picker');
+  const colorValue = document.getElementById('color-value');
+  const themeBtns = document.querySelectorAll('.theme-btn');
+  const bannerInput = document.getElementById('event-banner');
+  const bannerUploadBox = document.getElementById('banner-upload-area');
+  const lockOverlays = document.querySelectorAll('.lock-overlay');
+
+  // Check user role (Simulation - in real app would check session/token)
+  const userRole = localStorage.getItem('userRole') || 'free'; // 'free' or 'pro'
+  if (userRole !== 'pro') {
+    lockOverlays.forEach(overlay => {
+      overlay.style.display = 'flex';
+      overlay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        alert('Цей функціонал доступний лише для користувачів з тарифом PRO. Перейдіть на сторінку тарифів, щоб оновити аккаунт.');
+        window.location.href = 'pricing.html';
+      });
+    });
+  }
+
+  // Color Picker
+  if (colorPicker && colorValue) {
+    colorPicker.addEventListener('input', (e) => {
+      colorValue.textContent = e.target.value.toUpperCase();
+    });
+  }
+
+  // Theme Toggle
+  if (themeBtns) {
+    themeBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (userRole !== 'pro') return;
+        themeBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  }
+
+  // Banner Upload Preview
+  if (bannerInput && bannerUploadBox) {
+    bannerUploadBox.addEventListener('click', () => {
+      if (userRole === 'pro') bannerInput.click();
+    });
+
+    bannerInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          bannerUploadBox.style.backgroundImage = `url('${e.target.result}')`;
+          bannerUploadBox.style.backgroundSize = 'cover';
+          bannerUploadBox.style.backgroundPosition = 'center';
+          bannerUploadBox.style.borderStyle = 'solid';
+          bannerUploadBox.querySelector('i').style.display = 'none';
+          bannerUploadBox.querySelector('span').style.display = 'none';
+        };
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
+  }
+
+  // Update submit logic to include design data
+  const originalSubmitHandler = createForm.onsubmit;
+  createForm.addEventListener('submit', function(e) {
+    // Collect design data
+    const designData = {
+      buttonColor: colorPicker.value,
+      theme: document.querySelector('.theme-btn.active').getAttribute('data-theme'),
+      hasCustomBanner: !!bannerInput.files.length
+    };
+    console.log('Design Data:', designData);
+    // Design data would be sent to server here
+  });
 });

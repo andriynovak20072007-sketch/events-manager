@@ -320,4 +320,41 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// ==========================================
+// 9. ОНОВЛЕННЯ СТАТУСУ ДО PRO (POST /users/upgrade)
+// ==========================================
+router.post('/upgrade', async (req, res) => {
+    try {
+        // У реальному проекті тут була б перевірка сесії або токена
+        const userId = req.session.user ? req.session.user.id : req.body.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: "Ви повинні бути авторизовані" });
+        }
+
+        const result = await pool.query(
+            "UPDATE users SET role = 'pro' WHERE user_id = $1 RETURNING user_id, username, email, role",
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Користувача не знайдено" });
+        }
+
+        // Оновлюємо дані в сесії, якщо вона є
+        if (req.session.user) {
+            req.session.user.role = 'pro';
+        }
+
+        res.json({ 
+            message: "Вітаємо! Ваш статус оновлено до Pro.", 
+            user: result.rows[0] 
+        });
+
+    } catch (err) {
+        console.error('Помилка при оновленні статусу:', err.message);
+        res.status(500).json({ error: "Помилка сервера при оновленні статусу" });
+    }
+});
+
 module.exports = router;

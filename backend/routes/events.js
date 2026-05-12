@@ -333,13 +333,35 @@ router.post('/', async (req, res) => {
     if (!region) return res.status(400).json({ error: "Вкажіть область" });
     if (price !== undefined && price < 0) return res.status(400).json({ error: "Ціна не може бути від'ємною" });
 
+    // Check for Pro features (Design Constructor)
+    if ((req.body.banner_url || req.body.button_color || req.body.theme !== 'light')) {
+        const userRes = await pool.query('SELECT role FROM users WHERE user_id = $1', [creator_id]);
+        if (userRes.rows.length === 0 || userRes.rows[0].role !== 'pro') {
+            // If user is not pro, we ignore design fields or return error
+            // For now, let's just nullify them to prevent free users from using them
+            req.body.banner_url = null;
+            req.body.button_color = null;
+            req.body.theme = 'light';
+        }
+    }
+
     try {
         const query = `
-            INSERT INTO events (title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, is_private, price, currency) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+            INSERT INTO events (
+                title, description, event_day, start_time, end_time, 
+                latitude, longitude, category_id, creator_id, region, 
+                is_private, price, currency,
+                banner_url, button_color, theme
+            ) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
             RETURNING *`;
 
-        const values = [title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, is_private ?? true, price || 0, currency || 'UAH'];
+        const values = [
+            title, description, event_day, start_time, end_time, 
+            latitude, longitude, category_id, creator_id, region, 
+            is_private ?? true, price || 0, currency || 'UAH',
+            req.body.banner_url || null, req.body.button_color || null, req.body.theme || 'light'
+        ];
 
         const result = await pool.query(query, values);
         res.status(201).json(result.rows[0]);
@@ -481,7 +503,10 @@ router.put('/private/:id', async (req, res) => {
                 region = COALESCE($9, region),
                 price = COALESCE($10, price),
                 currency = COALESCE($11, currency),
-                photo_url = COALESCE($12, photo_url)
+                photo_url = COALESCE($12, photo_url),
+                banner_url = COALESCE($14, banner_url),
+                button_color = COALESCE($15, button_color),
+                theme = COALESCE($16, theme)
             WHERE event_id = $13 AND is_private = TRUE
             RETURNING *`;
 
@@ -489,7 +514,8 @@ router.put('/private/:id', async (req, res) => {
             title, description, event_day, start_time, end_time, 
             latitude, longitude, category_id, region, 
             price, currency, photo_url,
-            eventId
+            eventId,
+            req.body.banner_url, req.body.button_color, req.body.theme
         ];
 
         const result = await pool.query(query, values);

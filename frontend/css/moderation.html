@@ -42,19 +42,27 @@
                 <a href="#" class="sidebar-link active" data-tab="dashboard">
                     <i class="fa-solid fa-chart-line"></i> Дашборд
                 </a>
-                <a href="#" class="sidebar-link" data-tab="events">
+                <!-- Event Specific Tabs (Visible if id is present) -->
+                <a href="#" class="sidebar-link event-only hidden" data-tab="sales">
+                    <i class="fa-solid fa-ticket"></i> Продажі
+                </a>
+                <a href="#" class="sidebar-link event-only hidden" data-tab="traffic">
+                    <i class="fa-solid fa-globe"></i> Трафік
+                </a>
+                <!-- Admin Only Tabs -->
+                <a href="#" class="sidebar-link admin-only" data-tab="events">
                     <i class="fa-solid fa-calendar-days"></i> Події
                 </a>
-                <a href="#" class="sidebar-link" data-tab="categories">
+                <a href="#" class="sidebar-link admin-only" data-tab="categories">
                     <i class="fa-solid fa-layer-group"></i> Категорії
                 </a>
-                <a href="#" class="sidebar-link" data-tab="users">
+                <a href="#" class="sidebar-link admin-only" data-tab="users">
                     <i class="fa-solid fa-users"></i> Користувачі
                 </a>
-                <a href="#" class="sidebar-link" data-tab="reports">
+                <a href="#" class="sidebar-link admin-only" data-tab="reports">
                     <i class="fa-solid fa-circle-exclamation"></i> Скарги
                 </a>
-                <a href="#" class="sidebar-link" data-tab="marketing">
+                <a href="#" class="sidebar-link admin-only" data-tab="marketing">
                     <i class="fa-solid fa-bullseye"></i> Маркетинг
                 </a>
             </nav>
@@ -238,7 +246,7 @@
                 </div>
             </section>
 
-            <!-- Розділ МАРКЕТИНГ -->
+            <!-- Розділ МАРКЕТИНГ (Admin) -->
             <section id="marketing-section" class="tab-content">
                 <div class="admin-header-actions">
                     <h1>Статистика переходів (Квитки)</h1>
@@ -255,6 +263,56 @@
                         </thead>
                         <tbody id="adminMarketingBody"></tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- Розділ ПРОДАЖІ (Event Analytics - Pro+) -->
+            <section id="sales-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Динаміка продажів</h1>
+                    <span class="pro-plus-badge">PRO+</span>
+                </div>
+                <div class="card" style="position: relative; padding: 30px;">
+                    <canvas id="eventSalesChart" height="100"></canvas>
+                    <div id="sales-lock" class="lock-overlay hidden">
+                        <div class="lock-content">
+                            <i class="fa-solid fa-lock"></i>
+                            <h3>Доступно в Pro+</h3>
+                            <a href="pricing.html" class="main-btn" style="width: auto; padding: 10px 20px;">Оновити</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Розділ ТРАФІК (Event Analytics - Pro+) -->
+            <section id="traffic-section" class="tab-content">
+                <div class="admin-header-actions">
+                    <h1>Джерела трафіку</h1>
+                    <span class="pro-plus-badge">PRO+</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px; position: relative;">
+                    <div class="card" style="padding: 20px;">
+                        <canvas id="eventTrafficChart"></canvas>
+                    </div>
+                    <div class="card" style="padding: 20px;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Джерело</th>
+                                    <th>Кількість</th>
+                                    <th>Конверсія</th>
+                                </tr>
+                            </thead>
+                            <tbody id="event-utm-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="traffic-lock" class="lock-overlay hidden">
+                        <div class="lock-content">
+                            <i class="fa-solid fa-lock"></i>
+                            <h3>Доступно в Pro+</h3>
+                            <a href="pricing.html" class="main-btn" style="width: auto; padding: 10px 20px;">Оновити</a>
+                        </div>
+                    </div>
                 </div>
             </section>
 
