@@ -146,7 +146,11 @@
             <div class="group-label"><span>Дата та час</span></div>
             <div class="input-with-icon">
               <i class="fa-regular fa-clock"></i>
-              <input type="datetime-local" class="normal-placeholder">
+              <input type="datetime-local" id="event-date-time" class="normal-placeholder">
+              <div class="input-with-icon" style="margin-top: 10px;">
+                <i class="fa-regular fa-clock"></i>
+                <input type="datetime-local" id="event-end-date-time" class="normal-placeholder">
+              </div>
             </div>
           </div>
 
@@ -170,7 +174,7 @@
             <div class="group-label"><span>Категорія події</span></div>
             <div class="input-with-icon">
               <i class="fa-solid fa-layer-group"></i>
-              <select
+             <select id="event-category"
                 style="width: 100%; border: none; outline: none; background: transparent; padding: 10px 0; color: #1E293B; font-size: 15px;">
                 <option value="" disabled selected>Оберіть категорію...</option>
                 <option value="concert">Концерт</option>
@@ -284,6 +288,27 @@
                 <i class="fa-solid fa-circle-plus"></i>
               </button>
             </div>
+          </div>
+
+          <!-- 
+          ТАСК 70: Приватні та загальні події
+          Опис:
+          Користувач обирає, чи подія буде загальною або приватною
+          -->
+          <div class="input-group">
+            <div class="group-label">
+              <span>Доступ до події</span>
+            </div>
+
+            <label>
+              <input type="radio" name="eventVisibility" value="public" checked>
+              Загальна подія
+            </label>
+
+            <label style="margin-left: 15px;">
+              <input type="radio" name="eventVisibility" value="private">
+              Приватна подія
+            </label>
           </div>
 
           <!-- Submit Action -->
