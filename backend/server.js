@@ -17,6 +17,7 @@ const hotelsRoutes = require('./routes/hotels');
 const authRoutes = require('./routes/auth');
 const notificationsRoutes = require('./routes/notifications');
 const settingsRoutes = require('./routes/settings');
+const subscriptionsRoutes = require('./routes/subscriptions');
 
 // ==========================================
 // ІНІЦІАЛІЗАЦІЯ ФОНОВИХ ЗАВДАНЬ (CRON JOBS)
@@ -58,6 +59,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/subscriptions', subscriptionsRoutes);
 
 // Базовий тестовий роут для перевірки працездатності
 app.get('/', (req, res) => {

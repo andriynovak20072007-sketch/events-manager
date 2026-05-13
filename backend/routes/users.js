@@ -4,7 +4,11 @@ const pool = require('../db');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+<<<<<<< HEAD
 const trialService = require('../services/TrialService');
+=======
+const SubscriptionService = require('../services/SubscriptionService');
+>>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
 
 // РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ РїРѕС€С‚Рё (РґР»СЏ СЂРѕР·СЂРѕР±РєРё РїРѕСЃРёР»Р°РЅРЅСЏ РїСЂРѕСЃС‚Рѕ РІРёРІРѕРґРёС‚СЊСЃСЏ РІ РєРѕРЅСЃРѕР»СЊ СЃРµСЂРІРµСЂР°)
 const transporter = nodemailer.createTransport({
@@ -76,19 +80,20 @@ router.post('/register', async (req, res) => {
             }
         }
 
-        // РҐР•РЁРЈР’РђРќРќРЇ РџРђР РћР›РЇ
+        // РҐР•РЁРЈР’РђРќРќРЇ РџРђР РћР›СЏ
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // Р“Р•РќР•Р РђР¦Р†РЇ РўРћРљР•РќРђ РђРљРўРР’РђР¦Р†Р‡
+        // Р“Р•РќР•Р РђР¦Р†РЇ РўРћРљР•РќРђ РђРљРўР˜Р’РђР¦Р†Р‡
         const activationToken = crypto.randomBytes(32).toString('hex');
 
-        // Р—Р‘Р•Р Р•Р–Р•РќРќРЇ Р’ Р‘РђР—РЈ Р”РђРќРРҐ
+        // Р—Р‘Р•Р Р•Р–Р•РќРќРЇ Р’ Р‘РђР—РЈ Р”РђРќР˜РҐ
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password_hash, activation_token) VALUES ($1, $2, $3, $4) RETURNING user_id, username, email',
             [username, email, passwordHash, activationToken]
         );
 
+<<<<<<< HEAD
         // Автоматична активація Trial-періоду (2 місяці)
         let trialInfo = null;
         try {
@@ -98,6 +103,15 @@ router.post('/register', async (req, res) => {
             }
         } catch (trialErr) {
             console.error('Trial activation error:', trialErr.message);
+=======
+        // АВТОМАТИЧНЕ ПРИЗНАЧЕННЯ ТАРИФУ FREE
+        // Патерн: Strategy — кожен новий користувач отримує базову стратегію (Free)
+        try {
+            await SubscriptionService.assignFreePlan(newUser.rows[0].user_id);
+        } catch (subErr) {
+            console.error('Помилка призначення тарифу Free:', subErr.message);
+            // Не блокуємо реєстрацію, якщо підписка не створилась
+>>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
         }
 
         const activationLink = `http://localhost:5000/users/activate/${activationToken}`;

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const { OAuth2Client } = require('google-auth-library');
+const SubscriptionService = require('../services/SubscriptionService');
 
 // ==========================================
 // ПАТЕРН: Singleton
@@ -48,6 +49,13 @@ router.post('/google', async (req, res) => {
                 [username, email, google_id, 'user']
             );
             user = insertResult.rows[0];
+
+            // АВТОМАТИЧНЕ ПРИЗНАЧЕННЯ ТАРИФУ FREE для нового Google-користувача
+            try {
+                await SubscriptionService.assignFreePlan(user.user_id);
+            } catch (subErr) {
+                console.error('Помилка призначення тарифу Free (Google):', subErr.message);
+            }
         }
 
         // 4. Зберігаємо сесію
