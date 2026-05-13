@@ -10,55 +10,32 @@ import java.util.ArrayList;
 import java.util.List;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay; // якщо знадобиться пізніше
 
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        // Імпорти (додай їх у верхню частину файлу, якщо треба):
 
-// 1. Ініціалізація конфігурації (це обов'язково для osmdroid)
         Configuration.getInstance().setUserAgentValue(getPackageName());
+        setContentView(R.layout.activity_main);
 
-// 2. Знаходимо карту
+        // Карта
         MapView mapView = findViewById(R.id.mapView);
-        mapView.setMultiTouchControls(true); // Дозволяє зумити пальцями
+        mapView.setMultiTouchControls(true);
 
-// 3. Встановлюємо початковий вигляд (наприклад, центр України)
-        mapView.getController().setZoom(6.0);
-        mapView.getController().setCenter(new org.osmdroid.util.GeoPoint(49.0, 31.0));
-
-        // 1. Налаштування іконки профілю
+        // Профіль
         ImageButton profileBtn = findViewById(R.id.profileMenuBtn);
-        if (profileBtn != null) {
-            profileBtn.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, ProfileMenuActivity.class);
-                startActivity(intent);
-            });
-        }
+        profileBtn.setOnClickListener(v -> startActivity(new Intent(this, ProfileMenuActivity.class)));
 
-        // 2. Ініціалізація даних
+        // Дані для списку
         List<Event> eventList = new ArrayList<>();
-        eventList.add(new Event("Summer Fest", "Львів, Стрийський парк", "20 липня, 18:00", R.drawable.summer_fest));
-        eventList.add(new Event("Техно-Конференція", "Київ, КВЦ Парковий", "15 серпня, 10:00", R.drawable.tech_conf));
-        eventList.add(new Event("Майстер-клас з живопису", "Львів, Арт-центр", "25 липня, 15:00", R.drawable.art_class));
+        eventList.add(new Event("Summer Fest", "Львів, Стрийський парк", "20 липня", R.drawable.summer_fest));
+        eventList.add(new Event("Техно-Конференція", "Київ, КВЦ Парковий", "15 серпня", R.drawable.tech_conf));
 
-        // 3. Підключення RecyclerView
+        // Налаштування списку
         RecyclerView recyclerView = findViewById(R.id.rvEvents);
-
-        // Встановлюємо менеджер списку
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // ВАЖЛИВО: Вимикаємо внутрішній скролінг для роботи в NestedScrollView
-        recyclerView.setNestedScrollingEnabled(false);
-
-        // Створюємо та встановлюємо адаптер
-        EventAdapter adapter = new EventAdapter(eventList);
-        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerView.setAdapter(new EventAdapter(eventList));
     }
 }
