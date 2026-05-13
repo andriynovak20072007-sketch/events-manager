@@ -9,6 +9,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const adminLogsBody = document.getElementById('adminLogsBody');
     const statusFilter = document.getElementById('statusFilter');
     const adminSearchInput = document.getElementById('adminSearchInput');
+    const modeModeration = document.getElementById('mode-moderation');
+    const modeAnalytics = document.getElementById('mode-analytics');
+    const eventPickerContainer = document.getElementById('event-picker-container');
+    const eventPicker = document.getElementById('event-picker');
+    const userStatusToggle = document.getElementById('user-status-toggle');
 
     // --- СТАН (STATE) ---
     let allEvents = [];
@@ -59,6 +64,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         { title: 'Tech Conference 2026', clicks: 310, unique: 280, conv: '8.2%' },
         { title: 'Art Exhibition', clicks: 100, unique: 95, conv: '4.1%' }
     ];
+    
+    // --- Chart Instances (to destroy before re-render) ---
+    let salesChartInstance = null;
+    let trafficChartInstance = null;
+    let dashboardChartInstance = null;
 
     // --- ЛОГІКА ТАБІВ ---
     function switchTab(tabId) {
@@ -229,7 +239,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const ctx = document.getElementById('activityChart');
         if (!ctx) return;
 
-        myChart = new Chart(ctx, {
+        if (dashboardChartInstance) dashboardChartInstance.destroy();
+
+        dashboardChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
@@ -265,6 +277,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function updateDashboardStats() {
+        // Only update if we are in Moderation mode
+        if (modeModeration && !modeModeration.classList.contains('active')) return;
+
         if (document.getElementById('stat-total-events')) {
             document.getElementById('stat-total-events').innerText = allEvents.length;
         }
@@ -272,10 +287,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById('stat-active-reports').innerText = mockReports.length;
         }
 
-        // Можна також імітувати випадкове оновлення графіка
-        if (myChart) {
-            myChart.data.datasets[0].data[6] = 450 + (Math.random() * 50);
-            myChart.update();
+        if (dashboardChartInstance) {
+            dashboardChartInstance.data.datasets[0].data[6] = 450 + (Math.random() * 50);
+            dashboardChartInstance.update();
         }
     }
 
@@ -443,89 +457,259 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
     }
 
+    // --- СТАТУС КОРИСТУВАЧА (ДЛЯ ТЕСТУ) ---
+    function updateStatusUI() {
+        const role = localStorage.getItem('userRole') || 'free';
+        const isPro = role === 'pro_plus' || role === 'pro';
+        if (userStatusToggle) {
+            userStatusToggle.innerText = isPro ? 'PRO+' : 'FREE';
+            userStatusToggle.className = `user-status-badge ${isPro ? 'pro-plus' : 'free'}`;
+        }
+    }
+
+    if (userStatusToggle) {
+        userStatusToggle.onclick = () => {
+            const currentRole = localStorage.getItem('userRole') || 'free';
+            const newRole = currentRole === 'pro_plus' ? 'free' : 'pro_plus';
+            localStorage.setItem('userRole', newRole);
+            updateStatusUI();
+            showToast(`Статус змінено на: ${newRole.toUpperCase()}`);
+            
+            // Reload analytics if in analytics mode
+            if (modeAnalytics && modeAnalytics.classList.contains('active') && eventPicker && eventPicker.value) {
+                loadEventAnalytics(eventPicker.value);
+            }
+        };
+    }
+    updateStatusUI();
+
     // --- ІНІЦІАЛІЗАЦІЯ ---
     async function init() {
+        // --- MODE SWITCHING ---
+        if (modeModeration) {
+            modeModeration.onclick = () => {
+                modeModeration.classList.add('active');
+                modeAnalytics.classList.remove('active');
+                eventPickerContainer.classList.add('hidden');
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+                document.querySelectorAll('.event-only').forEach(el => el.classList.add('hidden'));
+                document.querySelector('.header-left h2').innerText = 'Адмін-панель';
+                switchTab('dashboard');
+            };
+        }
+
+        if (modeAnalytics) {
+            modeAnalytics.onclick = async () => {
+                modeAnalytics.classList.add('active');
+                modeModeration.classList.remove('active');
+                eventPickerContainer.classList.remove('hidden');
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.event-only').forEach(el => el.classList.remove('hidden'));
+                document.querySelector('.header-left h2').innerText = 'Аналітика події';
+                
+                // Load events for picker
+                await loadEventsForPicker();
+                
+                // Auto-select first event if exists
+                if (eventPicker && eventPicker.options.length > 1) {
+                    eventPicker.selectedIndex = 1;
+                    loadEventAnalytics(eventPicker.value);
+                }
+                
+                switchTab('dashboard');
+            };
+        }
+
+        if (eventPicker) {
+            eventPicker.onchange = (e) => {
+                const eventId = e.target.value;
+                if (eventId) {
+                    loadEventAnalytics(eventId);
+                }
+            };
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const eventId = urlParams.get('id');
-        const userRole = localStorage.getItem('userRole') || 'free';
-
+        
         if (eventId) {
-            // MODE: EVENT ANALYTICS (Organizer)
-            document.querySelector('.header-left h2').innerText = 'Аналітика події';
-            document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.event-only').forEach(el => el.classList.remove('hidden'));
-            
-            // Hide dashboard sections that aren't for organizers
-            const adminStats = document.querySelectorAll('.stat-card[data-tab="users"], .stat-card[data-tab="reports"]');
-            adminStats.forEach(el => el.style.display = 'none');
-
-            // Fetch Event Data
-            try {
-                const res = await fetch(`/api/analytics/${eventId}/summary`);
-                const stats = await res.json();
-                document.getElementById('stat-total-events').innerText = stats.views;
-                document.querySelector('.stat-label').innerText = 'Перегляди';
-                // Adjust other cards for events
-                const ticketsCard = document.querySelector('.stat-card[data-tab="users"]'); // Reusing slot
-                const revenueCard = document.querySelector('.stat-card[data-tab="marketing"]');
-                
-                document.getElementById('stat-total-events').innerText = stats.views.toLocaleString();
-                document.querySelectorAll('.stat-value')[2].innerText = stats.tickets.toLocaleString(); // Marketing slot
-                document.querySelectorAll('.stat-label')[2].innerText = 'Квитки';
-
-                // Handle Pro+ for Event
-                if (userRole === 'pro_plus') {
-                    loadEventDetailedData(eventId);
-                } else {
-                    document.getElementById('sales-lock').classList.remove('hidden');
-                    document.getElementById('traffic-lock').classList.remove('hidden');
-                    renderMockEventCharts();
+            // If ID in URL, auto-switch to analytics mode
+            if (modeAnalytics) modeAnalytics.click();
+            // Wait for picker to load then select
+            setTimeout(() => {
+                if (eventPicker) {
+                    eventPicker.value = eventId;
+                    loadEventAnalytics(eventId);
                 }
-            } catch (e) { console.error(e); }
-
+            }, 500);
         } else {
-            // MODE: ADMIN PANEL
-            try {
-                const res = await fetch('http://localhost:5000/api/events');
-                if (res.ok) {
-                    const data = await res.json();
-                    allEvents = data.map(e => ({ ...e, status: e.status || 'pending' }));
-                } else {
-                    allEvents = [...mockEvents];
-                }
-            } catch (e) {
+            // DEFAULT: Moderation Mode
+            updateDashboardStats();
+            initChart();
+        }
+
+        // Load all events for moderation table regardless
+        try {
+            const res = await fetch('http://localhost:5000/events');
+            if (res.ok) {
+                const data = await res.json();
+                allEvents = data.map(e => ({ ...e, status: e.status || 'pending' }));
+            } else {
                 allEvents = [...mockEvents];
             }
+        } catch (e) {
+            allEvents = [...mockEvents];
+        }
+        renderEventsTable(allEvents);
+    }
 
-            const sourceEvents = allEvents.length > 0 ? allEvents : mockEvents;
+    async function loadEventsForPicker() {
+        if (!eventPicker) return;
+        eventPicker.innerHTML = '<option value="">Оберіть подію...</option>';
+        
+        // In real app, fetch events where current user is organizer
+        // For now, let's use allEvents or mock
+        const source = allEvents.length > 0 ? allEvents : mockEvents;
+        source.forEach(ev => {
+            const opt = document.createElement('option');
+            opt.value = ev.event_id || ev.id;
+            opt.innerText = ev.title || ev.event_name;
+            eventPicker.appendChild(opt);
+        });
+    }
 
-            marketingData = sourceEvents.map(ev => ({
-                title: ev.title || ev.event_name || 'Без назви',
-                clicks: Math.floor(Math.random() * 500) + 20,
-                unique: Math.floor(Math.random() * 150) + 10,
-                conv: (Math.random() * 15 + 2).toFixed(1) + '%'
-            }));
+    async function loadEventAnalytics(eventId) {
+        const userRole = localStorage.getItem('userRole') || 'free';
+        
+        // --- Consistent Dummy Data per Event ---
+        const seed = String(eventId).length + (parseInt(String(eventId).replace(/\D/g, '')) || 0);
+        const getSeedRandom = (offset) => {
+            const x = Math.sin(seed + offset) * 10000;
+            return x - Math.floor(x);
+        };
 
-            updateDashboardStats();
-            renderEventsTable(allEvents.length > 0 ? allEvents : mockEvents);
+        const dummyStats = {
+            views: Math.floor(getSeedRandom(1) * 2000) + 500,
+            tickets: Math.floor(getSeedRandom(2) * 100) + 10,
+            revenue: Math.floor(getSeedRandom(3) * 50000) + 5000
+        };
 
-            const activeTab = document.querySelector('.tab-content.active');
-            if (activeTab && activeTab.id === 'marketing-section') {
-                renderMarketing();
+        try {
+            let stats = dummyStats;
+            
+            // Only try fetch if eventId is a number
+            if (!isNaN(eventId)) {
+                const res = await fetch(`http://localhost:5000/api/analytics/${eventId}/summary`);
+                if (res.ok) {
+                    const realStats = await res.json();
+                    // If we have real views, use them, otherwise stick to dummy for demo
+                    if (realStats.views > 0) stats = realStats;
+                }
+            }
+            
+            // Update Stats Cards
+            document.getElementById('stat-total-events').innerText = stats.views.toLocaleString();
+            document.querySelectorAll('.stat-label')[0].innerText = 'Перегляди сторінки';
+            
+            const cards = document.querySelectorAll('.stat-card');
+            if (cards[1]) {
+                cards[1].querySelector('.stat-label').innerText = 'Продані квитки';
+                cards[1].querySelector('.stat-value').innerText = stats.tickets;
+                cards[1].querySelector('.stat-icon').style.background = '#E0F2FE';
+                cards[1].querySelector('.stat-icon').style.color = '#0369A1';
+                cards[1].querySelector('.stat-icon').innerHTML = '<i class="fa-solid fa-ticket"></i>';
+                cards[1].style.display = 'flex';
+            }
+            if (cards[2]) {
+                cards[2].querySelector('.stat-label').innerText = 'Загальний дохід';
+                cards[2].querySelector('.stat-value').innerText = `₴${stats.revenue.toLocaleString()}`;
+                cards[2].querySelector('.stat-icon').style.background = '#DCFCE7';
+                cards[2].querySelector('.stat-icon').style.color = '#15803D';
+                cards[2].querySelector('.stat-icon').innerHTML = '<i class="fa-solid fa-money-bill-trend-up"></i>';
+                cards[2].style.display = 'flex';
+            }
+            if (cards[3]) {
+                cards[3].querySelector('.stat-label').innerText = 'Конверсія';
+                const conv = stats.views > 0 ? ((stats.tickets / stats.views) * 100).toFixed(1) : 0;
+                cards[3].querySelector('.stat-value').innerText = `${conv}%`;
+                cards[3].style.display = 'flex';
             }
 
-            initChart();
+            // Update Dashboard Chart for Event
+            if (dashboardChartInstance) {
+                dashboardChartInstance.data.datasets[0].label = 'Перегляди';
+                dashboardChartInstance.data.datasets[0].data = [
+                    Math.floor(getSeedRandom(4) * 500),
+                    Math.floor(getSeedRandom(5) * 600),
+                    Math.floor(getSeedRandom(6) * 450),
+                    Math.floor(getSeedRandom(7) * 800),
+                    Math.floor(getSeedRandom(8) * 700),
+                    Math.floor(getSeedRandom(9) * 900),
+                    stats.views % 1000
+                ];
+                dashboardChartInstance.data.datasets[1].label = 'Квитки';
+                dashboardChartInstance.data.datasets[1].data = [
+                    Math.floor(getSeedRandom(10) * 50),
+                    Math.floor(getSeedRandom(11) * 40),
+                    Math.floor(getSeedRandom(12) * 60),
+                    Math.floor(getSeedRandom(13) * 30),
+                    Math.floor(getSeedRandom(14) * 70),
+                    Math.floor(getSeedRandom(15) * 55),
+                    stats.tickets
+                ];
+                dashboardChartInstance.update();
+            }
+
+            // Handle Pro+ Detailed Data
+            const isPro = userRole === 'pro_plus' || userRole === 'pro';
+            if (isPro) {
+                document.getElementById('sales-lock').classList.add('hidden');
+                document.getElementById('traffic-lock').classList.add('hidden');
+                loadEventDetailedData(eventId);
+            } else {
+                document.getElementById('sales-lock').classList.remove('hidden');
+                document.getElementById('traffic-lock').classList.remove('hidden');
+                renderMockEventCharts();
+            }
+        } catch (e) {
+            console.error('Error loading analytics:', e);
+            // Fallback UI already updated with dummyStats
         }
     }
 
     async function loadEventDetailedData(eventId) {
         try {
-            const res = await fetch(`/api/analytics/${eventId}/detailed?user_id=${localStorage.getItem('userId') || 1}`);
-            const data = await res.json();
+            let data = null;
+            
+            if (!isNaN(eventId)) {
+                const res = await fetch(`http://localhost:5000/api/analytics/${eventId}/detailed?user_id=${localStorage.getItem('userId') || 1}`);
+                if (res.ok) data = await res.json();
+            }
+
+            // Fallback for demo if no real data
+            if (!data || !data.daily_sales || data.daily_sales.length === 0) {
+                data = {
+                    daily_sales: [
+                        { date: '2026-05-01', amount: 1200 },
+                        { date: '2026-05-02', amount: 800 },
+                        { date: '2026-05-03', amount: 2400 },
+                        { date: '2026-05-04', amount: 1500 },
+                        { date: '2026-05-05', amount: 3200 }
+                    ],
+                    utm_stats: [
+                        { utm_source: 'Google', count: 450 },
+                        { utm_source: 'Facebook', count: 320 },
+                        { utm_source: 'Instagram', count: 280 },
+                        { utm_source: 'Direct', count: 150 }
+                    ]
+                };
+            }
             
             // Render Sales Chart
             const salesCtx = document.getElementById('eventSalesChart').getContext('2d');
-            new Chart(salesCtx, {
+            if (salesChartInstance) salesChartInstance.destroy();
+
+            salesChartInstance = new Chart(salesCtx, {
                 type: 'line',
                 data: {
                     labels: data.daily_sales.map(d => new Date(d.date).toLocaleDateString()),
@@ -537,12 +721,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                         fill: true,
                         backgroundColor: 'rgba(0, 170, 255, 0.1)'
                     }]
-                }
+                },
+                options: { scales: { y: { beginAtZero: true } } }
             });
 
             // Render Traffic Chart
             const trafficCtx = document.getElementById('eventTrafficChart').getContext('2d');
-            new Chart(trafficCtx, {
+            if (trafficChartInstance) trafficChartInstance.destroy();
+
+            trafficChartInstance = new Chart(trafficCtx, {
                 type: 'doughnut',
                 data: {
                     labels: data.utm_stats.map(s => s.utm_source),

@@ -146,7 +146,11 @@
             <div class="group-label"><span>Р”Р°С‚Р° С‚Р° С‡Р°СЃ</span></div>
             <div class="input-with-icon">
               <i class="fa-regular fa-clock"></i>
-              <input type="datetime-local" class="normal-placeholder">
+              <input type="datetime-local" id="event-date-time" class="normal-placeholder">
+              <div class="input-with-icon" style="margin-top: 10px;">
+                <i class="fa-regular fa-clock"></i>
+                <input type="datetime-local" id="event-end-date-time" class="normal-placeholder">
+              </div>
             </div>
           </div>
 
@@ -170,7 +174,7 @@
             <div class="group-label"><span>РљР°С‚РµРіРѕСЂС–СЏ РїРѕРґС–С—</span></div>
             <div class="input-with-icon">
               <i class="fa-solid fa-layer-group"></i>
-              <select
+             <select id="event-category"
                 style="width: 100%; border: none; outline: none; background: transparent; padding: 10px 0; color: #1E293B; font-size: 15px;">
                 <option value="" disabled selected>РћР±РµСЂС–С‚СЊ РєР°С‚РµРіРѕСЂС–СЋ...</option>
                 <option value="concert">РљРѕРЅС†РµСЂС‚</option>
@@ -284,6 +288,46 @@
                 <i class="fa-solid fa-circle-plus"></i>
               </button>
             </div>
+          </div>
+
+          <!-- 
+          ТАСК 70: Приватні та загальні події
+          Опис:
+          Користувач обирає, чи подія буде загальною або приватною
+          -->
+          <div class="input-group">
+            <div class="group-label">
+              <span>Доступ до події</span>
+            </div>
+
+            <label>
+              <input type="radio" name="eventVisibility" value="public" checked>
+              Загальна подія
+            </label>
+
+            <label style="margin-left: 15px;">
+              <input type="radio" name="eventVisibility" value="private">
+              Приватна подія
+            </label>
+          </div>
+
+          <!--
+          ТАСК 71: Разова доплата за подію
+          Показується Free-користувачу, якщо він досяг ліміту створення подій
+          -->
+          <div id="extraPaymentBox" class="input-group" style="display:none;">
+            <div class="group-label">
+              <span>Ліміт подій досягнуто</span>
+            </div>
+
+            <p style="color:#64748B; font-size:14px;">
+              Ви вже створили 3 події на безкоштовному тарифі.
+              Можете оплатити створення ще однієї події без купівлі Pro.
+            </p>
+
+            <button type="button" id="payExtraEventBtn" class="large-blue">
+              Оплатити ще 1 подію — 99 ₴
+            </button>
           </div>
 
           <!-- Submit Action -->

@@ -4,6 +4,11 @@ const pool = require('../db');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+<<<<<<< HEAD
+const trialService = require('../services/TrialService');
+=======
+const SubscriptionService = require('../services/SubscriptionService');
+>>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
 
 // РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ РїРѕС€С‚Рё (РґР»СЏ СЂРѕР·СЂРѕР±РєРё РїРѕСЃРёР»Р°РЅРЅСЏ РїСЂРѕСЃС‚Рѕ РІРёРІРѕРґРёС‚СЊСЃСЏ РІ РєРѕРЅСЃРѕР»СЊ СЃРµСЂРІРµСЂР°)
 const transporter = nodemailer.createTransport({
@@ -75,32 +80,53 @@ router.post('/register', async (req, res) => {
             }
         }
 
-        // РҐР•РЁРЈР’РђРќРќРЇ РџРђР РћР›РЇ
+        // РҐР•РЁРЈР’РђРќРќРЇ РџРђР РћР›СЏ
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // Р“Р•РќР•Р РђР¦Р†РЇ РўРћРљР•РќРђ РђРљРўРР’РђР¦Р†Р‡
+        // Р“Р•РќР•Р РђР¦Р†РЇ РўРћРљР•РќРђ РђРљРўР˜Р’РђР¦Р†Р‡
         const activationToken = crypto.randomBytes(32).toString('hex');
 
-        // Р—Р‘Р•Р Р•Р–Р•РќРќРЇ Р’ Р‘РђР—РЈ Р”РђРќРРҐ
+        // Р—Р‘Р•Р Р•Р–Р•РќРќРЇ Р’ Р‘РђР—РЈ Р”РђРќР˜РҐ
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password_hash, activation_token) VALUES ($1, $2, $3, $4) RETURNING user_id, username, email',
             [username, email, passwordHash, activationToken]
         );
 
+<<<<<<< HEAD
+        // Автоматична активація Trial-періоду (2 місяці)
+        let trialInfo = null;
+        try {
+            const trialResult = await trialService.activateTrial(newUser.rows[0].user_id);
+            if (trialResult.success) {
+                trialInfo = trialResult.trial_info;
+            }
+        } catch (trialErr) {
+            console.error('Trial activation error:', trialErr.message);
+=======
+        // АВТОМАТИЧНЕ ПРИЗНАЧЕННЯ ТАРИФУ FREE
+        // Патерн: Strategy — кожен новий користувач отримує базову стратегію (Free)
+        try {
+            await SubscriptionService.assignFreePlan(newUser.rows[0].user_id);
+        } catch (subErr) {
+            console.error('Помилка призначення тарифу Free:', subErr.message);
+            // Не блокуємо реєстрацію, якщо підписка не створилась
+>>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
+        }
+
         const activationLink = `http://localhost:5000/users/activate/${activationToken}`;
         
-        // РЎРёРјСѓР»СЏС†С–СЏ РІС–РґРїСЂР°РІРєРё Р»РёСЃС‚Р° (РІРёРІРѕРґРёРјРѕ РІ РєРѕРЅСЃРѕР»СЊ)
-        console.log(`\n=== РќРћР’РР™ РљРћР РРЎРўРЈР’РђР§ Р—РђР Р•Р„РЎРўР РћР’РђРќРР™ ===`);
+        console.log(`\n=== NEW USER REGISTERED ===`);
         console.log(`Email: ${email}`);
-        console.log(`РџРѕСЃРёР»Р°РЅРЅСЏ РґР»СЏ Р°РєС‚РёРІР°С†С–С—: ${activationLink}`);
-        console.log(`=========================================\n`);
+        console.log(`Activation: ${activationLink}`);
+        console.log(`Trial: ${trialInfo ? 'activated for 60 days' : 'not activated'}`);
+        console.log(`===========================\n`);
 
         res.status(201).json({ 
-            message: "Р РµС”СЃС‚СЂР°С†С–СЏ СѓСЃРїС–С€РЅР°! РџРµСЂРµРІС–СЂС‚Рµ РєРѕРЅСЃРѕР»СЊ СЃРµСЂРІРµСЂР° РґР»СЏ Р°РєС‚РёРІР°С†С–С— Р°РєР°СѓРЅС‚Р°.",
-            user: newUser.rows[0]
+            message: "Registration successful!",
+            user: newUser.rows[0],
+            trial: trialInfo
         });
-
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: "Р’РЅСѓС‚СЂС–С€РЅСЏ РїРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё СЂРµС”СЃС‚СЂР°С†С–С—." });
@@ -332,8 +358,12 @@ router.post('/upgrade', async (req, res) => {
             return res.status(401).json({ error: "Ви повинні бути авторизовані" });
         }
 
+        // Оновлюємо роль до Pro та деактивуємо trial
         const result = await pool.query(
-            "UPDATE users SET role = 'pro' WHERE user_id = $1 RETURNING user_id, username, email, role",
+            `UPDATE users 
+             SET role = 'pro', is_trial_active = FALSE 
+             WHERE user_id = $1 
+             RETURNING user_id, username, email, role`,
             [userId]
         );
 
@@ -354,6 +384,104 @@ router.post('/upgrade', async (req, res) => {
     } catch (err) {
         console.error('Помилка при оновленні статусу:', err.message);
         res.status(500).json({ error: "Помилка сервера при оновленні статусу" });
+    }
+});
+
+// ==========================================
+// 10. СТАТУС TRIAL-ПЕРІОДУ (GET /users/:id/trial)
+// ==========================================
+router.get('/:id/trial', async (req, res) => {
+    const userId = req.params.id;
+
+    if (!userId || isNaN(userId)) {
+        return res.status(400).json({ error: 'Невалідний ID користувача' });
+    }
+
+    try {
+        const status = await trialService.checkTrialStatus(parseInt(userId));
+
+        if (status.error) {
+            return res.status(404).json({ error: status.error });
+        }
+
+        res.json({
+            status: 'success',
+            data: status
+        });
+    } catch (err) {
+        console.error('Помилка перевірки trial-статусу:', err.message);
+        res.status(500).json({ error: 'Внутрішня помилка сервера' });
+    }
+});
+
+// ==========================================
+// 11. АКТИВАЦІЯ TRIAL-ПЕРІОДУ (POST /users/:id/trial/activate)
+// Для юзерів, які зареєструвалися до впровадження trial
+// ==========================================
+router.post('/:id/trial/activate', async (req, res) => {
+    const userId = req.params.id;
+
+    if (!userId || isNaN(userId)) {
+        return res.status(400).json({ error: 'Невалідний ID користувача' });
+    }
+
+    try {
+        // Перевіряємо, що юзер не Pro (Pro не потребує trial)
+        const userResult = await pool.query(
+            'SELECT role, trial_start FROM users WHERE user_id = $1',
+            [userId]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Користувача не знайдено' });
+        }
+
+        const user = userResult.rows[0];
+
+        if (user.role === 'pro') {
+            return res.status(400).json({ error: 'Ви вже маєте Pro підписку. Trial не потрібен.' });
+        }
+
+        if (user.trial_start) {
+            return res.status(400).json({ error: 'Trial-період вже було активовано для цього акаунта.' });
+        }
+
+        const result = await trialService.activateTrial(parseInt(userId));
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.reason });
+        }
+
+        res.json({
+            status: 'success',
+            message: `Trial-період активовано на ${trialService.TRIAL_DURATION_DAYS} днів!`,
+            data: result
+        });
+    } catch (err) {
+        console.error('Помилка активації trial:', err.message);
+        res.status(500).json({ error: 'Внутрішня помилка сервера' });
+    }
+});
+
+// ==========================================
+// 12. ПЕРЕВІРКА ЛІМІТУ СТВОРЕННЯ ПОДІЙ (GET /users/:id/can-create-event)
+// ==========================================
+router.get('/:id/can-create-event', async (req, res) => {
+    const userId = req.params.id;
+
+    if (!userId || isNaN(userId)) {
+        return res.status(400).json({ error: 'Невалідний ID користувача' });
+    }
+
+    try {
+        const result = await trialService.canCreateEvent(parseInt(userId));
+        res.json({
+            status: 'success',
+            data: result
+        });
+    } catch (err) {
+        console.error('Помилка перевірки ліміту:', err.message);
+        res.status(500).json({ error: 'Внутрішня помилка сервера' });
     }
 });
 

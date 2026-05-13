@@ -831,6 +831,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 regions.forEach(r => r.classList.remove('active-region'));
                 region.classList.add('active-region');
                 markersList.forEach(m => { m.classList.remove('is-dot'); m.classList.add('is-pin'); });
+                
+                // Оновлюємо готелі та ресторани за регіоном
+                const regionName = region.dataset.name;
+                if (window.filterHotelsByCity) {
+                    window.filterHotelsByCity(regionName);
+                }
+                if (window.filterRestaurantsByCity) {
+                    window.filterRestaurantsByCity(regionName);
+                }
             });
 
             region.addEventListener('mouseenter', () => { regionTooltip.style.display = "block"; });
@@ -1030,6 +1039,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Синхронізуємо з Leaflet-картою
         updateLeafletMarkers(selectedDate, selectedCity, selectedCategory);
 
+        // Оновлюємо готелі та ресторани за містом
+        if (selectedCity) {
+            if (window.filterHotelsByCity) window.filterHotelsByCity(selectedCity);
+            if (window.filterRestaurantsByCity) window.filterRestaurantsByCity(selectedCity);
+        } else {
+            if (window.filterHotelsByCity) window.filterHotelsByCity('all');
+            if (window.filterRestaurantsByCity) window.filterRestaurantsByCity('all');
+        }
+
         // Ховаємо тултіп, якщо він був відкритий
         const tooltip = document.querySelector('.bp-tooltip');
         if (tooltip) tooltip.classList.remove('show');
@@ -1060,13 +1078,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.style.opacity = '1';
             });
 
+            // Скидаємо готелі та ресторани
+            if (window.filterHotelsByCity) window.filterHotelsByCity('all');
+            if (window.filterRestaurantsByCity) window.filterRestaurantsByCity('all');
+
             filterMapMarkers();
 
             // Скидаємо сортування карток
-            if (sortPriceSelect) sortPriceSelect.value = 'default';
-            if (sortRatingSelect) sortRatingSelect.value = 'default';
-            if (sortDateSelect) sortDateSelect.value = 'default';
-            renderEventCards(eventsList);
+            if (typeof sortPriceSelect !== 'undefined' && sortPriceSelect) sortPriceSelect.value = 'default';
+            if (typeof sortRatingSelect !== 'undefined' && sortRatingSelect) sortRatingSelect.value = 'default';
+            if (typeof sortDateSelect !== 'undefined' && sortDateSelect) sortDateSelect.value = 'default';
+            if (typeof renderEventCards === 'function') renderEventCards(eventsList);
         });
     }
 

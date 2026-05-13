@@ -2,12 +2,14 @@ const cron = require('node-cron');
 const pool = require('../db');
 const schedulerService = require('../services/EventSchedulerService');
 const NotificationDispatcher = require('../services/NotificationDispatcher');
+const trialService = require('../services/TrialService');
 
 // ==========================================
 // ПАТЕРН: Mediator (Посередник)
 // Цей cron-модуль координує взаємодію між:
 // - EventSchedulerService (сканування та черга)
 // - NotificationDispatcher (відправка по каналах)
+// - TrialService (деактивація закінчених trial-ів)
 // Жоден з них не знає про інший — координація тут
 // ==========================================
 
@@ -21,9 +23,6 @@ cron.schedule('*/5 * * * *', async () => {
     
     try {
         // Крок 1-2: Сканування подій та формування черги
-        // (виконується всередині schedulerService.run())
-        
-        // Перед processQueue — передаємо диспетчер
         const upcomingEvents = await schedulerService.scanUpcomingEvents();
         schedulerService.stats.scanned = upcomingEvents.length;
 
@@ -38,6 +37,10 @@ cron.schedule('*/5 * * * *', async () => {
         if (processed.total > 0) {
             console.log(`✅ [SCHEDULER] Оброблено: ${processed.sent} відправлено, ${processed.failed} помилок`);
         }
+
+        // Крок 4: Деактивація закінчених trial-періодів
+        await trialService.expireAllOverdueTrials();
+
     } catch (err) {
         console.error('❌ [SCHEDULER] Помилка циклу планувальника:', err.message);
     }

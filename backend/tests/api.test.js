@@ -21,9 +21,87 @@ const mockSettingsStore = {};
 const mockScheduleStore = {};
 let mockScheduleIdCounter = 1;
 
+// Внутрішнє сховище для імітації таблиць підписок (In-Memory)
+const mockPlansStore = [
+    { plan_id: 1, name: 'free', display_name: 'Безкоштовний', price: 0, currency: 'UAH', duration_days: null, max_events: 5, max_routes: 1, can_create_public: false, can_export: false, priority_support: false, description: 'Базовий план' },
+    { plan_id: 2, name: 'pro', display_name: 'Професійний', price: 149, currency: 'UAH', duration_days: 30, max_events: 50, max_routes: 10, can_create_public: true, can_export: true, priority_support: false, description: 'Розширений план' },
+    { plan_id: 3, name: 'premium', display_name: 'Преміум', price: 299, currency: 'UAH', duration_days: 30, max_events: -1, max_routes: -1, can_create_public: true, can_export: true, priority_support: true, description: 'Необмежений план' }
+];
+const mockSubscriptionsStore = {};
+let mockSubscriptionIdCounter = 1;
+
 jest.mock('../db', () => ({
     query: jest.fn((sql, values) => {
         const trimmedSql = typeof sql === 'string' ? sql.trim() : '';
+
+        // --- Обробка запитів для subscription_plans ---
+
+        // SELECT всіх планів (GET /plans)
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('subscription_plans') && !trimmedSql.includes('user_subscriptions')) {
+            if (values && values.length > 0) {
+                // Пошук конкретного плану за назвою
+                const plan = mockPlansStore.find(p => p.name === values[0]);
+                return Promise.resolve({ rows: plan ? [plan] : [] });
+            }
+            return Promise.resolve({ rows: [...mockPlansStore] });
+        }
+
+        // SELECT підписки користувача (JOIN)
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('user_subscriptions') && trimmedSql.includes('subscription_plans')) {
+            const userId = values[0];
+            const sub = Object.values(mockSubscriptionsStore).find(s => s.user_id == userId && s.status === 'active');
+            if (sub) {
+                const plan = mockPlansStore.find(p => p.plan_id === sub.plan_id);
+                return Promise.resolve({
+                    rows: [{
+                        subscription_id: sub.subscription_id,
+                        status: sub.status,
+                        started_at: sub.started_at,
+                        expires_at: sub.expires_at,
+                        plan_id: plan.plan_id,
+                        plan_name: plan.name,
+                        display_name: plan.display_name,
+                        price: plan.price,
+                        currency: plan.currency,
+                        max_events: plan.max_events,
+                        max_routes: plan.max_routes,
+                        can_create_public: plan.can_create_public,
+                        can_export: plan.can_export,
+                        priority_support: plan.priority_support,
+                        description: plan.description
+                    }]
+                });
+            }
+            return Promise.resolve({ rows: [] });
+        }
+
+        // INSERT підписки (assignFreePlan / upgradePlan)
+        if (trimmedSql.startsWith('INSERT') && trimmedSql.includes('user_subscriptions')) {
+            const userId = values[0];
+            const planId = values[1];
+            const newSub = {
+                subscription_id: mockSubscriptionIdCounter++,
+                user_id: userId,
+                plan_id: planId,
+                status: 'active',
+                started_at: new Date().toISOString(),
+                expires_at: values[2] || null,
+                created_at: new Date().toISOString()
+            };
+            mockSubscriptionsStore[`${userId}:active`] = newSub;
+            return Promise.resolve({ rows: [newSub] });
+        }
+
+        // UPDATE підписки (деактивація при upgrade)
+        if (trimmedSql.startsWith('UPDATE') && trimmedSql.includes('user_subscriptions')) {
+            const userId = values[0];
+            const key = `${userId}:active`;
+            if (mockSubscriptionsStore[key]) {
+                mockSubscriptionsStore[key].status = 'cancelled';
+                delete mockSubscriptionsStore[key];
+            }
+            return Promise.resolve({ rows: [] });
+        }
 
         // --- Обробка запитів для notification_schedule ---
 
@@ -208,6 +286,8 @@ beforeEach(() => {
     Object.keys(mockSettingsStore).forEach(key => delete mockSettingsStore[key]);
     Object.keys(mockScheduleStore).forEach(key => delete mockScheduleStore[key]);
     mockScheduleIdCounter = 1;
+    Object.keys(mockSubscriptionsStore).forEach(key => delete mockSubscriptionsStore[key]);
+    mockSubscriptionIdCounter = 1;
 });
 
 // =======================================================
@@ -578,6 +658,122 @@ describe('Тестування планувальника сповіщень (Sc
         expect(second.body.reminder.schedule_id).toEqual(first.body.reminder.schedule_id);
         // Але канал оновився
         expect(second.body.reminder.channel).toEqual('in_app');
+    });
+
+});
+
+// =======================================================
+// ТЕСТУВАННЯ СТРУКТУРИ ПІДПИСОК (SUBSCRIPTION PLANS)
+// ПАТЕРН: Strategy — різні тарифи = різні стратегії доступу
+// =======================================================
+
+describe('Тестування структури підписок (Subscriptions)', () => {
+
+    it('TC-26: Отримання списку тарифних планів (GET /plans)', async () => {
+        const res = await request(app)
+            .get('/api/subscriptions/plans');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data).toBeInstanceOf(Array);
+        expect(res.body.count).toBeGreaterThanOrEqual(1);
+    });
+
+    it('TC-27: Список містить 3 плани (free, pro, premium)', async () => {
+        const res = await request(app)
+            .get('/api/subscriptions/plans');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.data.length).toEqual(3);
+
+        const names = res.body.data.map(p => p.name);
+        expect(names).toContain('free');
+        expect(names).toContain('pro');
+        expect(names).toContain('premium');
+
+        // Перевіряємо, що плани відсортовані за ціною (ASC)
+        const prices = res.body.data.map(p => p.price);
+        expect(prices[0]).toBeLessThanOrEqual(prices[1]);
+        expect(prices[1]).toBeLessThanOrEqual(prices[2]);
+    });
+
+    it('TC-28: Отримання підписки існуючого користувача (GET /:userId)', async () => {
+        // Спочатку створюємо підписку для юзера 1
+        const SubscriptionService = require('../services/SubscriptionService');
+        await SubscriptionService.assignFreePlan(1);
+
+        const res = await request(app)
+            .get('/api/subscriptions/1');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.data.plan_name).toEqual('free');
+        expect(res.body.data.status).toEqual('active');
+        expect(res.body.data.max_events).toEqual(5);
+        expect(res.body.data.max_routes).toEqual(1);
+    });
+
+    it('TC-29: Автоматичне призначення Free для нового юзера', async () => {
+        const SubscriptionService = require('../services/SubscriptionService');
+        const result = await SubscriptionService.assignFreePlan(42);
+
+        expect(result).toBeDefined();
+        expect(result.user_id).toEqual(42);
+        expect(result.plan_id).toEqual(1); // Free = plan_id 1
+        expect(result.status).toEqual('active');
+        expect(result.expires_at).toBeNull(); // Free — безстроковий
+    });
+
+    it('TC-30: Оновлення тарифу до Pro (POST /upgrade)', async () => {
+        // Спочатку призначаємо Free
+        const SubscriptionService = require('../services/SubscriptionService');
+        await SubscriptionService.assignFreePlan(1);
+
+        const res = await request(app)
+            .post('/api/subscriptions/1/upgrade')
+            .send({ plan: 'pro' });
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.status).toEqual('success');
+        expect(res.body.msg).toContain('Професійний');
+        expect(res.body.data.plan.name).toEqual('pro');
+        expect(res.body.data.plan.max_events).toEqual(50);
+        expect(res.body.data.plan.can_create_public).toEqual(true);
+    });
+
+    it('TC-31: Відхилення невалідного тарифу (POST → 400)', async () => {
+        const res = await request(app)
+            .post('/api/subscriptions/1/upgrade')
+            .send({ plan: 'enterprise' });
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.error).toContain('Невалідний тариф');
+    });
+
+    it('TC-32: Підписка неіснуючого юзера → 404', async () => {
+        const res = await request(app)
+            .get('/api/subscriptions/999');
+
+        expect(res.statusCode).toEqual(404);
+        expect(res.body.error).toContain('не знайдено');
+    });
+
+    it('TC-33: Перевірка лімітів тарифу Free (checkFeatureAccess)', async () => {
+        const SubscriptionService = require('../services/SubscriptionService');
+        await SubscriptionService.assignFreePlan(1);
+
+        // Free не має доступу до публічних подій
+        const publicAccess = await SubscriptionService.checkFeatureAccess(1, 'create_public');
+        expect(publicAccess.allowed).toEqual(false);
+        expect(publicAccess.plan).toEqual('free');
+
+        // Free не має доступу до експорту
+        const exportAccess = await SubscriptionService.checkFeatureAccess(1, 'export');
+        expect(exportAccess.allowed).toEqual(false);
+
+        // Free не має пріоритетної підтримки
+        const supportAccess = await SubscriptionService.checkFeatureAccess(1, 'priority_support');
+        expect(supportAccess.allowed).toEqual(false);
     });
 
 });

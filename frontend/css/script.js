@@ -873,11 +873,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function processEventsData(data) {
-        eventsByDate = {};
-        data.forEach(ev => {
+          function processEventsData(data) {
+            eventsByDate = {};
+            const userEvents = JSON.parse(localStorage.getItem('myEvents') || '[]');
+
+            const normalizedUserEvents = userEvents.map(event => ({
+                event_id: event.id,
+                title: event.title || 'Без назви',
+                event_day: event.date || event.dateTime || event.event_day,
+                start_time: event.start_time || 'Час не вказано',
+                img: event.img || event.image || 'images/fest1..png'
+            }));
+
+            const allCalendarEvents = [
+                ...(Array.isArray(data) ? data : []),
+                ...normalizedUserEvents
+            ];
+
+            allCalendarEvents.forEach(ev => {
             if (!ev.event_day) return;
-            const d = new Date(ev.event_day);
+
+            const rawDate = String(ev.event_day).split('T')[0];
+            const d = new Date(rawDate);
             if (isNaN(d.getTime())) return;
             const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             if (!eventsByDate[ds]) eventsByDate[ds] = [];
