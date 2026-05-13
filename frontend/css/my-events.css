@@ -1,0 +1,180 @@
+/* 
+  My Events Page Specific Styles
+  Inherits Premium Design System from style.css
+*/
+
+.my-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 35px;
+}
+
+/* Event Card Customizations */
+.event-card {
+    background: white;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    transition: var(--transition-premium);
+    position: relative;
+    border: 1px solid var(--glass-border);
+}
+
+.event-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(40, 84, 197, 0.12);
+}
+
+.card-image {
+    height: 240px;
+    background-size: cover;
+    background-position: center;
+}
+
+.status-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: white;
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.status-approved { background: rgba(16, 185, 129, 0.85); backdrop-filter: blur(5px); }
+.status-pending { background: rgba(245, 158, 11, 0.85); backdrop-filter: blur(5px); }
+
+.card-content {
+    padding: 35px;
+}
+
+.card-content h3 {
+    margin: 0 0 15px 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-premium);
+}
+
+.event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.info-item i { color: var(--primary-premium); width: 20px; }
+
+.card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.btn-edit, .btn-delete {
+    padding: 14px;
+    border-radius: 18px;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-edit {
+    background: var(--primary-grad);
+    color: white;
+}
+.btn-edit:hover { box-shadow: 0 8px 20px rgba(40, 84, 197, 0.3); }
+
+.btn-delete {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+.btn-delete:hover { background: #FECACA; }
+
+/* Bento Background Blobs */
+.bento-blobs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    filter: blur(50px);
+    opacity: 0.4;
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    animation: float-blob 20s infinite alternate ease-in-out;
+}
+
+.blob:nth-child(1) { width: 300px; height: 300px; top: -100px; left: -100px; background: #2854C5; }
+.blob:nth-child(2) { width: 250px; height: 250px; bottom: -50px; right: 10%; background: #00AAFF; animation-delay: -5s; }
+.blob:nth-child(3) { width: 200px; height: 200px; top: 20%; right: -50px; background: #60A5FA; animation-delay: -10s; }
+
+@keyframes float-blob {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(40px, 60px) scale(1.1); }
+}
+
+/* Stats */
+.bento-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.bento-card {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: var(--transition-premium);
+    box-shadow: var(--shadow-premium);
+}
+
+.bento-card:hover {
+    transform: scale(1.05) translateX(-5px);
+}
+
+.bento-card.total { background: #EFF6FF; color: #1E40AF; }
+.bento-card.approved { background: #F0FDF4; color: #166534; }
+.bento-card.pending { background: #FFFBEB; color: #92400E; }
+
+.b-icon {
+    width: 52px;
+    height: 52px;
+    background: white;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.b-info { display: flex; flex-direction: column; }
+.b-val { font-size: 26px; font-weight: 900; line-height: 1; }
+.b-lab { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
