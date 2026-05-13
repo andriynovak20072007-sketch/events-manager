@@ -249,4 +249,25 @@ router.get('/:id', async (req, res) => {
 });
 
 
+// ==========================================
+// 8. ОНОВЛЕННЯ ТАРИФУ (UPGRADE TO PRO+)
+// ==========================================
+router.post('/upgrade', async (req, res) => {
+    try {
+        const userId = req.session.user ? req.session.user.id : null;
+        
+        // В демо-режимі, якщо сесії немає, ми все одно повертаємо успіх для фронтенду,
+        // щоб localStorage міг оновитися.
+        if (userId) {
+            await pool.query('UPDATE users SET role = $1 WHERE user_id = $2', ['pro_plus', userId]);
+            req.session.user.role = 'pro_plus';
+        }
+
+        res.json({ message: "Акаунт успішно оновлено до PRO+! 🎉" });
+    } catch (err) {
+        console.error('Помилка оновлення тарифу:', err.message);
+        res.status(500).json({ error: "Помилка сервера при оновленні тарифу." });
+    }
+});
+
 module.exports = router;
