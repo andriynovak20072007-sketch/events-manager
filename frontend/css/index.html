@@ -592,16 +592,16 @@
     <div class="footer-top">
       <div class="footer-column">
         <h4>Event Manager</h4>
-        <a href="#">Підтримка</a>
-        <a href="#">Контакти</a>
-        <a href="#">Приватність & cookies</a>
-        <a href="#">Політика використання</a>
+        <a href="#" class="footer-modal-link" data-modal="support">Підтримка</a>
+        <a href="#" class="footer-modal-link" data-modal="contacts">Контакти</a>
+        <a href="#" class="footer-modal-link" data-modal="privacy">Приватність & cookies</a>
+        <a href="#" class="footer-modal-link" data-modal="terms">Політика використання</a>
       </div>
       <div class="footer-column">
         <h4>Розробники</h4>
         <a href="pricing.html">Тарифи</a>
-        <a href="#">Про команду</a>
-        <a href="#">Про сайт</a>
+        <a href="#" class="footer-modal-link" data-modal="team">Про команду</a>
+        <a href="#" class="footer-modal-link" data-modal="about">Про сайт</a>
       </div>
       <div class="footer-column">
         <h4>Слідкуйте за<br>нами</h4>
@@ -627,6 +627,27 @@
       <p>© CodeX 2026</p>
     </div>
   </footer>
+
+  <div id="footerModal" class="modal-overlay" style="display: none;">
+    <div class="premium-modal-container" style="max-width: 500px; text-align: center;">
+      <span class="close-modal" id="closeFooterModalBtn">&times;</span>
+      
+      <div class="modal-icon-header" id="footerModalIcon">
+        <i class="fa-solid fa-circle-info"></i>
+      </div>
+      
+      <h2 id="footerModalTitle">Заголовок</h2>
+      <div class="modal-content-text" id="footerModalContent" style="margin-top: 20px; line-height: 1.6; color: #4b5563; font-size: 15px;">
+        Текст інформації...
+      </div>
+      
+      <div class="modal-actions" style="margin-top: 30px;">
+        <button id="okFooterModalBtn" class="premium-btn-primary" style="width: 100%;">
+          Зрозуміло
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div id="userPanelOverlay" class="panel-overlay"></div>
 

@@ -302,6 +302,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         }
     }
+
+    // --- 4. ЛОГІКА КАРУСЕЛІ (ГОТЕЛІ / РЕСТОРАНИ) ---
+    const nearbyCarousel = document.getElementById('nearbyCarousel');
+    const prevBtn = document.getElementById('nearbyPrevBtn');
+    const nextBtn = document.getElementById('nearbyNextBtn');
+
+    if (nearbyCarousel && prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', () => {
+            nearbyCarousel.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+        nextBtn.addEventListener('click', () => {
+            nearbyCarousel.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+    }
 });
 
 

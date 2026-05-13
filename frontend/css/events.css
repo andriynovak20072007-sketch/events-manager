@@ -19,8 +19,8 @@ body {
 }
 
 .event-grid-container {
-    max-width: 950px;
-    margin: 0 auto;
+    max-width: 1100px; /* Збільшуємо ширину (було 950px), щоб лівий край став ближче до краю екрана */
+    margin: 0 auto 0 8%; /* 0 зверху, auto справа, 0 знизу, 8% зліва. Можеш змінити 8% на, наприклад, 80px, якщо треба точніше по сітці з Figma */
     display: flex;
     flex-direction: column;
 }
@@ -30,7 +30,6 @@ body {
     margin-bottom: 30px;
     display: flex !important;
     justify-content: flex-start !important;
-    transform: translateX(-40px); 
 }
 
 .back-link {
@@ -508,4 +507,185 @@ html, body {
 /* Плавна заливка сердечка */
 #favoriteIcon {
     transition: fill 0.3s ease;
+}
+
+/* --- Nearby Places Section --- */
+.nearby-places-section {
+    margin-top: 50px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.nearby-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.nearby-title {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: #000;
+    margin: 0;
+}
+
+.nearby-nav {
+    display: flex;
+    gap: 12px;
+}
+
+.nearby-nav .nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nearby-nav .nav-btn:hover {
+    background: #00AAFF;
+    color: #fff;
+    border-color: #00AAFF;
+}
+
+.nearby-carousel {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    scroll-behavior: smooth;
+    /* Hide scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.nearby-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.nearby-card {
+    min-width: 280px;
+    max-width: 280px;
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border: 1px solid #F1F5F9;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nearby-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+}
+
+.nearby-card-img {
+    width: 100%;
+    height: 160px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.nearby-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+
+.nearby-badge.hotel {
+    background: rgba(40, 84, 197, 0.85); /* blue-dark */
+}
+
+.nearby-badge.restaurant {
+    background: rgba(245, 158, 11, 0.85); /* amber */
+}
+
+.nearby-card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.nearby-card-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    color: #1E293B;
+    line-height: 1.3;
+}
+
+.nearby-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: #F59E0B; /* Star color */
+}
+
+.nearby-rating span {
+    color: #64748B;
+    margin-left: 6px;
+    font-weight: 500;
+}
+
+.nearby-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.nearby-meta span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.nearby-meta span i {
+    color: #00AAFF;
+    width: 16px;
+    text-align: center;
+}
+
+.nearby-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #F8FAFC;
+    color: #00AAFF;
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.nearby-btn:hover {
+    background: #00AAFF;
+    color: #fff;
 }
