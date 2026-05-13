@@ -20,6 +20,9 @@
             <h2 style="margin-left: 20px; font-size: 18px; color: var(--blue-dark);">Адмін-панель</h2>
         </div>
         <div class="header-right">
+            <div id="user-status-toggle" class="user-status-badge free" title="Натисніть, щоб змінити статус (для тесту)">
+                FREE
+            </div>
             <div class="language-dropdown-wrapper">
         <div class="language-btn">UA <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></div>
         <div class="language-dropdown hidden">
@@ -38,7 +41,23 @@
 
     <div class="admin-container">
         <aside class="admin-sidebar" style="display: flex; flex-direction: column; justify-content: space-between; height: calc(100vh - 80px); position: sticky; top: 80px;">
-            <nav style="display: flex; flex-direction: column; gap: 5px;">
+            <div class="panel-mode-switcher">
+                <button class="mode-btn active" id="mode-moderation" title="Керування системою">
+                    <i class="fa-solid fa-shield-halved"></i> Модерація
+                </button>
+                <button class="mode-btn" id="mode-analytics" title="Аналітика ваших подій">
+                    <i class="fa-solid fa-chart-pie"></i> Аналітика
+                </button>
+            </div>
+
+            <div id="event-picker-container" class="event-picker-wrapper hidden">
+                <label>Оберіть подію:</label>
+                <select id="event-picker" class="admin-select" style="width: 100%; margin-top: 5px;">
+                    <option value="">Завантаження...</option>
+                </select>
+            </div>
+
+            <nav id="sidebar-nav-main" style="display: flex; flex-direction: column; gap: 5px; margin-top: 15px;">
                 <a href="#" class="sidebar-link active" data-tab="dashboard">
                     <i class="fa-solid fa-chart-line"></i> Дашборд
                 </a>

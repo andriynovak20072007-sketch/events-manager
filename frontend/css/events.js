@@ -119,7 +119,17 @@ document.addEventListener("DOMContentLoaded", async () => {
                buyBtn.innerText = `Придбати квиток | Від ${priceString}`;
                
                // Додаємо перехід на зовнішній сайт
-               buyBtn.addEventListener('click', () => {
+               buyBtn.addEventListener('click', async () => {
+                   // Analytics: record "sale" (click-to-buy)
+                   fetch(`http://localhost:5000/api/analytics/${eventId}/sale`, {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({
+                           price: data.price,
+                           currency: data.currency || 'UAH'
+                       })
+                   }).catch(err => console.warn('Sale tracking error:', err));
+
                    const bookingUrl = data.booking_url || 'https://karabas.com/ua/'; 
                    window.open(bookingUrl, '_blank');
                });
@@ -133,11 +143,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             const utmMedium = urlParams.get('utm_medium');
             const utmCampaign = urlParams.get('utm_campaign');
 
-            fetch('/api/analytics/view', {
+            fetch(`http://localhost:5000/api/analytics/${eventId}/view`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    event_id: eventId,
                     utm_source: utmSource,
                     utm_medium: utmMedium,
                     utm_campaign: utmCampaign

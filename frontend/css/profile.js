@@ -282,15 +282,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cityDropdown.querySelectorAll('.city-option').forEach(opt => {
                 opt.addEventListener('click', () => {
-                    cityText.textContent = opt.textContent;
+                    const cityName = opt.textContent;
+                    cityText.textContent = cityName;
                     cityDropdown.classList.add('hidden');
-                    showToast(`Місто змінено на: ${opt.textContent}`, '#00AAFF');
+                    showToast(`Місто змінено на: ${cityName}`, '#00AAFF');
+                    
+                    // Оновлюємо готелі та ресторани відповідно до міста
+                    if (window.filterHotelsByCity) {
+                        window.filterHotelsByCity(cityName);
+                    }
+                    if (window.filterRestaurantsByCity) {
+                        window.filterRestaurantsByCity(cityName);
+                    }
                 });
             });
 
             cityDropdown.querySelector('.city-reset').addEventListener('click', () => {
                 cityText.textContent = 'Місто';
                 cityDropdown.classList.add('hidden');
+                
+                // Скидаємо фільтр готелів та ресторанів
+                if (window.filterHotelsByCity) {
+                    window.filterHotelsByCity('Усі міста');
+                }
+                if (window.filterRestaurantsByCity) {
+                    window.filterRestaurantsByCity('Усі міста');
+                }
             });
         }
 

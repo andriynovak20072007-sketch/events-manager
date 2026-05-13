@@ -165,12 +165,26 @@ function renderRestaurantMarkers(restaurantsToRender) {
     });
 }
 
-function renderRestaurantCards() {
+function renderRestaurantCards(cityFilter = 'all') {
     const grid = document.getElementById('restaurants-grid');
     if (!grid) return;
     
-    const topRestaurants = restaurantsList.slice(0, 4);
-    const displayRestaurants = [...topRestaurants, ...topRestaurants];
+    // Фільтруємо список ресторанів за містом
+    let filteredRestaurants = restaurantsList;
+    if (cityFilter !== 'all') {
+        filteredRestaurants = restaurantsList.filter(r => r.city === cityFilter);
+    }
+
+    // Якщо нічого не знайдено для міста
+    if (filteredRestaurants.length === 0) {
+        grid.innerHTML = '<div style="color: #94A3B8; text-align: center; width: 100%; padding: 40px;">Ресторанів у цьому місті поки не знайдено.</div>';
+        return;
+    }
+    
+    // Беремо перші 4 ресторани для відмальовки
+    const topRestaurants = filteredRestaurants.slice(0, 4);
+    // Дублюємо масив для безперервної анімації (якщо потрібно)
+    const displayRestaurants = filteredRestaurants.length > 2 ? [...topRestaurants, ...topRestaurants] : topRestaurants;
     
     let html = '';
     displayRestaurants.forEach((rest, index) => {
@@ -206,8 +220,73 @@ function renderRestaurantCards() {
     grid.innerHTML = html;
 }
 
+// Запускаємо відмальовку карток при завантаженні
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderRestaurantCards);
+    document.addEventListener('DOMContentLoaded', () => renderRestaurantCards());
 } else {
     renderRestaurantCards();
 }
+
+// Глобальна функція для фільтрації ресторанів
+window.filterRestaurantsByCity = function(cityName) {
+    const cityMapping = {
+        'Львів': 'lviv',
+        'Львівська область': 'lviv',
+        'Київ': 'kyiv',
+        'Київська область': 'kyiv',
+        'Одеса': 'odesa',
+        'Одеська область': 'odesa',
+        'Харків': 'kharkiv',
+        'Харківська область': 'kharkiv',
+        'Усі міста': 'all',
+        'lviv': 'lviv',
+        'kyiv': 'kyiv',
+        'odesa': 'odesa',
+        'kharkiv': 'kharkiv',
+        'all': 'all'
+    };
+    
+    const cityId = cityMapping[cityName] || 'all';
+    
+    // 1. Оновлюємо картки
+    renderRestaurantCards(cityId);
+    
+    // 2. Оновлюємо маркери на SVG карті
+    const svgMarkersLayer = document.getElementById('markers-layer');
+    if (svgMarkersLayer) {
+        const oldMarkers = svgMarkersLayer.querySelectorAll('.map-marker');
+        oldMarkers.forEach(m => {
+            // Оранжевий колір для ресторанів (#E67E22)
+            if (m.style.backgroundColor === 'rgb(230, 126, 34)' || m.style.backgroundColor === '#E67E22') {
+                m.remove();
+            }
+        });
+        
+        let restsToRender = restaurantsList;
+        if (cityId !== 'all') {
+            restsToRender = restaurantsList.filter(r => r.city === cityId);
+        }
+        renderSvgRestaurantMarkers(restsToRender);
+    }
+    
+    // 3. Оновлюємо маркери на Leaflet карті
+    if (typeof leafletMap !== 'undefined' && leafletMap) {
+        let restsToRender = restaurantsList;
+        if (cityId !== 'all') {
+            restsToRender = restaurantsList.filter(r => r.city === cityId);
+        }
+        renderRestaurantMarkers(restsToRender);
+    }
+};
+
+// Додаємо обробник для селекту в сайдбарі
+document.addEventListener('DOMContentLoaded', () => {
+    const citySelect = document.getElementById('city-select');
+    if (citySelect) {
+        citySelect.addEventListener('change', () => {
+            const selectedCity = citySelect.value;
+            window.filterRestaurantsByCity(selectedCity);
+        });
+    }
+});
+
