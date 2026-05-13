@@ -108,6 +108,86 @@ document.addEventListener('DOMContentLoaded', () => {
   const createForm = document.querySelector('.create-event-form');
   const submitBtn = document.querySelector('.large-blue');
   /*
+  ТАСК 71: Механізм разової доплати за подію
+  ПАТЕРН: Strategy
+  Опис:
+  Різні тарифи мають різні правила створення подій.
+  Free — максимум 3 події, але можна використати разову доплату.
+  Pro — безліміт
+  */
+  const eventLimitStrategies = {
+    free: (createdEventsCount, extraCredits) => {
+      return createdEventsCount < 3 || extraCredits > 0;
+    },
+
+    pro: () => true,
+
+    proPlus: () => true
+  };
+
+  async function getCreatedEventsCount() {
+    try {
+      const response = await fetch('http://localhost:5000/api/events');
+
+      if (!response.ok) {
+        throw new Error('Не вдалося отримати список подій');
+      }
+
+      const events = await response.json();
+
+      return events.filter(event => Number(event.creator_id) === 1).length;
+    } catch (error) {
+      console.error('Помилка перевірки ліміту подій:', error);
+      return 0;
+    }
+  }
+
+  async function canCreateEventByPlan() {
+    const userRole = localStorage.getItem('userRole') || 'free';
+    const extraCredits = Number(localStorage.getItem('extraEventCredits') || 0);
+    const createdEventsCount = await getCreatedEventsCount();
+
+    const strategy = eventLimitStrategies[userRole] || eventLimitStrategies.free;
+
+    return strategy(createdEventsCount, extraCredits);
+  }
+
+  function showExtraPaymentBox() {
+    const box = document.getElementById('extraPaymentBox');
+
+    if (box) {
+      box.style.display = 'block';
+    }
+  }
+
+  function useExtraEventCreditIfNeeded() {
+    const userRole = localStorage.getItem('userRole') || 'free';
+
+    if (userRole !== 'free') return;
+
+    let extraCredits = Number(localStorage.getItem('extraEventCredits') || 0);
+
+    if (extraCredits > 0) {
+      extraCredits--;
+      localStorage.setItem('extraEventCredits', String(extraCredits));
+    }
+  }
+
+  const payExtraEventBtn = document.getElementById('payExtraEventBtn');
+
+  if (payExtraEventBtn) {
+    payExtraEventBtn.addEventListener('click', () => {
+      const currentCredits = Number(localStorage.getItem('extraEventCredits') || 0);
+
+      localStorage.setItem('extraEventCredits', String(currentCredits + 1));
+
+      alert('Оплата успішна. Ви можете створити ще одну подію.');
+
+      const box = document.getElementById('extraPaymentBox');
+      if (box) box.style.display = 'none';
+    });
+  }
+  /*
   ТАСК 64: Інтеграція email-сповіщень із подіями
   ПАТЕРН: Facade
   Одна функція приховує всю логіку створення email-нагадування.
@@ -142,6 +222,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const eventName = document.querySelector('input[placeholder="Назва події"]');
       if (!eventName || !eventName.value.trim()) {
         alert('Будь ласка, вкажіть назву події');
+        return;
+      }
+
+      /*
+      ТАСК 71: Перевірка ліміту перед створенням події
+      */
+      const allowedToCreate = await canCreateEventByPlan();
+
+      if (!allowedToCreate) {
+        showExtraPaymentBox();
+        alert('Ви досягли ліміту Free-тарифу. Оплатіть ще одну подію або перейдіть на Pro.');
         return;
       }
 
@@ -229,6 +320,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const createdEvent = await response.json();
+      
+      //Використання оплаченої додаткової події
+      useExtraEventCreditIfNeeded();
+
       /*
       ТАСК 64: Інтеграція email-сповіщень із подіями
       Після створення події автоматично створюється email-нагадування

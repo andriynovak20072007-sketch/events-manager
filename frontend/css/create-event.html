@@ -4,7 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Створення події - Event Manager</title>
+  <!-- 
+  SEO оптимізація
+  -->
+  <meta name="description" content="Event Manager — платформа для пошуку, створення, планування та керування подіями.">
+  <meta name="keywords" content="події, івенти, календар подій, квитки, Event Manager, концерти, фестивалі">
+  <meta name="author" content="CodeX Team">
+  <meta name="robots" content="index, follow">
+
+  <title>Створення події | Event Manager</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -309,6 +317,25 @@
               <input type="radio" name="eventVisibility" value="private">
               Приватна подія
             </label>
+          </div>
+
+          <!--
+          ТАСК 71: Разова доплата за подію
+          Показується Free-користувачу, якщо він досяг ліміту створення подій
+          -->
+          <div id="extraPaymentBox" class="input-group" style="display:none;">
+            <div class="group-label">
+              <span>Ліміт подій досягнуто</span>
+            </div>
+
+            <p style="color:#64748B; font-size:14px;">
+              Ви вже створили 3 події на безкоштовному тарифі.
+              Можете оплатити створення ще однієї події без купівлі Pro.
+            </p>
+
+            <button type="button" id="payExtraEventBtn" class="large-blue">
+              Оплатити ще 1 подію — 99 ₴
+            </button>
           </div>
 
           <!-- Submit Action -->
