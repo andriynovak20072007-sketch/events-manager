@@ -491,20 +491,34 @@ describe('Інтеграція: Повний цикл сповіщень (CRUD)'
 describe('Інтеграція: Email-сповіщення та Dispatcher', () => {
 
     it('TC-EMAIL-01: NotificationDispatcher ініціалізується без помилок', () => {
-        const NotificationDispatcher = require('../services/NotificationDispatcher');
-        const pool = require('../db');
-        const dispatcher = new NotificationDispatcher(pool);
+        const tempHost = process.env.SMTP_HOST;
+        delete process.env.SMTP_HOST;
+
+        let dispatcher;
+        jest.isolateModules(() => {
+            const NotificationDispatcher = require('../services/NotificationDispatcher');
+            const pool = require('../db');
+            dispatcher = new NotificationDispatcher(pool);
+        });
 
         expect(dispatcher).toBeDefined();
         expect(dispatcher.chain).toBeDefined();
         // SMTP не налаштовано в тестах — email не активний
         expect(dispatcher.isEmailConfigured()).toBe(false);
+
+        if (tempHost) process.env.SMTP_HOST = tempHost;
     });
 
     it('TC-EMAIL-02: Dispatch in_app сповіщення без SMTP', async () => {
-        const NotificationDispatcher = require('../services/NotificationDispatcher');
-        const pool = require('../db');
-        const dispatcher = new NotificationDispatcher(pool);
+        const tempHost = process.env.SMTP_HOST;
+        delete process.env.SMTP_HOST;
+
+        let dispatcher;
+        jest.isolateModules(() => {
+            const NotificationDispatcher = require('../services/NotificationDispatcher');
+            const pool = require('../db');
+            dispatcher = new NotificationDispatcher(pool);
+        });
 
         const results = await dispatcher.dispatch({
             userId: 1,
@@ -517,10 +531,11 @@ describe('Інтеграція: Email-сповіщення та Dispatcher', () 
         });
 
         expect(results).toBeInstanceOf(Array);
-        // Тільки in_app канал має спрацювати
         const inApp = results.find(r => r.channel === 'in_app');
         expect(inApp).toBeDefined();
         expect(inApp.success).toBe(true);
+
+        if (tempHost) process.env.SMTP_HOST = tempHost;
     });
 
     it('TC-EMAIL-03: ReminderStrategy форматує повідомлення правильно', () => {
@@ -542,9 +557,15 @@ describe('Інтеграція: Email-сповіщення та Dispatcher', () 
     });
 
     it('TC-EMAIL-04: Канал "all" проходить через весь ланцюг обробників', async () => {
-        const NotificationDispatcher = require('../services/NotificationDispatcher');
-        const pool = require('../db');
-        const dispatcher = new NotificationDispatcher(pool);
+        const tempHost = process.env.SMTP_HOST;
+        delete process.env.SMTP_HOST;
+
+        let dispatcher;
+        jest.isolateModules(() => {
+            const NotificationDispatcher = require('../services/NotificationDispatcher');
+            const pool = require('../db');
+            dispatcher = new NotificationDispatcher(pool);
+        });
 
         const results = await dispatcher.dispatch({
             userId: 1,
@@ -561,6 +582,8 @@ describe('Інтеграція: Email-сповіщення та Dispatcher', () 
         const inApp = results.find(r => r.channel === 'in_app');
         expect(inApp).toBeDefined();
         expect(inApp.success).toBe(true);
+
+        if (tempHost) process.env.SMTP_HOST = tempHost;
     });
 });
 

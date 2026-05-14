@@ -4,13 +4,10 @@ const pool = require('../db');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-<<<<<<< HEAD
-const trialService = require('../services/TrialService');
-=======
 const SubscriptionService = require('../services/SubscriptionService');
->>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
+const trialService = require('../services/TrialService');
 
-// РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ РїРѕС€С‚Рё (РґР»СЏ СЂРѕР·СЂРѕР±РєРё РїРѕСЃРёР»Р°РЅРЅСЏ РїСЂРѕСЃС‚Рѕ РІРёРІРѕРґРёС‚СЊСЃСЏ РІ РєРѕРЅСЃРѕР»СЊ СЃРµСЂРІРµСЂР°)
+// Налаштування пошти (для розробки посилання просто виводиться в консоль сервера)
 const transporter = nodemailer.createTransport({
     host: 'smtp.ethereal.email',
     port: 587,
@@ -20,16 +17,16 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Р”РѕРїРѕРјС–Р¶РЅР° С„СѓРЅРєС†С–СЏ: РїРµСЂРµРІС–СЂРєР° РїСЂР°РІРёР»СЊРЅРѕРіРѕ С„РѕСЂРјР°С‚Сѓ email
+// Допоміжна функція: перевірка правильного формату email
 const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 };
 
 // ==========================================
-// РџРђРўР•Р Рќ: Data Transfer Object (DTO)
-// Р’РёРєРѕСЂРёСЃС‚РѕРІСѓС”С‚СЊСЃСЏ РґР»СЏ Р±РµР·РїРµС‡РЅРѕС— РїРµСЂРµРґР°С‡С– РґР°РЅРёС… РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РєР»С–С”РЅС‚Сѓ
-// Р±РµР· СЂРѕР·РєСЂРёС‚С‚СЏ С‡СѓС‚Р»РёРІРѕС— С–РЅС„РѕСЂРјР°С†С–С— (РїР°СЂРѕР»С–, С‚РѕРєРµРЅРё)
+// ПАТЕРН: Data Transfer Object (DTO)
+// Використовується для безпечної передачі даних користувача клієнту
+// без розкриття чутливої інформації (паролі, токени)
 // ==========================================
 class UserDTO {
     constructor(user) {
@@ -38,33 +35,33 @@ class UserDTO {
         this.email = user.email;
         this.role = user.role;
         this.created_at = user.created_at;
-        // Р”РѕРґР°С‚РєРѕРІРѕ РјРѕР¶РЅР° РґРѕРґР°С‚Рё РїРѕР»СЏ, СЏРєС‰Рѕ РІРѕРЅРё Р·'СЏРІР»СЏС‚СЊСЃСЏ (Р°РІР°С‚Р°СЂ С‚РѕС‰Рѕ)
+        // Додатково можна додати поля, якщо вони з'являться (аватар тощо)
     }
 }
 
 // ==========================================
-// 1. Р РћРЈРў Р Р•Р„РЎРўР РђР¦Р†Р‡ (POST /users/register)
+// 1. РОУТ РЕЄСТРАЦІЇ (POST /users/register)
 // ==========================================
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        // Р’РђР›Р†Р”РђР¦Р†РЇ 1: РћР±РѕРІ'СЏР·РєРѕРІС– РїРѕР»СЏ
+        // ВАЛІДАЦІЯ 1: Обов'язкові поля
         if (!username || !email || !password) {
-            return res.status(400).json({ error: "Р’СЃС– РїРѕР»СЏ (username, email, password) С” РѕР±РѕРІ'СЏР·РєРѕРІРёРјРё" });
+            return res.status(400).json({ error: "Всі поля (username, email, password) є обов'язковими" });
         }
 
-        // Р’РђР›Р†Р”РђР¦Р†РЇ 2: РџСЂР°РІРёР»СЊРЅС–СЃС‚СЊ email
+        // ВАЛІДАЦІЯ 2: Правильність email
         if (!isValidEmail(email)) {
-            return res.status(400).json({ error: "РќРµРєРѕСЂРµРєС‚РЅРёР№ С„РѕСЂРјР°С‚ email Р°РґСЂРµСЃРё" });
+            return res.status(400).json({ error: "Некоректний формат email адреси" });
         }
 
-        // Р’РђР›Р†Р”РђР¦Р†РЇ 3: Р”РѕРІР¶РёРЅР° РїР°СЂРѕР»СЏ
+        // ВАЛІДАЦІЯ 3: Довжина пароля
         if (password.length < 6) {
-            return res.status(400).json({ error: "РџР°СЂРѕР»СЊ РјР°С” РјС–СЃС‚РёС‚Рё С‰РѕРЅР°Р№РјРµРЅС€Рµ 6 СЃРёРјРІРѕР»С–РІ" });
+            return res.status(400).json({ error: "Пароль має містити щонайменше 6 символів" });
         }
 
-        // РџР•Р Р•Р’Р†Р РљРђ РќРђ Р”РЈР‘Р›Р†РљРђРў
+        // ПЕРЕВІРКА НА ДУБЛІКАТ
         const userExists = await pool.query(
             'SELECT * FROM users WHERE email = $1 OR username = $2', 
             [email, username]
@@ -73,68 +70,60 @@ router.post('/register', async (req, res) => {
         if (userExists.rows.length > 0) {
             const existingUser = userExists.rows[0];
             if (existingUser.email === email) {
-                return res.status(400).json({ error: "РљРѕСЂРёСЃС‚СѓРІР°С‡ Р· С‚Р°РєРёРј email РІР¶Рµ Р·Р°СЂРµС”СЃС‚СЂРѕРІР°РЅРёР№" });
+                return res.status(400).json({ error: "Користувач з таким email вже зареєстрований" });
             }
             if (existingUser.username === username) {
-                return res.status(400).json({ error: "Р¦Рµ С–Рј'СЏ РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РІР¶Рµ Р·Р°Р№РЅСЏС‚Рµ" });
+                return res.status(400).json({ error: "Це ім'я користувача вже зайняте" });
             }
         }
 
-        // РҐР•РЁРЈР’РђРќРќРЇ РџРђР РћР›СЏ
+        // ХЕШУВАННЯ ПАРОЛЯ
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // Р“Р•РќР•Р РђР¦Р†РЇ РўРћРљР•РќРђ РђРљРўР˜Р’РђР¦Р†Р‡
+        // ГЕНЕРАЦІЯ ТОКЕНА АКТИВАЦІЇ
         const activationToken = crypto.randomBytes(32).toString('hex');
 
-        // Р—Р‘Р•Р Р•Р–Р•РќРќРЇ Р’ Р‘РђР—РЈ Р”РђРќР˜РҐ
+        // ЗБЕРЕЖЕННЯ В БАЗУ ДАНИХ
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password_hash, activation_token) VALUES ($1, $2, $3, $4) RETURNING user_id, username, email',
             [username, email, passwordHash, activationToken]
         );
 
-<<<<<<< HEAD
-        // Автоматична активація Trial-періоду (2 місяці)
+        // АВТОМАТИЧНЕ ПРИЗНАЧЕННЯ ТАРИФУ FREE та Активація Trial-періоду
         let trialInfo = null;
         try {
+            await SubscriptionService.assignFreePlan(newUser.rows[0].user_id);
             const trialResult = await trialService.activateTrial(newUser.rows[0].user_id);
             if (trialResult.success) {
                 trialInfo = trialResult.trial_info;
             }
-        } catch (trialErr) {
-            console.error('Trial activation error:', trialErr.message);
-=======
-        // АВТОМАТИЧНЕ ПРИЗНАЧЕННЯ ТАРИФУ FREE
-        // Патерн: Strategy — кожен новий користувач отримує базову стратегію (Free)
-        try {
-            await SubscriptionService.assignFreePlan(newUser.rows[0].user_id);
-        } catch (subErr) {
-            console.error('Помилка призначення тарифу Free:', subErr.message);
+        } catch (err) {
+            console.error('Помилка призначення тарифу/trial:', err.message);
             // Не блокуємо реєстрацію, якщо підписка не створилась
->>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
         }
 
         const activationLink = `http://localhost:5000/users/activate/${activationToken}`;
         
-        console.log(`\n=== NEW USER REGISTERED ===`);
+        // Симуляція відправки листа (виводимо в консоль)
+        console.log(`\n=== НОВИЙ КОРИСТУВАЧ ЗАРЕЄСТРОВАНИЙ ===`);
         console.log(`Email: ${email}`);
-        console.log(`Activation: ${activationLink}`);
-        console.log(`Trial: ${trialInfo ? 'activated for 60 days' : 'not activated'}`);
-        console.log(`===========================\n`);
+        console.log(`Посилання для активації: ${activationLink}`);
+        console.log(`=========================================\n`);
 
         res.status(201).json({ 
-            message: "Registration successful!",
-            user: newUser.rows[0],
-            trial: trialInfo
+            message: "Реєстрація успішна! Перевірте консоль сервера для активації акаунта.",
+            user: newUser.rows[0]
         });
+
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: "Р’РЅСѓС‚СЂС–С€РЅСЏ РїРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё СЂРµС”СЃС‚СЂР°С†С–С—." });
+        res.status(500).json({ error: "Внутрішня помилка сервера при реєстрації." });
     }
 });
 
 // ==========================================
-// 2. Р РћРЈРў РђРљРўРР’РђР¦Р†Р‡ (GET /users/activate/:token)
+// 2. РОУТ АКТИВАЦІЇ (GET /users/activate/:token)
 // ==========================================
 router.get('/activate/:token', async (req, res) => {
     try {
@@ -143,27 +132,27 @@ router.get('/activate/:token', async (req, res) => {
         const userResult = await pool.query('SELECT * FROM users WHERE activation_token = $1', [token]);
 
         if (userResult.rows.length === 0) {
-            return res.status(400).json({ error: "РџРѕСЃРёР»Р°РЅРЅСЏ РЅРµРґС–Р№СЃРЅРµ Р°Р±Рѕ Р°РєР°СѓРЅС‚ РІР¶Рµ Р°РєС‚РёРІРѕРІР°РЅРѕ." });
+            return res.status(400).json({ error: "Посилання недійсне або акаунт вже активовано." });
         }
 
-        // РћРЅРѕРІР»СЋС”РјРѕ СЃС‚Р°С‚СѓСЃ РЅР° is_active = TRUE
+        // Оновлюємо статус на is_active = TRUE
         await pool.query(
             'UPDATE users SET is_active = TRUE, activation_token = NULL WHERE activation_token = $1',
             [token]
         );
 
-        res.send("<h1>РђРєР°СѓРЅС‚ СѓСЃРїС–С€РЅРѕ Р°РєС‚РёРІРѕРІР°РЅРѕ! рџЋ‰</h1><p>РўРµРїРµСЂ РІРё РјРѕР¶РµС‚Рµ СѓРІС–Р№С‚Рё РІ СЃРёСЃС‚РµРјСѓ.</p>");
+        res.send("<h1>Акаунт успішно активовано! 🎉</h1><p>Тепер ви можете увійти в систему.</p>");
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: "РџРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё Р°РєС‚РёРІР°С†С–С—." });
+        res.status(500).json({ error: "Помилка сервера при активації." });
     }
 });
 
 
 
 // ==========================================
-// 3. Р—РђРџРРў РќРђ Р’Р†Р”РќРћР’Р›Р•РќРќРЇ РџРђР РћР›РЇ
+// 3. ЗАПИТ НА ВІДНОВЛЕННЯ ПАРОЛЯ
 // ==========================================
 router.post('/forgot-password', async (req, res) => {
     try {
@@ -171,11 +160,11 @@ router.post('/forgot-password', async (req, res) => {
         const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         
         if (userRes.rows.length === 0) {
-            return res.status(404).json({ error: "РљРѕСЂРёСЃС‚СѓРІР°С‡Р° Р· С‚Р°РєРёРј email РЅРµ Р·РЅР°Р№РґРµРЅРѕ." });
+            return res.status(404).json({ error: "Користувача з таким email не знайдено." });
         }
 
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const expireTime = new Date(Date.now() + 3600000); // +1 РіРѕРґРёРЅР°
+        const expireTime = new Date(Date.now() + 3600000); // +1 година
 
         await pool.query(
             'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE email = $3',
@@ -183,43 +172,43 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         const resetLink = `http://localhost:5000/users/reset-password/${resetToken}`;
-        console.log(`\n=== Р’Р†Р”РќРћР’Р›Р•РќРќРЇ РџРђР РћР›РЇ ===\nEmail: ${email}\nРџРѕСЃРёР»Р°РЅРЅСЏ: ${resetLink}\n==========================\n`);
+        console.log(`\n=== ВІДНОВЛЕННЯ ПАРОЛЯ ===\nEmail: ${email}\nПосилання: ${resetLink}\n==========================\n`);
 
-        res.json({ message: "Р›РёСЃС‚ Р· С–РЅСЃС‚СЂСѓРєС†С–СЏРјРё РІС–РґРїСЂР°РІР»РµРЅРѕ РЅР° РІР°С€Сѓ РїРѕС€С‚Сѓ (РїРµСЂРµРІС–СЂС‚Рµ РєРѕРЅСЃРѕР»СЊ)." });
+        res.json({ message: "Лист з інструкціями відправлено на вашу пошту (перевірте консоль)." });
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: "РџРѕРјРёР»РєР° СЃРµСЂРІРµСЂР°." });
+        res.status(500).json({ error: "Помилка сервера." });
     }
 });
 
 
 // ==========================================
-// 5. Р›РћР“Р†Рќ РљРћР РРЎРўРЈР’РђР§Рђ (Р’РҐР†Р”)
+// 5. ЛОГІН КОРИСТУВАЧА (ВХІД)
 // ==========================================
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // 1. РџРµСЂРµРІС–СЂСЏС”РјРѕ, С‡Рё РїРµСЂРµРґР°РЅС– РґР°РЅС–
+        // 1. Перевіряємо, чи передані дані
         if (!email || !password) {
-            return res.status(400).json({ error: "Р‘СѓРґСЊ Р»Р°СЃРєР°, РІРІРµРґС–С‚СЊ email С‚Р° РїР°СЂРѕР»СЊ." });
+            return res.status(400).json({ error: "Будь ласка, введіть email та пароль." });
         }
 
-        // 2. РЁСѓРєР°С”РјРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РІ Р±Р°Р·С–
+        // 2. Шукаємо користувача в базі
         const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userRes.rows.length === 0) {
-            return res.status(400).json({ error: "РќРµРїСЂР°РІРёР»СЊРЅРёР№ email Р°Р±Рѕ РїР°СЂРѕР»СЊ." });
+            return res.status(400).json({ error: "Неправильний email або пароль." });
         }
 
         const user = userRes.rows[0];
 
-        // 3. РџРµСЂРµРІС–СЂСЏС”РјРѕ РїР°СЂРѕР»СЊ (РїРѕСЂС–РІРЅСЋС”РјРѕ РІРІРµРґРµРЅРёР№ РїР°СЂРѕР»СЊ Р· С…РµС€РµРј Сѓ Р±Р°Р·С–)
+        // 3. Перевіряємо пароль (порівнюємо введений пароль з хешем у базі)
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
-            return res.status(400).json({ error: "РќРµРїСЂР°РІРёР»СЊРЅРёР№ email Р°Р±Рѕ РїР°СЂРѕР»СЊ." });
+            return res.status(400).json({ error: "Неправильний email або пароль." });
         }
 
-        // 4. Р—Р°РїРёСЃСѓС”РјРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡Р° РІ РЎР•РЎР†Р®
+        // 4. Записуємо користувача в СЕСІЮ
         req.session.user = {
             id: user.user_id,
             username: user.username,
@@ -228,31 +217,31 @@ router.post('/login', async (req, res) => {
         };
 
         res.json({ 
-            message: "Р’С…С–Рґ СѓСЃРїС–С€РЅРёР№!", 
+            message: "Вхід успішний!", 
             user: req.session.user 
         });
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: "РџРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё РІС…РѕРґС–." });
+        res.status(500).json({ error: "Помилка сервера при вході." });
     }
 });
 
 // ==========================================
-// 6. Р›РћР“РђРЈРў (Р’РРҐР†Р” Р— РЎРРЎРўР•РњР)
+// 6. ЛОГАУТ (ВИХІД З СИСТЕМИ)
 // ==========================================
 router.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            return res.status(500).json({ error: "РџРѕРјРёР»РєР° РїСЂРё РІРёС…РѕРґС– Р· СЃРёСЃС‚РµРјРё." });
+            return res.status(500).json({ error: "Помилка при виході з системи." });
         }
-        res.clearCookie('connect.sid'); // Р’РёРґР°Р»СЏС”РјРѕ РєСѓРєС– СЃРµСЃС–С—
-        res.json({ message: "Р’Рё СѓСЃРїС–С€РЅРѕ РІРёР№С€Р»Рё Р· СЃРёСЃС‚РµРјРё." });
+        res.clearCookie('connect.sid'); // Видаляємо кукі сесії
+        res.json({ message: "Ви успішно вийшли з системи." });
     });
 });
 
 // ==========================================
-// 7. РћРўР РРњРђРќРќРЇ Р”РђРќРРҐ РљРћР РРЎРўРЈР’РђР§Рђ (GET /users/:id)
+// 7. ОТРИМАННЯ ДАНИХ КОРИСТУВАЧА (GET /users/:id)
 // ==========================================
 router.get('/:id', async (req, res) => {
     try {
@@ -261,16 +250,16 @@ router.get('/:id', async (req, res) => {
         const result = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: "РљРѕСЂРёСЃС‚СѓРІР°С‡Р° РЅРµ Р·РЅР°Р№РґРµРЅРѕ" });
+            return res.status(404).json({ error: "Користувача не знайдено" });
         }
 
-        // Р’РёРєРѕСЂРёСЃС‚РѕРІСѓС”РјРѕ DTO РїР°С‚РµСЂРЅ РґР»СЏ С„РѕСЂРјР°С‚СѓРІР°РЅРЅСЏ РІРёС…С–РґРЅРёС… РґР°РЅРёС…
+        // Використовуємо DTO патерн для форматування вихідних даних
         const userDTO = new UserDTO(result.rows[0]);
 
         res.json(userDTO);
     } catch (err) {
-        console.error('РџРѕРјРёР»РєР° РѕС‚СЂРёРјР°РЅРЅСЏ РґР°РЅРёС… РєРѕСЂРёСЃС‚СѓРІР°С‡Р°:', err.message);
-        res.status(500).json({ error: "Р’РЅСѓС‚СЂС–С€РЅСЏ РїРѕРјРёР»РєР° СЃРµСЂРІРµСЂР° РїСЂРё РѕС‚СЂРёРјР°РЅРЅС– РїСЂРѕС„С–Р»СЋ." });
+        console.error('Помилка отримання даних користувача:', err.message);
+        res.status(500).json({ error: "Внутрішня помилка сервера при отриманні профілю." });
     }
 });
 
@@ -358,12 +347,8 @@ router.post('/upgrade', async (req, res) => {
             return res.status(401).json({ error: "Ви повинні бути авторизовані" });
         }
 
-        // Оновлюємо роль до Pro та деактивуємо trial
         const result = await pool.query(
-            `UPDATE users 
-             SET role = 'pro', is_trial_active = FALSE 
-             WHERE user_id = $1 
-             RETURNING user_id, username, email, role`,
+            "UPDATE users SET role = 'pro' WHERE user_id = $1 RETURNING user_id, username, email, role",
             [userId]
         );
 
@@ -386,6 +371,7 @@ router.post('/upgrade', async (req, res) => {
         res.status(500).json({ error: "Помилка сервера при оновленні статусу" });
     }
 });
+
 
 // ==========================================
 // 10. СТАТУС TRIAL-ПЕРІОДУ (GET /users/:id/trial)
