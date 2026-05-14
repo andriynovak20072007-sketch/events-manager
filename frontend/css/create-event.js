@@ -107,9 +107,115 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Main Form Submit
   const createForm = document.querySelector('.create-event-form');
   const submitBtn = document.querySelector('.large-blue');
+  /*
+  ТАСК 71: Механізм разової доплати за подію
+  ПАТЕРН: Strategy
+  Опис:
+  Різні тарифи мають різні правила створення подій.
+  Free — максимум 3 події, але можна використати разову доплату.
+  Pro — безліміт
+  */
+  const eventLimitStrategies = {
+    free: (createdEventsCount, extraCredits) => {
+      return createdEventsCount < 3 || extraCredits > 0;
+    },
+
+    pro: () => true,
+
+    proPlus: () => true
+  };
+
+  async function getCreatedEventsCount() {
+    try {
+      const response = await fetch('http://localhost:5000/api/events');
+
+      if (!response.ok) {
+        throw new Error('Не вдалося отримати список подій');
+      }
+
+      const events = await response.json();
+
+      return events.filter(event => Number(event.creator_id) === 1).length;
+    } catch (error) {
+      console.error('Помилка перевірки ліміту подій:', error);
+      return 0;
+    }
+  }
+
+  async function canCreateEventByPlan() {
+    const userRole = localStorage.getItem('userRole') || 'free';
+    const extraCredits = Number(localStorage.getItem('extraEventCredits') || 0);
+    const createdEventsCount = await getCreatedEventsCount();
+
+    const strategy = eventLimitStrategies[userRole] || eventLimitStrategies.free;
+
+    return strategy(createdEventsCount, extraCredits);
+  }
+
+  function showExtraPaymentBox() {
+    const box = document.getElementById('extraPaymentBox');
+
+    if (box) {
+      box.style.display = 'block';
+    }
+  }
+
+  function useExtraEventCreditIfNeeded() {
+    const userRole = localStorage.getItem('userRole') || 'free';
+
+    if (userRole !== 'free') return;
+
+    let extraCredits = Number(localStorage.getItem('extraEventCredits') || 0);
+
+    if (extraCredits > 0) {
+      extraCredits--;
+      localStorage.setItem('extraEventCredits', String(extraCredits));
+    }
+  }
+
+  const payExtraEventBtn = document.getElementById('payExtraEventBtn');
+
+  if (payExtraEventBtn) {
+    payExtraEventBtn.addEventListener('click', () => {
+      const currentCredits = Number(localStorage.getItem('extraEventCredits') || 0);
+
+      localStorage.setItem('extraEventCredits', String(currentCredits + 1));
+
+      alert('Оплата успішна. Ви можете створити ще одну подію.');
+
+      const box = document.getElementById('extraPaymentBox');
+      if (box) box.style.display = 'none';
+    });
+  }
+  /*
+  ТАСК 64: Інтеграція email-сповіщень із подіями
+  ПАТЕРН: Facade
+  Одна функція приховує всю логіку створення email-нагадування.
+  */
+  async function createEmailReminderForEvent(eventId) {
+    const response = await fetch('http://localhost:5000/api/notifications/reminders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        event_id: eventId,
+        user_id: 1,
+        type: '1h',
+        channel: 'email'
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.error || 'Не вдалося створити email-нагадування');
+    }
+
+    return response.json();
+  }
   
   if (createForm) {
-    createForm.addEventListener('submit', function(e) {
+      createForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       
       // Simple validation check
@@ -119,34 +225,122 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      /*
+      ТАСК 71: Перевірка ліміту перед створенням події
+      */
+      const allowedToCreate = await canCreateEventByPlan();
+
+      if (!allowedToCreate) {
+        showExtraPaymentBox();
+        alert('Ви досягли ліміту Free-тарифу. Оплатіть ще одну подію або перейдіть на Pro.');
+        return;
+      }
+
       // Change button state to simulate loading
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Відправляємо...';
       submitBtn.style.opacity = '0.8';
       submitBtn.disabled = true;
 
-      // Simulate API call
-      setTimeout(() => {
+      
+      setTimeout(async () => {
+        try {
         const isEditMode = new URLSearchParams(window.location.search).get('id');
         
-        // Save to localStorage
-        let myEvents = JSON.parse(localStorage.getItem('myEvents') || '[]');
-        const eventTitle = document.querySelector('input[placeholder="Назва події"]').value.trim();
-        const eventId = isEditMode ? isEditMode : 'ev_' + Date.now();
-        const eventData = {
-            id: eventId,
-            title: eventTitle,
-            status: isEditMode ? 'Змінено' : 'На модерації',
-            statusIcon: isEditMode ? 'fa-check-circle' : 'fa-clock',
-            statusColor: isEditMode ? '#10B981' : '#F59E0B'
-        };
-        const eventIndex = myEvents.findIndex(e => e.id === eventId);
-        if (eventIndex > -1) {
-            myEvents[eventIndex] = eventData;
-        } else {
-            myEvents.push(eventData);
-        }
-        localStorage.setItem('myEvents', JSON.stringify(myEvents));
+       /*
+      ТАСК 63: Інтеграція календаря з подіям
+      Подія відправляється в API, зберігається в БД,
+      а календар потім отримує її через /api/events.
+      */
+      const eventTitle = document.getElementById('event-title').value.trim();
+      const eventDescription = document.getElementById('event-description')?.value.trim() || 'Опис події відсутній';
+      const eventLocationValue = document.getElementById('event-location')?.value.trim() || '';
+
+      const startDateTime = document.getElementById('event-date-time')?.value;
+      const endDateTime = document.getElementById('event-end-date-time')?.value;
+
+      if (!startDateTime) {
+        alert('Вкажіть дату та час початку події');
+        submitBtn.innerHTML = originalText;
+        submitBtn.style.opacity = '1';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      if (!endDateTime) {
+        alert('Вкажіть дату та час завершення події');
+        submitBtn.innerHTML = originalText;
+        submitBtn.style.opacity = '1';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      const eventDay = startDateTime.split('T')[0];
+      const startTime = startDateTime.split('T')[1];
+      const endTime = endDateTime.split('T')[1];
+
+      const visibility = document.querySelector('input[name="eventVisibility"]:checked')?.value || 'public';
+
+      const categoryValue = document.getElementById('event-category')?.value;
+
+      const categoryMap = {
+        concert: 1,
+        festival: 2,
+        education: 3,
+        sport: 4
+      };
+      
+      const eventPayload = {
+        title: eventTitle,
+        description: eventDescription,
+        event_day: eventDay,
+        start_time: startTime,
+        end_time: endTime,
+        latitude: null,
+        longitude: null,
+        category_id: categoryMap[categoryValue] || null,
+        creator_id: 1,
+        region: eventLocationValue,
+        is_private: visibility === 'private',
+        price: Number(document.getElementById('ticket-price')?.value || 0),
+        currency: 'UAH'
+      };
+
+      const response = await fetch('http://localhost:5000/api/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventPayload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Не вдалося створити подію');
+      }
+
+      const createdEvent = await response.json();
+      
+      //Використання оплаченої додаткової події
+      useExtraEventCreditIfNeeded();
+
+      /*
+      ТАСК 64: Інтеграція email-сповіщень із подіями
+      Після створення події автоматично створюється email-нагадування
+      */
+      try {
+        await createEmailReminderForEvent(createdEvent.event_id);
+        console.log('Email-нагадування успішно створено');
+      } catch (emailError) {
+        /*
+        ТАСК 64: Обробка помилок відправки email
+        Якщо нагадування не створилось, подія все одно залишається створеною,
+        але користувач отримує повідомлення про помилку email.
+        */
+        console.error('Помилка email-нагадування:', emailError);
+        alert('Подію створено, але email-нагадування не вдалося налаштувати');
+      }
+      console.log('Подію створено в БД:', createdEvent);
 
         submitBtn.innerHTML = isEditMode ? '<i class="fa-solid fa-check"></i> Зміни збережено!' : '<i class="fa-solid fa-check"></i> Успішно відправлено!';
         submitBtn.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
@@ -180,6 +374,15 @@ document.addEventListener('DOMContentLoaded', () => {
           
           alert(isEditMode ? 'Зміни до події успішно збережено!' : 'Подію успішно надіслано на модерацію!');
         }, 2000);
+        } catch (error) {
+          console.error('Помилка створення події:', error);
+
+          alert(error.message || 'Сталася помилка при створенні події');
+
+          submitBtn.innerHTML = originalText;
+          submitBtn.style.opacity = '1';
+          submitBtn.disabled = false;
+        }
       }, 1500);
     });
   }

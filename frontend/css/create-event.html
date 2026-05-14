@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Створення події - Event Manager</title>
+  <title>РЎС‚РІРѕСЂРµРЅРЅСЏ РїРѕРґС–С— - Event Manager</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -29,7 +29,7 @@
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="text" placeholder="Пошук подій ...">
+        <input type="text" placeholder="РџРѕС€СѓРє РїРѕРґС–Р№ ...">
         <div
           style="background-color:#E0E0E0; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; color:#333; margin-right:10px;">
           <i class="fa-solid fa-plus" style="font-size:12px;"></i>
@@ -42,7 +42,7 @@
         <div class="language-btn">UA <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i>
         </div>
         <div class="language-dropdown hidden">
-          <button type="button" class="lang-option active">UA - Українська</button>
+          <button type="button" class="lang-option active">UA - РЈРєСЂР°С—РЅСЃСЊРєР°</button>
           <button type="button" class="lang-option">EN - English</button>
         </div>
       </div>
@@ -59,9 +59,9 @@
   <main class="create-event-page">
     <div class="create-event-header">
       <a href="index.html" class="back-link">
-        <i class="fa-solid fa-arrow-left"></i> Назад
+        <i class="fa-solid fa-arrow-left"></i> РќР°Р·Р°Рґ
       </a>
-      <h1 id="page-main-title">Створити нову подію</h1>
+      <h1 id="page-main-title">РЎС‚РІРѕСЂРёС‚Рё РЅРѕРІСѓ РїРѕРґС–СЋ</h1>
       <div class="title-separator"></div>
     </div>
 
@@ -74,7 +74,7 @@
             <div class="upload-btn">
               <i class="fa-solid fa-plus"></i>
             </div>
-            <div class="upload-text">Завантажити обкладинку</div>
+            <div class="upload-text">Р—Р°РІР°РЅС‚Р°Р¶РёС‚Рё РѕР±РєР»Р°РґРёРЅРєСѓ</div>
           </div>
         </label>
 
@@ -82,17 +82,17 @@
         <div class="event-details-section">
           <!-- Event Name -->
           <div class="input-group">
-            <input type="text" id="event-title" placeholder="Назва події" class="border-bot-input text-title" required>
+            <input type="text" id="event-title" placeholder="РќР°Р·РІР° РїРѕРґС–С—" class="border-bot-input text-title" required>
           </div>
 
           <!-- Event Description -->
           <div class="input-group">
             <div class="group-label">
-              <span>Опис події</span>
+              <span>РћРїРёСЃ РїРѕРґС–С—</span>
             </div>
             <div class="input-with-icon">
               <i class="fa-solid fa-bars-staggered"></i>
-              <input type="text" id="event-description" placeholder="Класна подія, всім варто піти!"
+              <input type="text" id="event-description" placeholder="РљР»Р°СЃРЅР° РїРѕРґС–СЏ, РІСЃС–Рј РІР°СЂС‚Рѕ РїС–С‚Рё!"
                 class="normal-placeholder">
             </div>
           </div>
@@ -100,12 +100,12 @@
           <!-- Additional Photos (Gallery) -->
           <div class="input-group">
             <div class="group-label">
-              <span>Галерея події</span>
+              <span>Р“Р°Р»РµСЂРµСЏ РїРѕРґС–С—</span>
             </div>
             <div class="gallery-upload-container">
               <label for="gallery-images" class="gallery-upload-btn">
                 <i class="fa-solid fa-camera"></i>
-                <span>Додати фото</span>
+                <span>Р”РѕРґР°С‚Рё С„РѕС‚Рѕ</span>
               </label>
               <input type="file" id="gallery-images" hidden accept="image/*" multiple>
               <div id="gallery-preview" class="gallery-preview-list"></div>
@@ -115,15 +115,15 @@
           <!-- Add details Buttons -->
           <div class="details-buttons">
             <button type="button" class="pill-btn" data-target="date-group"><i class="fa-regular fa-calendar-days"></i>
-              Додати дату</button>
+              Р”РѕРґР°С‚Рё РґР°С‚Сѓ</button>
             <button type="button" class="pill-btn" data-target="location-group"><i class="fa-solid fa-location-dot"></i>
-              Додати місце</button>
+              Р”РѕРґР°С‚Рё РјС–СЃС†Рµ</button>
             <button type="button" class="pill-btn" data-target="category-group"><i class="fa-solid fa-ticket"></i>
-              Додати категорію</button>
+              Р”РѕРґР°С‚Рё РєР°С‚РµРіРѕСЂС–СЋ</button>
             <button type="button" class="pill-btn" data-target="restriction-group"><i class="fa-solid fa-ban"></i>
-              Додати обмеження</button>
+              Р”РѕРґР°С‚Рё РѕР±РјРµР¶РµРЅРЅСЏ</button>
             <button type="button" class="pill-btn" data-target="type-group"><i class="fa-solid fa-border-all"></i>
-              Додати тип події</button>
+              Р”РѕРґР°С‚Рё С‚РёРї РїРѕРґС–С—</button>
           </div>
 
           <style>
@@ -143,21 +143,25 @@
           <!-- Dynamic Hidden Groups -->
           <div id="date-group" class="input-group hidden dynamic-group"
             style="display: none; animation: fadeInDown 0.3s ease;">
-            <div class="group-label"><span>Дата та час</span></div>
+            <div class="group-label"><span>Р”Р°С‚Р° С‚Р° С‡Р°СЃ</span></div>
             <div class="input-with-icon">
               <i class="fa-regular fa-clock"></i>
-              <input type="datetime-local" class="normal-placeholder">
+              <input type="datetime-local" id="event-date-time" class="normal-placeholder">
+              <div class="input-with-icon" style="margin-top: 10px;">
+                <i class="fa-regular fa-clock"></i>
+                <input type="datetime-local" id="event-end-date-time" class="normal-placeholder">
+              </div>
             </div>
           </div>
 
           <div id="location-group" class="input-group hidden dynamic-group"
             style="display: none; animation: fadeInDown 0.3s ease;">
-            <div class="group-label"><span>Місце проведення</span></div>
+            <div class="group-label"><span>РњС–СЃС†Рµ РїСЂРѕРІРµРґРµРЅРЅСЏ</span></div>
             <div class="input-with-icon" style="position: relative; margin-bottom: 15px;">
               <i class="fa-solid fa-map-pin"></i>
-              <input type="text" id="event-location" placeholder="Введіть адресу або клікніть на карті нижче"
+              <input type="text" id="event-location" placeholder="Р’РІРµРґС–С‚СЊ Р°РґСЂРµСЃСѓ Р°Р±Рѕ РєР»С–РєРЅС–С‚СЊ РЅР° РєР°СЂС‚С– РЅРёР¶С‡Рµ"
                 class="normal-placeholder" autocomplete="off">
-              <!-- Сюди підвантажуватимуться підказки -->
+              <!-- РЎСЋРґРё РїС–РґРІР°РЅС‚Р°Р¶СѓРІР°С‚РёРјСѓС‚СЊСЃСЏ РїС–РґРєР°Р·РєРё -->
               <ul id="location-suggestions" class="suggestions-list" style="display: none;"></ul>
             </div>
 
@@ -167,40 +171,40 @@
 
           <div id="category-group" class="input-group hidden dynamic-group"
             style="display: none; animation: fadeInDown 0.3s ease;">
-            <div class="group-label"><span>Категорія події</span></div>
+            <div class="group-label"><span>РљР°С‚РµРіРѕСЂС–СЏ РїРѕРґС–С—</span></div>
             <div class="input-with-icon">
               <i class="fa-solid fa-layer-group"></i>
-              <select
+             <select id="event-category"
                 style="width: 100%; border: none; outline: none; background: transparent; padding: 10px 0; color: #1E293B; font-size: 15px;">
-                <option value="" disabled selected>Оберіть категорію...</option>
-                <option value="concert">Концерт</option>
-                <option value="festival">Фестиваль</option>
-                <option value="education">Освіта / Лекція</option>
-                <option value="sport">Спорт</option>
+                <option value="" disabled selected>РћР±РµСЂС–С‚СЊ РєР°С‚РµРіРѕСЂС–СЋ...</option>
+                <option value="concert">РљРѕРЅС†РµСЂС‚</option>
+                <option value="festival">Р¤РµСЃС‚РёРІР°Р»СЊ</option>
+                <option value="education">РћСЃРІС–С‚Р° / Р›РµРєС†С–СЏ</option>
+                <option value="sport">РЎРїРѕСЂС‚</option>
               </select>
             </div>
           </div>
 
           <div id="restriction-group" class="input-group hidden dynamic-group"
             style="display: none; animation: fadeInDown 0.3s ease;">
-            <div class="group-label"><span>Обмеження (опціонально)</span></div>
+            <div class="group-label"><span>РћР±РјРµР¶РµРЅРЅСЏ (РѕРїС†С–РѕРЅР°Р»СЊРЅРѕ)</span></div>
             <div class="input-with-icon">
               <i class="fa-solid fa-triangle-exclamation"></i>
-              <input type="text" placeholder="Наприклад: 18+, дрес-код, лише для студентів" class="normal-placeholder">
+              <input type="text" placeholder="РќР°РїСЂРёРєР»Р°Рґ: 18+, РґСЂРµСЃ-РєРѕРґ, Р»РёС€Рµ РґР»СЏ СЃС‚СѓРґРµРЅС‚С–РІ" class="normal-placeholder">
             </div>
           </div>
 
           <div id="type-group" class="input-group hidden dynamic-group"
             style="display: none; animation: fadeInDown 0.3s ease;">
-            <div class="group-label"><span>Формат події</span></div>
+            <div class="group-label"><span>Р¤РѕСЂРјР°С‚ РїРѕРґС–С—</span></div>
             <div class="input-with-icon">
               <i class="fa-solid fa-globe"></i>
               <select
                 style="width: 100%; border: none; outline: none; background: transparent; padding: 10px 0; color: #1E293B; font-size: 15px;">
-                <option value="" disabled selected>Оберіть формат...</option>
-                <option value="offline">Офлайн</option>
-                <option value="online">Онлайн</option>
-                <option value="hybrid">Змішаний (Гібрид)</option>
+                <option value="" disabled selected>РћР±РµСЂС–С‚СЊ С„РѕСЂРјР°С‚...</option>
+                <option value="offline">РћС„Р»Р°Р№РЅ</option>
+                <option value="online">РћРЅР»Р°Р№РЅ</option>
+                <option value="hybrid">Р—РјС–С€Р°РЅРёР№ (Р“С–Р±СЂРёРґ)</option>
               </select>
             </div>
           </div>
@@ -208,17 +212,17 @@
           <!-- Design Constructor (Pro Feature) -->
           <div class="input-group design-constructor-section">
             <div class="group-label">
-              <span>Конструктор дизайну <span class="pro-badge">PRO</span></span>
+              <span>РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґРёР·Р°Р№РЅСѓ <span class="pro-badge">PRO</span></span>
             </div>
 
             <div class="design-controls-wrapper">
               <!-- Banner Upload -->
               <div class="design-control-item">
-                <label>Баннер події</label>
+                <label>Р‘Р°РЅРЅРµСЂ РїРѕРґС–С—</label>
                 <div class="banner-upload-box" id="banner-upload-area">
                   <input type="file" id="event-banner" hidden accept="image/*">
                   <i class="fa-solid fa-image"></i>
-                  <span>Завантажити баннер</span>
+                  <span>Р—Р°РІР°РЅС‚Р°Р¶РёС‚Рё Р±Р°РЅРЅРµСЂ</span>
                 </div>
                 <div class="lock-overlay" id="banner-lock">
                   <i class="fa-solid fa-lock"></i>
@@ -227,7 +231,7 @@
 
               <!-- Color Picker -->
               <div class="design-control-item">
-                <label>Колір кнопок</label>
+                <label>РљРѕР»С–СЂ РєРЅРѕРїРѕРє</label>
                 <div class="color-picker-wrapper">
                   <input type="color" id="button-color-picker" value="#00AAFF">
                   <span id="color-value">#00AAFF</span>
@@ -239,13 +243,13 @@
 
               <!-- Theme Toggle -->
               <div class="design-control-item">
-                <label>Тема сторінки</label>
+                <label>РўРµРјР° СЃС‚РѕСЂС–РЅРєРё</label>
                 <div class="theme-toggle-wrapper">
                   <button type="button" class="theme-btn active" data-theme="light">
-                    <i class="fa-solid fa-sun"></i> Світла
+                    <i class="fa-solid fa-sun"></i> РЎРІС–С‚Р»Р°
                   </button>
                   <button type="button" class="theme-btn" data-theme="dark">
-                    <i class="fa-solid fa-moon"></i> Темна
+                    <i class="fa-solid fa-moon"></i> РўРµРјРЅР°
                   </button>
                 </div>
                 <div class="lock-overlay" id="theme-lock">
@@ -258,12 +262,12 @@
           <!-- Invitations -->
           <div class="input-group">
             <div class="group-label">
-              <span>Запрошення</span>
+              <span>Р—Р°РїСЂРѕС€РµРЅРЅСЏ</span>
             </div>
             <div class="input-with-icon tags-input-wrapper" style="flex-wrap: wrap;">
               <i class="fa-regular fa-envelope" style="margin-bottom: 8px;"></i>
               <div id="email-tags" class="tags-container"></div>
-              <input type="email" id="invite-input" placeholder="Введіть e-mail і натисніть Enter..."
+              <input type="email" id="invite-input" placeholder="Р’РІРµРґС–С‚СЊ e-mail С– РЅР°С‚РёСЃРЅС–С‚СЊ Enter..."
                 class="normal-placeholder">
             </div>
           </div>
@@ -271,14 +275,14 @@
           <!-- Tickets -->
           <div class="input-group">
             <div class="group-label">
-              <span>Квитки</span>
+              <span>РљРІРёС‚РєРё</span>
             </div>
             <div id="tickets-list" class="tickets-container"></div>
             <div class="input-with-icon ticket-builder-wrapper">
               <i class="fa-solid fa-ticket"></i>
-              <input type="text" id="ticket-name" placeholder="Тип квитка (напр. VIP)" class="normal-placeholder"
+              <input type="text" id="ticket-name" placeholder="РўРёРї РєРІРёС‚РєР° (РЅР°РїСЂ. VIP)" class="normal-placeholder"
                 style="flex: 2;">
-              <input type="number" id="ticket-price" placeholder="Вартість (₴)" class="normal-placeholder"
+              <input type="number" id="ticket-price" placeholder="Р’Р°СЂС‚С–СЃС‚СЊ (в‚ґ)" class="normal-placeholder"
                 style="flex: 1; border-left: 2px solid #E2E8F0; padding-left: 15px; margin-left: 10px;">
               <button type="button" id="add-ticket-btn" class="add-icon-btn">
                 <i class="fa-solid fa-circle-plus"></i>
@@ -286,9 +290,49 @@
             </div>
           </div>
 
+          <!-- 
+          ТАСК 70: Приватні та загальні події
+          Опис:
+          Користувач обирає, чи подія буде загальною або приватною
+          -->
+          <div class="input-group">
+            <div class="group-label">
+              <span>Доступ до події</span>
+            </div>
+
+            <label>
+              <input type="radio" name="eventVisibility" value="public" checked>
+              Загальна подія
+            </label>
+
+            <label style="margin-left: 15px;">
+              <input type="radio" name="eventVisibility" value="private">
+              Приватна подія
+            </label>
+          </div>
+
+          <!--
+          ТАСК 71: Разова доплата за подію
+          Показується Free-користувачу, якщо він досяг ліміту створення подій
+          -->
+          <div id="extraPaymentBox" class="input-group" style="display:none;">
+            <div class="group-label">
+              <span>Ліміт подій досягнуто</span>
+            </div>
+
+            <p style="color:#64748B; font-size:14px;">
+              Ви вже створили 3 події на безкоштовному тарифі.
+              Можете оплатити створення ще однієї події без купівлі Pro.
+            </p>
+
+            <button type="button" id="payExtraEventBtn" class="large-blue">
+              Оплатити ще 1 подію — 99 ₴
+            </button>
+          </div>
+
           <!-- Submit Action -->
           <div class="submit-wrapper">
-            <button type="submit" id="submit-event-btn" class="large-blue">Відправити на модерацію <i
+            <button type="submit" id="submit-event-btn" class="large-blue">Р’С–РґРїСЂР°РІРёС‚Рё РЅР° РјРѕРґРµСЂР°С†С–СЋ <i
                 class="fa-solid fa-arrow-right"></i></button>
           </div>
         </div>
@@ -296,22 +340,23 @@
     </form>
   </main>
 
-  <footer class="site-footer" style="margin-top: auto;">
+  <footer class="site-footer">
     <div class="footer-top">
       <div class="footer-column">
         <h4>Event Manager</h4>
-        <a href="#">Підтримка</a>
-        <a href="#">Контакти</a>
-        <a href="#">Приватність & cookies</a>
-        <a href="#">Політика використання</a>
+        <a href="#" class="footer-modal-link" data-modal="support">РџС–РґС‚СЂРёРјРєР°</a>
+        <a href="#" class="footer-modal-link" data-modal="contacts">РљРѕРЅС‚Р°РєС‚Рё</a>
+        <a href="#" class="footer-modal-link" data-modal="privacy">РџСЂРёРІР°С‚РЅС–СЃС‚СЊ & cookies</a>
+        <a href="#" class="footer-modal-link" data-modal="terms">РџРѕР»С–С‚РёРєР° РІРёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ</a>
       </div>
       <div class="footer-column">
-        <h4>Розробники</h4>
-        <a href="#">Про команду</a>
-        <a href="#">Про сайт</a>
+        <h4>Р РѕР·СЂРѕР±РЅРёРєРё</h4>
+        <a href="pricing.html">РўР°СЂРёС„Рё</a>
+        <a href="#" class="footer-modal-link" data-modal="team">РџСЂРѕ РєРѕРјР°РЅРґСѓ</a>
+        <a href="#" class="footer-modal-link" data-modal="about">РџСЂРѕ СЃР°Р№С‚</a>
       </div>
       <div class="footer-column">
-        <h4>Слідкуйте за<br>нами</h4>
+        <h4>РЎР»С–РґРєСѓР№С‚Рµ Р·Р°<br>РЅР°РјРё</h4>
         <a href="#" class="social-link">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -330,25 +375,46 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>Українська (Україна)</p>
-      <p>© CodeX 2026</p>
+      <p>РЈРєСЂР°С—РЅСЃСЊРєР° (РЈРєСЂР°С—РЅР°)</p>
+      <p>В© CodeX 2026</p>
     </div>
   </footer>
+
+  <div id="footerModal" class="modal-overlay" style="display: none;">
+    <div class="premium-modal-container" style="max-width: 500px; text-align: center;">
+      <span class="close-modal" id="closeFooterModalBtn">&times;</span>
+      
+      <div class="modal-icon-header" id="footerModalIcon">
+        <i class="fa-solid fa-circle-info"></i>
+      </div>
+      
+      <h2 id="footerModalTitle">Р—Р°РіРѕР»РѕРІРѕРє</h2>
+      <div class="modal-content-text" id="footerModalContent" style="margin-top: 20px; line-height: 1.6; color: #4b5563; font-size: 15px;">
+        РўРµРєСЃС‚ С–РЅС„РѕСЂРјР°С†С–С—...
+      </div>
+      
+      <div class="modal-actions" style="margin-top: 30px;">
+        <button id="okFooterModalBtn" class="premium-btn-primary" style="width: 100%;">
+          Р—СЂРѕР·СѓРјС–Р»Рѕ
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div id="userPanelOverlay" class="panel-overlay"></div>
   <aside id="userPanel" class="user-panel">
     <div class="panel-header">
-      <h2>Профіль</h2>
+      <h2>РџСЂРѕС„С–Р»СЊ</h2>
       <button id="closePanelBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <nav class="panel-nav">
-      <a href="wishlist.html" class="panel-link"><i class="fa-regular fa-heart"></i> Обране</a>
-      <a href="#" class="panel-link"><i class="fa-regular fa-calendar-check"></i> Мої події</a>
-      <a href="create-event.html" class="panel-link active"><i class="fa-solid fa-plus"></i> Створити подію</a>
+      <a href="wishlist.html" class="panel-link"><i class="fa-regular fa-heart"></i> РћР±СЂР°РЅРµ</a>
+      <a href="#" class="panel-link"><i class="fa-regular fa-calendar-check"></i> РњРѕС— РїРѕРґС–С—</a>
+      <a href="create-event.html" class="panel-link active"><i class="fa-solid fa-plus"></i> РЎС‚РІРѕСЂРёС‚Рё РїРѕРґС–СЋ</a>
     </nav>
     <div class="panel-footer">
-      <button class="panel-auth-btn login-btn" onclick="openAuthFromPanel('login')">Увійти</button>
-      <button class="panel-auth-btn register-btn" onclick="openAuthFromPanel('register')">Зареєструватися</button>
+      <button class="panel-auth-btn login-btn" onclick="openAuthFromPanel('login')">РЈРІС–Р№С‚Рё</button>
+      <button class="panel-auth-btn register-btn" onclick="openAuthFromPanel('register')">Р—Р°СЂРµС”СЃС‚СЂСѓРІР°С‚РёСЃСЏ</button>
     </div>
   </aside>
 
@@ -362,12 +428,12 @@
 
       <form id="registrationForm" class="register-form" novalidate>
         <div class="form-content register active">
-          <h1>Створити профіль</h1>
+          <h1>РЎС‚РІРѕСЂРёС‚Рё РїСЂРѕС„С–Р»СЊ</h1>
           <input type="email" id="reg-email" placeholder="e-mail..." required>
           <p class="error" id="email-error"></p>
 
           <div class="password-wrapper">
-            <input type="password" id="reg-password" placeholder="Пароль..." required>
+            <input type="password" id="reg-password" placeholder="РџР°СЂРѕР»СЊ..." required>
             <span class="toggle-password">
               <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                 viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
@@ -386,35 +452,35 @@
           </div>
           <p class="error" id="password-error"></p>
 
-          <input type="text" id="reg-username" placeholder="@ім’я користувача" required>
+          <input type="text" id="reg-username" placeholder="@С–РјвЂ™СЏ РєРѕСЂРёСЃС‚СѓРІР°С‡Р°" required>
           <p class="error" id="username-error"></p>
 
           <label class="checkbox">
-            <input type="checkbox"> Запам’ятати мене
+            <input type="checkbox"> Р—Р°РїР°РјвЂ™СЏС‚Р°С‚Рё РјРµРЅРµ
           </label>
 
-          <button type="submit" class="main-btn">Створити профіль</button>
+          <button type="submit" class="main-btn">РЎС‚РІРѕСЂРёС‚Рё РїСЂРѕС„С–Р»СЊ</button>
 
-          <p class="or">або</p>
+          <p class="or">Р°Р±Рѕ</p>
 
           <button type="button" class="google-login">
-            <img src="images/гугл.webp" class="google-icon" alt="Google">
-            Ввійти з Google
+            <img src="images/РіСѓРіР».webp" class="google-icon" alt="Google">
+            Р’РІС–Р№С‚Рё Р· Google
           </button>
 
           <p class="login-link">
-            Вже маєте аккаунт?
-            <a href="#" class="switch-login">Увійти</a>
+            Р’Р¶Рµ РјР°С”С‚Рµ Р°РєРєР°СѓРЅС‚?
+            <a href="#" class="switch-login">РЈРІС–Р№С‚Рё</a>
           </p>
         </div>
 
         <div class="form-content login">
-          <h1>Вітаємо знову!</h1>
+          <h1>Р’С–С‚Р°С”РјРѕ Р·РЅРѕРІСѓ!</h1>
           <input type="email" id="login-email" placeholder="e-mail..." required>
           <p class="error" id="login-email-error"></p>
 
           <div class="password-wrapper">
-            <input type="password" id="login-password" placeholder="Пароль..." required>
+            <input type="password" id="login-password" placeholder="РџР°СЂРѕР»СЊ..." required>
             <span class="toggle-password">
               <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                 viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
@@ -435,54 +501,54 @@
 
           <div class="checkbox-forgot">
             <label class="checkbox">
-              <input type="checkbox"> Запам’ятати мене
+              <input type="checkbox"> Р—Р°РїР°РјвЂ™СЏС‚Р°С‚Рё РјРµРЅРµ
             </label>
-            <a href="#" class="forgot-password">Забули пароль?</a>
+            <a href="#" class="forgot-password">Р—Р°Р±СѓР»Рё РїР°СЂРѕР»СЊ?</a>
           </div>
 
-          <button type="submit" class="main-btn">Увійти</button>
+          <button type="submit" class="main-btn">РЈРІС–Р№С‚Рё</button>
 
-          <p class="or">або</p>
+          <p class="or">Р°Р±Рѕ</p>
 
           <button type="button" class="google-login">
-            <img src="images/гугл.webp" class="google-icon" alt="Google">
-            Ввійти з Google
+            <img src="images/РіСѓРіР».webp" class="google-icon" alt="Google">
+            Р’РІС–Р№С‚Рё Р· Google
           </button>
 
           <p class="login-link">
-            Не маєте аккаунт?
-            <a href="#" class="switch-register">Створити</a>
+            РќРµ РјР°С”С‚Рµ Р°РєРєР°СѓРЅС‚?
+            <a href="#" class="switch-register">РЎС‚РІРѕСЂРёС‚Рё</a>
           </p>
         </div>
 
         <div class="form-content forgot">
-          <h1>Відновлення пароля</h1>
+          <h1>Р’С–РґРЅРѕРІР»РµРЅРЅСЏ РїР°СЂРѕР»СЏ</h1>
           <input type="email" id="forgot-email" placeholder="e-mail..." required>
           <p class="error" id="forgot-email-error"></p>
-          <button type="button" id="forgot-submit" class="main-btn">Скинути пароль</button>
+          <button type="button" id="forgot-submit" class="main-btn">РЎРєРёРЅСѓС‚Рё РїР°СЂРѕР»СЊ</button>
           <p class="login-link">
-            <a href="#" class="back-login">Повернутися до входу</a>
+            <a href="#" class="back-login">РџРѕРІРµСЂРЅСѓС‚РёСЃСЏ РґРѕ РІС…РѕРґСѓ</a>
           </p>
         </div>
 
         <div class="form-content verify">
-          <h1>Введіть код</h1>
+          <h1>Р’РІРµРґС–С‚СЊ РєРѕРґ</h1>
           <div class="code-inputs">
             <input maxlength="1" class="code-box">
             <input maxlength="1" class="code-box">
             <input maxlength="1" class="code-box">
             <input maxlength="1" class="code-box">
           </div>
-          <button type="submit" class="main-btn">Підтвердити</button>
+          <button type="submit" class="main-btn">РџС–РґС‚РІРµСЂРґРёС‚Рё</button>
           <p class="login-link">
-            <a href="#" class="back-login">Повернутися до входу</a>
+            <a href="#" class="back-login">РџРѕРІРµСЂРЅСѓС‚РёСЃСЏ РґРѕ РІС…РѕРґСѓ</a>
           </p>
         </div>
 
         <div class="form-content reset-password">
-          <h1>Підтвердження пароля</h1>
+          <h1>РџС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ РїР°СЂРѕР»СЏ</h1>
           <div class="password-wrapper">
-            <input type="password" id="new-password" placeholder="Новий пароль..." required>
+            <input type="password" id="new-password" placeholder="РќРѕРІРёР№ РїР°СЂРѕР»СЊ..." required>
             <span class="toggle-password">
               <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                 viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
@@ -502,7 +568,7 @@
           <p class="error" id="new-password-error"></p>
 
           <div class="password-wrapper">
-            <input type="password" id="confirm-password" placeholder="Підтвердження..." required>
+            <input type="password" id="confirm-password" placeholder="РџС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ..." required>
             <span class="toggle-password">
               <svg class="eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                 viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round"
@@ -521,9 +587,9 @@
           </div>
           <p class="error" id="confirm-password-error"></p>
 
-          <button type="submit" class="main-btn">Підтвердити</button>
+          <button type="submit" class="main-btn">РџС–РґС‚РІРµСЂРґРёС‚Рё</button>
           <p class="login-link">
-            <a href="#" class="back-login">Повернутися до входу</a>
+            <a href="#" class="back-login">РџРѕРІРµСЂРЅСѓС‚РёСЃСЏ РґРѕ РІС…РѕРґСѓ</a>
           </p>
         </div>
       </form>

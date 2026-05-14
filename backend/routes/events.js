@@ -8,6 +8,7 @@ const upload = require('../middleware/upload'); // 🟢 Підключаємо M
 // Логіка конвертації валют (імпортована зі спільного сервісу)
 // ==========================================
 const currencyService = require('../services/CurrencyService');
+const trialService = require('../services/TrialService');
 
 // ==========================================
 // ПАТЕРН 1.1: Service Pattern
@@ -305,6 +306,200 @@ router.get('/search', async (req, res) => {
     }
 });
 
+// =======================================================
+// НОВИЙ МАРШРУТ: GET /events/scheduled
+// Отримання лише запланованих (майбутніх) подій
+// =======================================================
+router.get('/scheduled', async (req, res) => {
+    const { region, target_currency, sort_by, creator_id, limit } = req.query;
+
+    try {
+        let queryText = `
+            SELECT e.*, 
+                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating,
+                   'запланована' as status,
+                   (e.event_day + e.start_time) AS event_datetime
+            FROM events e
+            LEFT JOIN ratings r ON e.event_id = r.event_id
+            WHERE (e.event_day + e.start_time) > NOW()
+        `;
+        let queryParams = [];
+        let paramIndex = 1;
+
+        // Фільтр за регіоном
+        if (region) {
+            queryText += ` AND e.region = $${paramIndex}`;
+            queryParams.push(region);
+            paramIndex++;
+        }
+
+        // Фільтр за творцем (мої заплановані події)
+        if (creator_id) {
+            queryText += ` AND e.creator_id = $${paramIndex}`;
+            queryParams.push(creator_id);
+            paramIndex++;
+        }
+
+        queryText += ' GROUP BY e.event_id ORDER BY event_datetime ASC';
+
+        // Ліміт результатів
+        if (limit && !isNaN(limit)) {
+            queryText += ` LIMIT $${paramIndex}`;
+            queryParams.push(parseInt(limit));
+            paramIndex++;
+        }
+
+        const result = await pool.query(queryText, queryParams);
+        let events = result.rows;
+
+        // Конвертація валюти (аналогічно до GET /events)
+        events = events.map(event => {
+            const eventPrice = parseFloat(event.price) || 0;
+            const eventCurrency = event.currency || 'UAH';
+            const baseUahPrice = parseFloat(currencyService.convert(eventPrice, eventCurrency, 'UAH'));
+
+            let displayPrice = eventPrice;
+            let displayCurrency = eventCurrency;
+
+            if (target_currency) {
+                displayPrice = currencyService.convert(eventPrice, eventCurrency, target_currency);
+                displayCurrency = target_currency.toUpperCase();
+            }
+
+            return {
+                ...event,
+                average_rating: parseFloat(event.average_rating),
+                base_uah_price: baseUahPrice,
+                display_price: displayPrice,
+                display_currency: displayCurrency
+            };
+        });
+
+        // Сортування
+        if (sort_by && sortStrategies[sort_by.toLowerCase()]) {
+            events.sort(sortStrategies[sort_by.toLowerCase()]);
+        }
+
+        // Видаляємо технічне поле
+        events = events.map(event => {
+            delete event.base_uah_price;
+            return event;
+        });
+
+        res.json({
+            status: 'success',
+            count: events.length,
+            events: events
+        });
+    } catch (err) {
+        console.error('Помилка отримання запланованих подій:', err.message);
+        res.status(500).json({ error: "Внутрішня помилка сервера" });
+    }
+});
+
+// =======================================================
+// НОВИЙ МАРШРУТ: GET /events/calendar
+// Фільтрація подій за діапазоном дат (для календаря)
+// Query params: from (YYYY-MM-DD), to (YYYY-MM-DD)
+// =======================================================
+router.get('/calendar', async (req, res) => {
+    const { from, to, creator_id, region, category_id } = req.query;
+
+    // Валідація: обов'язкові параметри дат
+    if (!from || !to) {
+        return res.status(400).json({ 
+            error: "Потрібно вказати параметри 'from' та 'to' у форматі YYYY-MM-DD" 
+        });
+    }
+
+    // Валідація формату дат
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(from) || !dateRegex.test(to)) {
+        return res.status(400).json({ 
+            error: "Невірний формат дати. Використовуйте YYYY-MM-DD" 
+        });
+    }
+
+    // Валідація: from не може бути пізніше to
+    if (new Date(from) > new Date(to)) {
+        return res.status(400).json({ 
+            error: "Дата 'from' не може бути пізніше за 'to'" 
+        });
+    }
+
+    try {
+        let queryText = `
+            SELECT e.*, 
+                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating,
+                   CASE 
+                       WHEN (e.event_day + e.start_time) < NOW() THEN 'завершена'
+                       ELSE 'активна'
+                   END as status
+            FROM events e
+            LEFT JOIN ratings r ON e.event_id = r.event_id
+            WHERE e.event_day >= $1 AND e.event_day <= $2
+        `;
+        let queryParams = [from, to];
+        let paramIndex = 3;
+
+        // Фільтр за творцем
+        if (creator_id) {
+            queryText += ` AND e.creator_id = $${paramIndex}`;
+            queryParams.push(creator_id);
+            paramIndex++;
+        }
+
+        // Фільтр за регіоном
+        if (region) {
+            queryText += ` AND e.region = $${paramIndex}`;
+            queryParams.push(region);
+            paramIndex++;
+        }
+
+        // Фільтр за категорією
+        if (category_id) {
+            queryText += ` AND e.category_id = $${paramIndex}`;
+            queryParams.push(category_id);
+            paramIndex++;
+        }
+
+        queryText += ' GROUP BY e.event_id ORDER BY e.event_day ASC, e.start_time ASC';
+
+        const result = await pool.query(queryText, queryParams);
+
+        // Групування подій за датами (зручно для календаря)
+        const eventsByDate = {};
+        for (const event of result.rows) {
+            const dateKey = event.event_day instanceof Date 
+                ? event.event_day.toISOString().split('T')[0] 
+                : String(event.event_day).split('T')[0];
+            
+            if (!eventsByDate[dateKey]) {
+                eventsByDate[dateKey] = [];
+            }
+            eventsByDate[dateKey].push({
+                ...event,
+                average_rating: parseFloat(event.average_rating)
+            });
+        }
+
+        res.json({
+            status: 'success',
+            period: { from, to },
+            total_events: result.rows.length,
+            dates_with_events: Object.keys(eventsByDate).length,
+            events_by_date: eventsByDate,
+            events: result.rows.map(event => ({
+                ...event,
+                average_rating: parseFloat(event.average_rating)
+            }))
+        });
+    } catch (err) {
+        console.error('Помилка фільтрації подій за датами:', err.message);
+        res.status(500).json({ error: "Внутрішня помилка сервера" });
+    }
+});
+
 // ==========================================
 // 4. Отримання однієї події за ID
 // ==========================================
@@ -332,6 +527,23 @@ router.post('/', async (req, res) => {
     if (!title || title.length < 5) return res.status(400).json({ error: "Назва коротка" });
     if (!region) return res.status(400).json({ error: "Вкажіть область" });
     if (price !== undefined && price < 0) return res.status(400).json({ error: "Ціна не може бути від'ємною" });
+
+    // Перевірка ліміту Trial/Starter плану (макс. 3 активні події)
+    if (creator_id) {
+        try {
+            const canCreate = await trialService.canCreateEvent(creator_id);
+            if (!canCreate.allowed) {
+                return res.status(403).json({
+                    error: canCreate.reason,
+                    current_count: canCreate.current_count,
+                    max_count: canCreate.max_count
+                });
+            }
+        } catch (limitErr) {
+            console.error('Помилка перевірки ліміту:', limitErr.message);
+            // Graceful degradation — дозволяємо створення
+        }
+    }
 
     // Check for Pro features (Design Constructor)
     if ((req.body.banner_url || req.body.button_color || req.body.theme !== 'light')) {
