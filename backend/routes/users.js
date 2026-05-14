@@ -4,11 +4,8 @@ const pool = require('../db');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-<<<<<<< HEAD
 const trialService = require('../services/TrialService');
-=======
 const SubscriptionService = require('../services/SubscriptionService');
->>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
 
 // РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ РїРѕС€С‚Рё (РґР»СЏ СЂРѕР·СЂРѕР±РєРё РїРѕСЃРёР»Р°РЅРЅСЏ РїСЂРѕСЃС‚Рѕ РІРёРІРѕРґРёС‚СЊСЃСЏ РІ РєРѕРЅСЃРѕР»СЊ СЃРµСЂРІРµСЂР°)
 const transporter = nodemailer.createTransport({
@@ -93,7 +90,6 @@ router.post('/register', async (req, res) => {
             [username, email, passwordHash, activationToken]
         );
 
-<<<<<<< HEAD
         // Автоматична активація Trial-періоду (2 місяці)
         let trialInfo = null;
         try {
@@ -103,15 +99,6 @@ router.post('/register', async (req, res) => {
             }
         } catch (trialErr) {
             console.error('Trial activation error:', trialErr.message);
-=======
-        // АВТОМАТИЧНЕ ПРИЗНАЧЕННЯ ТАРИФУ FREE
-        // Патерн: Strategy — кожен новий користувач отримує базову стратегію (Free)
-        try {
-            await SubscriptionService.assignFreePlan(newUser.rows[0].user_id);
-        } catch (subErr) {
-            console.error('Помилка призначення тарифу Free:', subErr.message);
-            // Не блокуємо реєстрацію, якщо підписка не створилась
->>>>>>> 5ee0b39ef4c4dc347ff7e4a32746c0b0284a91fa
         }
 
         const activationLink = `http://localhost:5000/users/activate/${activationToken}`;
