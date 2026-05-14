@@ -357,8 +357,8 @@ router.post('/', async (req, res) => {
             RETURNING *`;
 
         const values = [
-            title, description, event_day, start_time, end_time, 
-            latitude, longitude, category_id, creator_id, region, 
+            title, description, event_day, start_time, end_time,
+            latitude, longitude, category_id, creator_id, region,
             is_private ?? true, price || 0, currency || 'UAH',
             req.body.banner_url || null, req.body.button_color || null, req.body.theme || 'light'
         ];
@@ -392,17 +392,17 @@ router.post('/:id/image', upload.single('image'), async (req, res) => {
             SET image_url = $1 
             WHERE event_id = $2 
             RETURNING *`;
-        
+
         const result = await pool.query(query, [imageUrl, eventId]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Подію не знайдено" });
         }
 
-        res.json({ 
-            message: "Фото успішно додано", 
+        res.json({
+            message: "Фото успішно додано",
             image_url: imageUrl,
-            event: result.rows[0] 
+            event: result.rows[0]
         });
 
     } catch (err) {
@@ -441,10 +441,10 @@ router.delete('/:id', async (req, res) => {
 // 8. СТВОРЕННЯ ПРИВАТНОЇ ПОДІЇ ТА ДОДАВАННЯ ФОТО (POST)
 // ==========================================
 router.post('/private', async (req, res) => {
-    const { 
-        title, description, event_day, start_time, end_time, 
+    const {
+        title, description, event_day, start_time, end_time,
         latitude, longitude, category_id, creator_id,
-        region, price, currency, photo_url 
+        region, price, currency, photo_url
     } = req.body;
 
     if (!title || title.trim().length < 3) return res.status(400).json({ error: "Назва занадто коротка" });
@@ -459,13 +459,13 @@ router.post('/private', async (req, res) => {
             ) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, TRUE, $11, $12, $13) 
             RETURNING *`;
-        
+
         const values = [
-            title, description, event_day, start_time, end_time, 
-            latitude, longitude, category_id, creator_id, region, 
+            title, description, event_day, start_time, end_time,
+            latitude, longitude, category_id, creator_id, region,
             price || 0, currency || 'UAH', photo_url
         ];
-        
+
         const result = await pool.query(query, values);
         res.status(201).json({
             msg: "Приватна подія успішно створена",
@@ -482,10 +482,10 @@ router.post('/private', async (req, res) => {
 // ==========================================
 router.put('/private/:id', async (req, res) => {
     const eventId = req.params.id;
-    const { 
-        title, description, event_day, start_time, end_time, 
+    const {
+        title, description, event_day, start_time, end_time,
         latitude, longitude, category_id,
-        region, price, currency, photo_url 
+        region, price, currency, photo_url
     } = req.body;
 
     try {
@@ -511,8 +511,8 @@ router.put('/private/:id', async (req, res) => {
             RETURNING *`;
 
         const values = [
-            title, description, event_day, start_time, end_time, 
-            latitude, longitude, category_id, region, 
+            title, description, event_day, start_time, end_time,
+            latitude, longitude, category_id, region,
             price, currency, photo_url,
             eventId,
             req.body.banner_url, req.body.button_color, req.body.theme
@@ -537,7 +537,7 @@ router.put('/private/:id', async (req, res) => {
 router.post('/:id/invite', async (req, res) => {
     const eventId = req.params.id;
     // Очікуємо масив ID користувачів для запрошення
-    const { user_ids } = req.body; 
+    const { user_ids } = req.body;
 
     if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
         return res.status(400).json({ error: "Передайте масив user_ids (IDs друзів) для запрошення" });
@@ -565,8 +565,8 @@ router.post('/:id/invite', async (req, res) => {
             }
 
             await client.query('COMMIT');
-            res.status(200).json({ 
-                msg: "Запрошення успішно надіслані", 
+            res.status(200).json({
+                msg: "Запрошення успішно надіслані",
                 invited_count: results.length,
                 invites: results
             });
@@ -600,11 +600,11 @@ class EventStateMachine {
     canTransition(currentStatus, newStatus) {
         // Якщо статус не змінюється, це ок (наприклад, при іншому апдейті)
         if (currentStatus === newStatus) return true;
-        
+
         const allowedNext = this.transitions[currentStatus] || [];
         return allowedNext.includes(newStatus);
     }
-    
+
     get validStatuses() {
         return Object.keys(this.transitions);
     }
@@ -625,7 +625,7 @@ router.patch('/:id/status', async (req, res) => {
     try {
         // Спочатку отримуємо поточний статус
         const currentEventRes = await pool.query('SELECT status FROM events WHERE event_id = $1', [eventId]);
-        
+
         if (currentEventRes.rows.length === 0) {
             return res.status(404).json({ error: "Подію не знайдено" });
         }
@@ -634,8 +634,8 @@ router.patch('/:id/status', async (req, res) => {
 
         // Використовуємо патерн State Machine для перевірки логіки переходу
         if (!eventStateMachine.canTransition(currentStatus, newStatus)) {
-            return res.status(400).json({ 
-                error: `Помилка бізнес-логіки: неможливо перейти зі статусу '${currentStatus}' в '${newStatus}'` 
+            return res.status(400).json({
+                error: `Помилка бізнес-логіки: неможливо перейти зі статусу '${currentStatus}' в '${newStatus}'`
             });
         }
 
@@ -645,7 +645,7 @@ router.patch('/:id/status', async (req, res) => {
             SET status = $1
             WHERE event_id = $2
             RETURNING *`;
-            
+
         const result = await pool.query(updateQuery, [newStatus, eventId]);
 
         res.json({ msg: "Статус події оновлено", event: result.rows[0] });
@@ -671,7 +671,7 @@ router.patch('/:id/participants/:user_id/status', async (req, res) => {
             SET status = $1
             WHERE event_id = $2 AND user_id = $3
             RETURNING *`;
-            
+
         const result = await pool.query(query, [status, eventId, userId]);
 
         if (result.rows.length === 0) {

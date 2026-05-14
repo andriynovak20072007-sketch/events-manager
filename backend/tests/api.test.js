@@ -185,7 +185,7 @@ jest.mock('../db', () => ({
             const userId = values[0];
             const key = values[1];
             const storeKey = `${userId}:${key}`;
-            
+
             if (mockSettingsStore[storeKey]) {
                 return Promise.resolve({
                     rows: [{ setting_value: mockSettingsStore[storeKey] }]
@@ -200,9 +200,9 @@ jest.mock('../db', () => ({
             const key = values[1];
             const value = values[2];
             const storeKey = `${userId}:${key}`;
-            
+
             mockSettingsStore[storeKey] = value;
-            
+
             return Promise.resolve({
                 rows: [{
                     setting_id: 1,
@@ -631,7 +631,7 @@ describe('Тестування планувальника сповіщень (Sc
         expect(res.body.scheduler.isProcessing).toBeDefined();
         expect(res.body.available_types).toBeInstanceOf(Array);
         expect(res.body.available_types.length).toBeGreaterThanOrEqual(3);
-        
+
         // Перевіряємо що всі 3 типи нагадувань доступні
         const types = res.body.available_types.map(t => t.type);
         expect(types).toContain('24h');
