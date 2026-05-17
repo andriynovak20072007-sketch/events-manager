@@ -5,6 +5,13 @@ const cors = require('cors');
 const pool = require('./db');
 
 // ==========================================
+// ПАТЕРН: Custom Error Hierarchy
+// Імпорт для централізованої обробки помилок
+// ==========================================
+const AppError = require('./utils/AppError');
+const logger = require('./utils/Logger');
+
+// ==========================================
 // 1. ІМПОРТ КОНТРОЛЕРІВ (РОУТІВ)
 // ==========================================
 const usersRoutes = require('./routes/users');
@@ -68,10 +75,21 @@ app.get('/', (req, res) => {
 
 // ==========================================
 // 4. ПАТЕРН: ЦЕНТРАЛІЗОВАНА ОБРОБКА ПОМИЛОК
+// Підтримує як AppError (операційні), так і непередбачені помилки
 // ==========================================
-// Цей мідлвер ловить всі помилки, які "впали" в додатку і не були оброблені
 app.use((err, req, res, next) => {
-    console.error('🔥 Неперехоплена помилка сервера:', err.stack);
+    // Якщо це наша операційна помилка (AppError) — повертаємо її статус та повідомлення
+    if (err.isOperational) {
+        logger.warn('HTTP', `${err.statusCode} ${req.method} ${req.originalUrl}: ${err.message}`);
+        
+        const response = { error: err.message };
+        if (err.details) response.details = err.details;
+        
+        return res.status(err.statusCode).json(response);
+    }
+
+    // Непередбачена помилка — логуємо повний стек
+    logger.error('SERVER', 'Неперехоплена помилка сервера', err);
     res.status(500).json({ 
         error: "Внутрішня помилка сервера", 
         message: err.message 
@@ -86,7 +104,7 @@ const PORT = process.env.PORT || 5000;
 // Запускаємо сервер ТІЛЬКИ якщо це не тести
 if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
-        console.log(`🚀 Server працює на порту ${PORT}`);
+        logger.success('SERVER', `Server працює на порту ${PORT}`);
     });
 }
 
