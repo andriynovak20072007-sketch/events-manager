@@ -30,8 +30,12 @@ const app = express();
 // ==========================================
 // 2. МІДЛВЕРИ (MIDDLEWARES)
 // ==========================================
-app.use(cors());
+app.use(cors({
+    origin: true,     // Дозволяє запити з будь-якого origin (для розробки)
+    credentials: true  // Дозволяє передачу cookies/сесій
+}));
 app.use(express.json()); // Дозволяє серверу читати JSON з req.body
+
 
 // 🟢 ДОДАНО: Робимо папку 'uploads' публічною, щоб фронтенд міг читати фотографії
 app.use('/uploads', express.static('uploads'));

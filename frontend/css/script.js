@@ -1,4 +1,119 @@
 console.log("JS підключений");
+
+// ==========================================
+// ПАТЕРН: Observer (Спостерігач) — Toast-сповіщення
+// Централізована система повідомлень замість alert()
+// ==========================================
+function showToast(message, type = 'info', duration = 4000) {
+    // Створюємо контейнер при першому виклику
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        `;
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    
+    // Кольори та іконки для різних типів
+    const themes = {
+        success: { bg: 'linear-gradient(135deg, #10B981, #059669)', icon: '✓', shadow: 'rgba(16, 185, 129, 0.3)' },
+        error:   { bg: 'linear-gradient(135deg, #EF4444, #DC2626)', icon: '✕', shadow: 'rgba(239, 68, 68, 0.3)' },
+        info:    { bg: 'linear-gradient(135deg, #2854C5, #00AAFF)', icon: 'ℹ', shadow: 'rgba(40, 84, 197, 0.3)' },
+        warning: { bg: 'linear-gradient(135deg, #F59E0B, #D97706)', icon: '⚠', shadow: 'rgba(245, 158, 11, 0.3)' }
+    };
+    
+    const theme = themes[type] || themes.info;
+    
+    toast.style.cssText = `
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 24px;
+        background: ${theme.bg};
+        color: white;
+        border-radius: 16px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 10px 30px ${theme.shadow};
+        backdrop-filter: blur(10px);
+        transform: translateX(120%);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        max-width: 380px;
+        line-height: 1.4;
+        cursor: pointer;
+    `;
+    
+    // Іконка
+    const iconSpan = document.createElement('span');
+    iconSpan.style.cssText = `
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    `;
+    iconSpan.textContent = theme.icon;
+    
+    const textSpan = document.createElement('span');
+    textSpan.textContent = message;
+    
+    toast.appendChild(iconSpan);
+    toast.appendChild(textSpan);
+    container.appendChild(toast);
+    
+    // Анімація появи
+    requestAnimationFrame(() => {
+        toast.style.transform = 'translateX(0)';
+    });
+    
+    // Закриття по кліку
+    toast.addEventListener('click', () => removeToast(toast));
+    
+    // Автоматичне зникнення
+    setTimeout(() => removeToast(toast), duration);
+    
+    function removeToast(el) {
+        el.style.transform = 'translateX(120%)';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500);
+    }
+}
+
+// ==========================================
+// ПАТЕРН: Mediator — Підсвітка поля з помилкою
+// Центральна функція обробки серверних помилок
+// ==========================================
+function highlightFieldError(field, errorMap) {
+    const fieldMap = {
+        'email': { input: document.getElementById('reg-email'), error: document.getElementById('email-error') },
+        'password': { input: document.getElementById('reg-password'), error: document.getElementById('password-error') },
+        'username': { input: document.getElementById('reg-username'), error: document.getElementById('username-error') }
+    };
+    
+    const target = fieldMap[field];
+    if (target && target.input && target.error) {
+        target.input.classList.add('input-error');
+        target.error.textContent = errorMap || '';
+        target.input.focus();
+    }
+}
 const form = document.getElementById("registrationForm");
 
 // Форми 
@@ -230,7 +345,7 @@ if (forgotSubmitBtn) {
 
     if (!valid) return;
 
-    alert("Код відправлено на email");
+    showToast('Код відправлено на email', 'success');
     showForm("verify");
   });
 }
@@ -239,7 +354,10 @@ if (form) {
   form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    // Реєстрація
+    // ==========================================
+    // РЕЄСТРАЦІЯ (підключення до бекенду)
+    // ПАТЕРН: Command — кожна гілка форми = окрема команда
+    // ==========================================
     if (forms.register.classList.contains("active")) {
       let valid = true;
       if (!validateUsername(regUsername, usernameError)) valid = false;
@@ -248,30 +366,57 @@ if (form) {
 
       if (!valid) return;
 
+      // Блокуємо кнопку на час запиту (UX)
+      const submitBtn = forms.register.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Зачекайте...';
+      submitBtn.style.opacity = '0.7';
+
       try {
         const res = await fetch('http://localhost:5000/api/users/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
-            username: regUsername.value,
-            email: regEmail.value,
+            username: regUsername.value.trim(),
+            email: regEmail.value.trim(),
             password: regPassword.value
           })
         });
         const data = await res.json();
+
         if (!res.ok) {
-          alert("Помилка реєстрації: " + (data.error || "Невідома помилка"));
+          // Підсвічуємо конкретне поле з помилкою (якщо сервер вказав)
+          if (data.field) {
+            highlightFieldError(data.field, data.error);
+          }
+          showToast(data.error || 'Помилка реєстрації', 'error');
         } else {
-          alert(data.message || "Реєстрація успішна! Перевірте консоль сервера для активації.");
-          showForm("login");
+          showToast(data.message || 'Реєстрація успішна! 🎉', 'success', 5000);
+          
+          // Якщо Trial активовано — показуємо додаткове повідомлення
+          if (data.trial) {
+            setTimeout(() => {
+              showToast(`Trial-період: ${data.trial.duration_days} днів безкоштовно!`, 'info', 6000);
+            }, 1500);
+          }
+
+          showForm('login');
         }
       } catch (err) {
-        console.error(err);
-        alert("Помилка з'єднання з сервером.");
+        console.error('Registration error:', err);
+        showToast("Помилка з'єднання з сервером", 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        submitBtn.style.opacity = '1';
       }
     }
 
-    // Вхід
+    // ==========================================
+    // ВХІД (LOGIN)
+    // ==========================================
     else if (forms.login.classList.contains("active")) {
       let valid = true;
       if (!validateEmail(loginEmail, loginEmailError)) valid = false;
@@ -279,29 +424,45 @@ if (form) {
 
       if (!valid) return;
 
+      const submitBtn = forms.login.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Зачекайте...';
+      submitBtn.style.opacity = '0.7';
+
       try {
         const res = await fetch('http://localhost:5000/api/users/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
-            email: loginEmail.value,
+            email: loginEmail.value.trim(),
             password: loginPassword.value
           })
         });
         const data = await res.json();
+
         if (!res.ok) {
-          alert("Помилка входу: " + (data.error || "Невідома помилка"));
+          showToast(data.error || 'Помилка входу', 'error');
         } else {
-          alert("Вхід успішний!");
+          showToast('Вхід успішний! 👋', 'success');
           localStorage.setItem('user', JSON.stringify(data.user));
           const authModal = document.getElementById("authModal");
           if (authModal) authModal.style.display = "none";
 
+          // Оновлюємо інтерфейс (Observer pattern — сповіщуємо підписників)
           window.dispatchEvent(new Event('userLoginStateChanged'));
+
+          // Оновлюємо бічну панель
+          updatePanelUI(data.user);
         }
       } catch (err) {
-        console.error(err);
-        alert("Помилка з'єднання з сервером.");
+        console.error('Login error:', err);
+        showToast("Помилка з'єднання з сервером", 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        submitBtn.style.opacity = '1';
       }
     }
 
@@ -311,7 +472,7 @@ if (form) {
       codeBoxes.forEach(box => code += box.value);
 
       if (code.length !== 4) {
-        alert("Введіть 4 цифри коду");
+        showToast('Введіть 4 цифри коду', 'warning');
         return;
       }
 
@@ -327,10 +488,57 @@ if (form) {
 
       if (!valid) return;
 
-      alert("Пароль змінено ✅");
+      showToast('Пароль успішно змінено ✅', 'success');
       showForm("login");
     }
   });
+}
+
+// ==========================================
+// ПАТЕРН: Observer — Оновлення UI панелі після логіну
+// ==========================================
+function updatePanelUI(user) {
+    const panelFooter = document.querySelector('.panel-footer');
+    if (panelFooter && user) {
+        panelFooter.innerHTML = `
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="font-weight: 700; font-size: 16px; color: #0F172A; margin-bottom: 4px;">
+                    ${user.username}
+                </div>
+                <div style="font-size: 13px; color: #64748B;">${user.email}</div>
+                <div style="margin-top: 8px;">
+                    <span style="
+                        display: inline-block;
+                        padding: 3px 12px;
+                        border-radius: 20px;
+                        font-size: 11px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        background: ${user.role === 'pro' ? 'linear-gradient(135deg, #2854C5, #00AAFF)' : '#F1F5F9'};
+                        color: ${user.role === 'pro' ? 'white' : '#64748B'};
+                    ">${user.role}</span>
+                </div>
+            </div>
+            <button class="panel-auth-btn register-btn" 
+                    onclick="localStorage.removeItem('user'); showToast('Ви вийшли з системи', 'info'); location.reload();" 
+                    style="background: #EF4444; margin-top: 10px;">
+                Вийти
+            </button>
+        `;
+    }
+}
+
+
+// ==========================================
+// Відновлення стану після перезавантаження сторінки
+// ==========================================
+const savedUser = localStorage.getItem('user');
+if (savedUser) {
+    try {
+        const userData = JSON.parse(savedUser);
+        // Відкладаємо до повного завантаження DOM
+        document.addEventListener('DOMContentLoaded', () => updatePanelUI(userData));
+    } catch(e) { /* ignore parse errors */ }
 }
 
 const authModal = document.getElementById("authModal");
@@ -423,7 +631,7 @@ if (promoForm) {
     if (!validateEmail(promoEmail, promoEmailError)) valid = false;
 
     if (valid) {
-      alert("Ваша заявка успішно відправлена! Ми зв'яжемося з вами.");
+      showToast("Заявка відправлена! Ми зв'яжемося з вами.", 'success');
       promoForm.reset();
     }
   });
@@ -649,17 +857,18 @@ async function handleGoogleLogin(response) {
         const data = await res.json();
         
         if (res.ok) {
-            alert("Вхід успішний!");
+            showToast('Вхід через Google успішний! 👋', 'success');
             localStorage.setItem('user', JSON.stringify(data.user));
             const authModal = document.getElementById("authModal");
             if (authModal) authModal.style.display = "none";
             window.dispatchEvent(new Event('userLoginStateChanged'));
+            updatePanelUI(data.user);
         } else {
-            alert("Помилка входу: " + (data.error || "Невідома помилка"));
+            showToast(data.error || 'Помилка входу через Google', 'error');
         }
     } catch (err) {
         console.error("Google Auth error:", err);
-        alert("Помилка з'єднання з сервером.");
+        showToast("Помилка з'єднання з сервером", 'error');
     }
 }
 
