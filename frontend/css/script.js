@@ -1226,3 +1226,75 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+// --- Footer Modals Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+  const footerLinks = document.querySelectorAll('.footer-modal-link');
+  const footerModal = document.getElementById('footerModal');
+  const closeFooterModalBtn = document.getElementById('closeFooterModalBtn');
+  const okFooterModalBtn = document.getElementById('okFooterModalBtn');
+  const footerModalTitle = document.getElementById('footerModalTitle');
+  const footerModalContent = document.getElementById('footerModalContent');
+  const footerModalIcon = document.getElementById('footerModalIcon');
+
+  const modalData = {
+    'support': {
+      title: 'Підтримка',
+      icon: '<i class="fa-solid fa-headset"></i>',
+      content: 'Зв\'яжіться з нашою службою підтримки за адресою <b>support@eventmanager.com</b> або зателефонуйте: <b>+38 (044) 123-45-67</b>. Ми працюємо 24/7!'
+    },
+    'contacts': {
+      title: 'Контакти',
+      icon: '<i class="fa-solid fa-address-book"></i>',
+      content: 'Головний офіс: м. Київ, вул. Хрещатик, 1.<br><br>Email: info@eventmanager.com<br>Телефон: +38 (044) 765-43-21'
+    },
+    'privacy': {
+      title: 'Приватність & cookies',
+      icon: '<i class="fa-solid fa-cookie-bite"></i>',
+      content: 'Ми використовуємо cookies для покращення вашого досвіду на нашому сайті. Ваші дані надійно захищені та не передаються третім особам без вашої згоди.'
+    },
+    'terms': {
+      title: 'Політика використання',
+      icon: '<i class="fa-solid fa-file-contract"></i>',
+      content: 'Використовуючи цей сайт, ви погоджуєтесь з нашими правилами. Заборонено розміщувати неправдиву інформацію про події та порушувати законодавство України.'
+    },
+    'team': {
+      title: 'Про команду',
+      icon: '<i class="fa-solid fa-users"></i>',
+      content: 'Ми - команда ентузіастів CodeX, які прагнуть зробити процес організації та пошуку подій максимально простим та зручним для кожного.'
+    },
+    'about': {
+      title: 'Про сайт',
+      icon: '<i class="fa-solid fa-globe"></i>',
+      content: 'Event Manager - це сучасна платформа для пошуку, створення та управління подіями. Знаходьте найцікавіші заходи у вашому місті та плануйте свій час ефективно!'
+    }
+  };
+
+  if (footerLinks.length > 0 && footerModal) {
+    footerLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const modalType = link.getAttribute('data-modal');
+        if (modalData[modalType]) {
+          footerModalTitle.textContent = modalData[modalType].title;
+          footerModalContent.innerHTML = modalData[modalType].content;
+          footerModalIcon.innerHTML = modalData[modalType].icon;
+          footerModal.style.display = 'flex';
+        }
+      });
+    });
+
+    const closeFooterModal = () => {
+      footerModal.style.display = 'none';
+    };
+
+    if (closeFooterModalBtn) closeFooterModalBtn.addEventListener('click', closeFooterModal);
+    if (okFooterModalBtn) okFooterModalBtn.addEventListener('click', closeFooterModal);
+
+    window.addEventListener('click', (e) => {
+      if (e.target === footerModal) {
+        closeFooterModal();
+      }
+    });
+  }
+});

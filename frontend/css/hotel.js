@@ -172,14 +172,26 @@ function renderHotelMarkers(hotelsToRender) {
     });
 }
 
-function renderHotelCards() {
+function renderHotelCards(cityFilter = 'all') {
     const grid = document.getElementById('hotels-grid');
     if (!grid) return;
     
+    // Фільтруємо список готелів за містом
+    let filteredHotels = hotelsList;
+    if (cityFilter !== 'all') {
+        filteredHotels = hotelsList.filter(h => h.city === cityFilter);
+    }
+
+    // Якщо нічого не знайдено для міста
+    if (filteredHotels.length === 0) {
+        grid.innerHTML = '<div style="color: #94A3B8; text-align: center; width: 100%; padding: 40px;">Готелів у цьому місті поки не знайдено.</div>';
+        return;
+    }
+    
     // Беремо перші 4 готелі для відмальовки
-    const topHotels = hotelsList.slice(0, 4);
+    const topHotels = filteredHotels.slice(0, 4);
     // Дублюємо масив для безперервної анімації "бігучої стрічки"
-    const displayHotels = [...topHotels, ...topHotels];
+    const displayHotels = filteredHotels.length > 2 ? [...topHotels, ...topHotels] : topHotels;
     
     let html = '';
     displayHotels.forEach((hotel, index) => {
@@ -194,6 +206,7 @@ function renderHotelCards() {
         
         html += `
         <div class="hotel-card">
+          <div class="hotel-price-badge">~${hotel.price} ${hotel.currency}</div>
           <div class="hotel-image-wrapper">
             <img src="images/${hotel.id}.png" alt="${hotel.title}">
           </div>
@@ -206,7 +219,7 @@ function renderHotelCards() {
               <i class="fa-solid fa-location-dot"></i>
               <span>${hotel.location}</span>
             </div>
-            <a href="hotel.html?id=${hotel.id}" class="hotel-link">Дізнатися більше</a>
+            <a href="hotel.html?id=${hotel.id}" class="hotel-link">Бронювати номер</a>
           </div>
         </div>
         `;
@@ -217,7 +230,71 @@ function renderHotelCards() {
 
 // Запускаємо відмальовку карток при завантаженні
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderHotelCards);
+    document.addEventListener('DOMContentLoaded', () => renderHotelCards());
 } else {
     renderHotelCards();
 }
+
+// Глобальна функція для фільтрації готелів
+window.filterHotelsByCity = function(cityName) {
+    const cityMapping = {
+        'Львів': 'lviv',
+        'Львівська область': 'lviv',
+        'Київ': 'kyiv',
+        'Київська область': 'kyiv',
+        'Одеса': 'odesa',
+        'Одеська область': 'odesa',
+        'Харків': 'kharkiv',
+        'Харківська область': 'kharkiv',
+        'Усі міста': 'all',
+        'lviv': 'lviv',
+        'kyiv': 'kyiv',
+        'odesa': 'odesa',
+        'kharkiv': 'kharkiv',
+        'all': 'all'
+    };
+    
+    const cityId = cityMapping[cityName] || 'all';
+    
+    // 1. Оновлюємо картки
+    renderHotelCards(cityId);
+    
+    // 2. Оновлюємо маркери на SVG карті
+    const svgMarkersLayer = document.getElementById('markers-layer');
+    if (svgMarkersLayer) {
+        // Видаляємо старі маркери готелів з SVG (вони мають колір #2ECC71)
+        const oldMarkers = svgMarkersLayer.querySelectorAll('.map-marker');
+        oldMarkers.forEach(m => {
+            if (m.style.backgroundColor === 'rgb(46, 204, 113)' || m.style.backgroundColor === '#2ECC71') {
+                m.remove();
+            }
+        });
+        
+        let hotelsToRender = hotelsList;
+        if (cityId !== 'all') {
+            hotelsToRender = hotelsList.filter(h => h.city === cityId);
+        }
+        renderSvgHotelMarkers(hotelsToRender);
+    }
+    
+    // 3. Оновлюємо маркери на Leaflet карті
+    if (typeof leafletMap !== 'undefined' && leafletMap) {
+        let hotelsToRender = hotelsList;
+        if (cityId !== 'all') {
+            hotelsToRender = hotelsList.filter(h => h.city === cityId);
+        }
+        renderHotelMarkers(hotelsToRender);
+    }
+};
+
+// Додаємо обробник для селекту в сайдбарі
+document.addEventListener('DOMContentLoaded', () => {
+    const citySelect = document.getElementById('city-select');
+    if (citySelect) {
+        citySelect.addEventListener('change', () => {
+            const selectedCity = citySelect.value;
+            window.filterHotelsByCity(selectedCity);
+        });
+    }
+});
+

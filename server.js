@@ -11,6 +11,10 @@ const usersRoutes = require('./routes/users');
 const eventsRoutes = require('./routes/events');
 const categoriesRoutes = require('./routes/categories');
 const commentsRoutes = require('./routes/comments');
+const analyticsRoutes = require('./routes/analytics');
+const analyticsController = require('./controllers/analyticsController');
+
+analyticsController.initDB();
 
 const app = express();
 
@@ -29,6 +33,7 @@ app.use('/users', usersRoutes);
 app.use('/events', eventsRoutes);
 app.use('/categories', categoriesRoutes);
 app.use('/comments', commentsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/', (req, res) => {
     res.send("Event Manager API працює 🚀");

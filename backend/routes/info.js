@@ -2,33 +2,48 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+// ==========================================
+// ПАТЕРН: Decorator (asyncHandler)
+// ==========================================
+const asyncHandler = require('../middleware/asyncHandler');
+
+// ==========================================
+// ПАТЕРН: Logger Singleton
+// ==========================================
+const logger = require('../utils/Logger');
+
+// ==========================================
 // GET /info - Отримання загальної статистики платформи
-router.get('/', async (req, res) => {
-    try {
-        const eventsCount = await pool.query('SELECT COUNT(*) FROM events');
-        const usersCount = await pool.query('SELECT COUNT(*) FROM users');
-        const categoriesCount = await pool.query('SELECT COUNT(*) FROM categories');
-        const commentsCount = await pool.query('SELECT COUNT(*) FROM comments');
-        const participantsCount = await pool.query('SELECT COUNT(*) FROM event_participants');
+// ПАТЕРН: Aggregate Query — один запит замість п'яти окремих
+// Раніше робилось 5 послідовних SELECT COUNT(*), тепер все в одному запиті
+// ==========================================
+router.get('/', asyncHandler(async (req, res) => {
+    // ПАТЕРН: Aggregate Query — збираємо всю статистику одним запитом
+    const aggregateQuery = `
+        SELECT 
+            (SELECT COUNT(*) FROM events) AS total_events,
+            (SELECT COUNT(*) FROM users) AS total_users,
+            (SELECT COUNT(*) FROM categories) AS total_categories,
+            (SELECT COUNT(*) FROM comments) AS total_comments,
+            (SELECT COUNT(*) FROM event_participants) AS total_registrations
+    `;
 
-        const platformStats = {
-            totalEvents: parseInt(eventsCount.rows[0].count),
-            totalUsers: parseInt(usersCount.rows[0].count),
-            totalCategories: parseInt(categoriesCount.rows[0].count),
-            totalComments: parseInt(commentsCount.rows[0].count),
-            totalRegistrations: parseInt(participantsCount.rows[0].count),
-            status: "Event Manager API is running smoothly 🚀"
-        };
+    const result = await pool.query(aggregateQuery);
+    const stats = result.rows[0];
 
-        res.status(200).json({
-            status: "success",
-            data: platformStats
-        });
+    const platformStats = {
+        totalEvents: parseInt(stats.total_events),
+        totalUsers: parseInt(stats.total_users),
+        totalCategories: parseInt(stats.total_categories),
+        totalComments: parseInt(stats.total_comments),
+        totalRegistrations: parseInt(stats.total_registrations),
+        status: "Event Manager API is running smoothly 🚀"
+    };
 
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Помилка сервера при отриманні статистики" });
-    }
-});
+    res.status(200).json({
+        status: "success",
+        data: platformStats
+    });
+}));
 
 module.exports = router;

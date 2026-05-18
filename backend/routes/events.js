@@ -4,6 +4,30 @@ const pool = require('../db');
 const upload = require('../middleware/upload'); // 🟢 Підключаємо Multer для роботи з файлами
 
 // ==========================================
+// ПАТЕРН: Decorator (asyncHandler)
+// Обгортає кожен роут — помилки автоматично передаються до error-handler
+// ==========================================
+const asyncHandler = require('../middleware/asyncHandler');
+
+// ==========================================
+// ПАТЕРН: Repository (Репозиторій)
+// Всі SQL-запити інкапсульовані в одному місці
+// ==========================================
+const eventRepo = require('../repositories/EventRepository');
+
+// ==========================================
+// ПАТЕРН: Custom Error Hierarchy
+// Спеціалізовані помилки з HTTP-статусами
+// ==========================================
+const AppError = require('../utils/AppError');
+
+// ==========================================
+// ПАТЕРН: Logger Singleton
+// Централізоване логування
+// ==========================================
+const logger = require('../utils/Logger');
+
+// ==========================================
 // ПАТЕРН 1: Singleton / Service Pattern
 // Логіка конвертації валют (імпортована зі спільного сервісу)
 // ==========================================
@@ -44,7 +68,7 @@ class DistanceService {
             }
             return null;
         } catch (error) {
-            console.error('Помилка під час звернення до Distance API:', error.message);
+            logger.error('DISTANCE', 'Помилка під час звернення до Distance API', error);
             return null;
         }
     }
@@ -64,157 +88,126 @@ const sortStrategies = {
     'date_desc': (a, b) => new Date(b.event_day) - new Date(a.event_day)
 };
 
+// ==========================================
+// ПАТЕРН: DRY / Extract Method
+// Виділення дублікату конвертації валюти в переиспользовуваний хелпер
+// Раніше цей код дублювався в GET / та GET /scheduled
+// ==========================================
+function applyPriceConversion(events, targetCurrency) {
+    return events.map(event => {
+        const eventPrice = parseFloat(event.price) || 0;
+        const eventCurrency = event.currency || 'UAH';
+
+        // Рахуємо приховану ціну в грн для сортування
+        const baseUahPrice = parseFloat(currencyService.convert(eventPrice, eventCurrency, 'UAH'));
+
+        let displayPrice = eventPrice;
+        let displayCurrency = eventCurrency;
+
+        if (targetCurrency) {
+            displayPrice = currencyService.convert(eventPrice, eventCurrency, targetCurrency);
+            displayCurrency = targetCurrency.toUpperCase();
+        }
+
+        return {
+            ...event,
+            average_rating: parseFloat(event.average_rating),
+            base_uah_price: baseUahPrice,
+            display_price: displayPrice,
+            display_currency: displayCurrency
+        };
+    });
+}
+
+/**
+ * Видаляє технічне поле base_uah_price перед відправкою
+ */
+function stripTechnicalFields(events) {
+    return events.map(event => {
+        delete event.base_uah_price;
+        return event;
+    });
+}
+
 // =======================================================
 // 1. GET /events - Отримання всіх подій (Фільтр + Рейтинг + Сортування)
+// ПАТЕРН: Repository (SQL в EventRepository)
+// ПАТЕРН: Decorator (asyncHandler замість try/catch)
+// ПАТЕРН: DRY (applyPriceConversion замість дублювання)
 // =======================================================
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
     const { region, target_currency, sort_by } = req.query;
 
-    try {
-        // SQL запит з LEFT JOIN для динамічного підрахунку середнього рейтингу
-        // ТА динамічного визначення статусу (Завершена/Активна)
-        let queryText = `
-            SELECT e.*, 
-                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating,
-                   CASE 
-                       WHEN (e.event_day + e.start_time) < NOW() THEN 'завершена'
-                       ELSE 'активна'
-                   END as status
-            FROM events e
-            LEFT JOIN ratings r ON e.event_id = r.event_id
-        `;
-        let queryParams = [];
-        let whereClauses = [];
+    // ПАТЕРН: Repository — делегуємо SQL-запит
+    const rawEvents = await eventRepo.findAll({ region });
 
-        if (region) {
-            whereClauses.push(`e.region = $1`);
-            queryParams.push(region);
-        }
+    // ПАТЕРН: DRY — спільна функція конвертації
+    let events = applyPriceConversion(rawEvents, target_currency);
 
-        if (whereClauses.length > 0) {
-            queryText += ' WHERE ' + whereClauses.join(' AND ');
-        }
-
-        queryText += ' GROUP BY e.event_id ORDER BY e.created_at DESC';
-
-        const result = await pool.query(queryText, queryParams);
-        let events = result.rows;
-
-        // Обробка кожної події (Конвертація та підготовка до сортування)
-        events = events.map(event => {
-            const eventPrice = parseFloat(event.price) || 0;
-            const eventCurrency = event.currency || 'UAH';
-
-            // Рахуємо приховану ціну в грн для сортування
-            const baseUahPrice = parseFloat(currencyService.convert(eventPrice, eventCurrency, 'UAH'));
-
-            let displayPrice = eventPrice;
-            let displayCurrency = eventCurrency;
-
-            if (target_currency) {
-                displayPrice = currencyService.convert(eventPrice, eventCurrency, target_currency);
-                displayCurrency = target_currency.toUpperCase();
-            }
-
-            return {
-                ...event,
-                average_rating: parseFloat(event.average_rating),
-                base_uah_price: baseUahPrice,
-                display_price: displayPrice,
-                display_currency: displayCurrency
-            };
-        });
-
-        // Застосування сортування за стратегією
-        if (sort_by && sortStrategies[sort_by.toLowerCase()]) {
-            events.sort(sortStrategies[sort_by.toLowerCase()]);
-        }
-
-        // Видаляємо технічне поле перед відправкою клієнту
-        events = events.map(event => {
-            delete event.base_uah_price;
-            return event;
-        });
-
-        res.json(events);
-    } catch (err) {
-        console.error('Помилка отримання подій:', err.message);
-        res.status(500).send("Server error");
+    // Застосування сортування за стратегією
+    if (sort_by && sortStrategies[sort_by.toLowerCase()]) {
+        events.sort(sortStrategies[sort_by.toLowerCase()]);
     }
-});
+
+    // Видаляємо технічне поле перед відправкою клієнту
+    events = stripTechnicalFields(events);
+
+    res.json(events);
+}));
 
 // ==========================================
 // 2. Фільтрація публічних подій за областю
 // ==========================================
-router.get('/filter', async (req, res) => {
+router.get('/filter', asyncHandler(async (req, res) => {
     const { region } = req.query;
-    if (!region) return res.status(400).json({ error: "Не вказано регіон" });
+    if (!region) throw AppError.badRequest("Не вказано регіон");
 
-    try {
-        const result = await pool.query(
-            'SELECT * FROM events WHERE region = $1 AND is_private = FALSE ORDER BY event_day ASC',
-            [region]
-        );
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Помилка фільтрації");
-    }
-});
+    const events = await eventRepo.findPublicByRegion(region);
+    res.json(events);
+}));
 
 // ==========================================
 // 3. Дані для побудови маршруту на карті ТА розрахунок відстані
 // ==========================================
-router.get('/route-data', async (req, res) => {
+router.get('/route-data', asyncHandler(async (req, res) => {
     const { ids } = req.query;
-    if (!ids) return res.status(400).send("Не вказано ID подій");
+    if (!ids) throw AppError.badRequest("Не вказано ID подій");
 
     // Зберігаємо оригінальний порядок ID (наприклад: "3,1,5" -> перша подія 3, друга 1, третя 5)
     const idArray = ids.split(',').map(Number);
 
-    try {
-        const result = await pool.query(
-            'SELECT event_id, title, latitude, longitude, region FROM events WHERE event_id = ANY($1)',
-            [idArray]
-        );
+    let events = await eventRepo.findRouteData(idArray);
 
-        let events = result.rows;
+    // Сортуємо події рівно в тому порядку, в якому юзер хоче їх відвідати
+    events.sort((a, b) => idArray.indexOf(a.event_id) - idArray.indexOf(b.event_id));
 
-        // Сортуємо події рівно в тому порядку, в якому юзер хоче їх відвідати
-        events.sort((a, b) => idArray.indexOf(a.event_id) - idArray.indexOf(b.event_id));
+    // Витягуємо лише валідні координати для сервісу
+    const validPoints = events
+        .filter(e => e.latitude && e.longitude)
+        .map(e => ({
+            latitude: parseFloat(e.latitude),
+            longitude: parseFloat(e.longitude)
+        }));
 
-        // Витягуємо лише валідні координати для сервісу
-        const validPoints = events
-            .filter(e => e.latitude && e.longitude)
-            .map(e => ({
-                latitude: parseFloat(e.latitude),
-                longitude: parseFloat(e.longitude)
-            }));
+    // Базові значення маршруту
+    let routingInfo = { distance_km: 0, duration_min: 0, status: "Немає даних для маршруту" };
 
-        // Базові значення маршруту
-        let routingInfo = { distance_km: 0, duration_min: 0, status: "Немає даних для маршруту" };
-
-        // Викликаємо інтеграцію API, якщо є хоча б 2 події з геолокацією
-        if (validPoints.length >= 2) {
-            const apiResult = await distanceService.calculateRoute(validPoints);
-            if (apiResult) {
-                routingInfo = {
-                    ...apiResult,
-                    status: "Успішно розраховано"
-                };
-            }
+    // Викликаємо інтеграцію API, якщо є хоча б 2 події з геолокацією
+    if (validPoints.length >= 2) {
+        const apiResult = await distanceService.calculateRoute(validPoints);
+        if (apiResult) {
+            routingInfo = {
+                ...apiResult,
+                status: "Успішно розраховано"
+            };
         }
-
-        res.json({
-            route_points: events,
-            routing_info: routingInfo
-        });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Помилка даних маршруту");
     }
-});
+
+    res.json({
+        route_points: events,
+        routing_info: routingInfo
+    });
+}));
 
 // ==========================================
 // ПАТЕРН 3: Query Builder (Будівельник запитів)
@@ -281,242 +274,124 @@ class EventSearchBuilder {
 // НОВИЙ МАРШРУТ: GET /events/search
 // Обробляє: пошук за назвою, ключовими словами, датою, містом, категорією
 // =======================================================
-router.get('/search', async (req, res) => {
+router.get('/search', asyncHandler(async (req, res) => {
     const { title, keyword, date, city, category_id } = req.query;
 
-    try {
-        const builder = new EventSearchBuilder()
-            .searchByTitle(title)
-            .searchByKeyword(keyword)
-            .filterByDate(date)
-            .filterByCity(city)
-            .filterByCategory(category_id);
+    const builder = new EventSearchBuilder()
+        .searchByTitle(title)
+        .searchByKeyword(keyword)
+        .filterByDate(date)
+        .filterByCity(city)
+        .filterByCategory(category_id);
 
-        const { text, values } = builder.build();
-        const result = await pool.query(text, values);
+    const { text, values } = builder.build();
+    const result = await pool.query(text, values);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ msg: "За вашим запитом подій не знайдено" });
-        }
-
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Помилка розширеного пошуку подій:', err.message);
-        res.status(500).send("Внутрішня помилка сервера під час пошуку");
+    if (result.rows.length === 0) {
+        throw AppError.notFound("За вашим запитом подій не знайдено");
     }
-});
+
+    res.json(result.rows);
+}));
 
 // =======================================================
 // НОВИЙ МАРШРУТ: GET /events/scheduled
 // Отримання лише запланованих (майбутніх) подій
+// ПАТЕРН: Repository + DRY
 // =======================================================
-router.get('/scheduled', async (req, res) => {
+router.get('/scheduled', asyncHandler(async (req, res) => {
     const { region, target_currency, sort_by, creator_id, limit } = req.query;
 
-    try {
-        let queryText = `
-            SELECT e.*, 
-                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating,
-                   'запланована' as status,
-                   (e.event_day + e.start_time) AS event_datetime
-            FROM events e
-            LEFT JOIN ratings r ON e.event_id = r.event_id
-            WHERE (e.event_day + e.start_time) > NOW()
-        `;
-        let queryParams = [];
-        let paramIndex = 1;
+    // ПАТЕРН: Repository — делегуємо SQL-запит
+    const rawEvents = await eventRepo.findScheduled({ region, creator_id, limit });
 
-        // Фільтр за регіоном
-        if (region) {
-            queryText += ` AND e.region = $${paramIndex}`;
-            queryParams.push(region);
-            paramIndex++;
-        }
+    // ПАТЕРН: DRY — та сама функція конвертації, що і в GET /
+    let events = applyPriceConversion(rawEvents, target_currency);
 
-        // Фільтр за творцем (мої заплановані події)
-        if (creator_id) {
-            queryText += ` AND e.creator_id = $${paramIndex}`;
-            queryParams.push(creator_id);
-            paramIndex++;
-        }
-
-        queryText += ' GROUP BY e.event_id ORDER BY event_datetime ASC';
-
-        // Ліміт результатів
-        if (limit && !isNaN(limit)) {
-            queryText += ` LIMIT $${paramIndex}`;
-            queryParams.push(parseInt(limit));
-            paramIndex++;
-        }
-
-        const result = await pool.query(queryText, queryParams);
-        let events = result.rows;
-
-        // Конвертація валюти (аналогічно до GET /events)
-        events = events.map(event => {
-            const eventPrice = parseFloat(event.price) || 0;
-            const eventCurrency = event.currency || 'UAH';
-            const baseUahPrice = parseFloat(currencyService.convert(eventPrice, eventCurrency, 'UAH'));
-
-            let displayPrice = eventPrice;
-            let displayCurrency = eventCurrency;
-
-            if (target_currency) {
-                displayPrice = currencyService.convert(eventPrice, eventCurrency, target_currency);
-                displayCurrency = target_currency.toUpperCase();
-            }
-
-            return {
-                ...event,
-                average_rating: parseFloat(event.average_rating),
-                base_uah_price: baseUahPrice,
-                display_price: displayPrice,
-                display_currency: displayCurrency
-            };
-        });
-
-        // Сортування
-        if (sort_by && sortStrategies[sort_by.toLowerCase()]) {
-            events.sort(sortStrategies[sort_by.toLowerCase()]);
-        }
-
-        // Видаляємо технічне поле
-        events = events.map(event => {
-            delete event.base_uah_price;
-            return event;
-        });
-
-        res.json({
-            status: 'success',
-            count: events.length,
-            events: events
-        });
-    } catch (err) {
-        console.error('Помилка отримання запланованих подій:', err.message);
-        res.status(500).json({ error: "Внутрішня помилка сервера" });
+    // Сортування
+    if (sort_by && sortStrategies[sort_by.toLowerCase()]) {
+        events.sort(sortStrategies[sort_by.toLowerCase()]);
     }
-});
+
+    // Видаляємо технічне поле
+    events = stripTechnicalFields(events);
+
+    res.json({
+        status: 'success',
+        count: events.length,
+        events: events
+    });
+}));
 
 // =======================================================
 // НОВИЙ МАРШРУТ: GET /events/calendar
 // Фільтрація подій за діапазоном дат (для календаря)
 // Query params: from (YYYY-MM-DD), to (YYYY-MM-DD)
 // =======================================================
-router.get('/calendar', async (req, res) => {
+router.get('/calendar', asyncHandler(async (req, res) => {
     const { from, to, creator_id, region, category_id } = req.query;
 
     // Валідація: обов'язкові параметри дат
     if (!from || !to) {
-        return res.status(400).json({ 
-            error: "Потрібно вказати параметри 'from' та 'to' у форматі YYYY-MM-DD" 
-        });
+        throw AppError.badRequest("Потрібно вказати параметри 'from' та 'to' у форматі YYYY-MM-DD");
     }
 
     // Валідація формату дат
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(from) || !dateRegex.test(to)) {
-        return res.status(400).json({ 
-            error: "Невірний формат дати. Використовуйте YYYY-MM-DD" 
-        });
+        throw AppError.badRequest("Невірний формат дати. Використовуйте YYYY-MM-DD");
     }
 
     // Валідація: from не може бути пізніше to
     if (new Date(from) > new Date(to)) {
-        return res.status(400).json({ 
-            error: "Дата 'from' не може бути пізніше за 'to'" 
+        throw AppError.badRequest("Дата 'from' не може бути пізніше за 'to'");
+    }
+
+    // ПАТЕРН: Repository
+    const rows = await eventRepo.findByDateRange(from, to, { creator_id, region, category_id });
+
+    // Групування подій за датами (зручно для календаря)
+    const eventsByDate = {};
+    for (const event of rows) {
+        const dateKey = event.event_day instanceof Date 
+            ? event.event_day.toISOString().split('T')[0] 
+            : String(event.event_day).split('T')[0];
+        
+        if (!eventsByDate[dateKey]) {
+            eventsByDate[dateKey] = [];
+        }
+        eventsByDate[dateKey].push({
+            ...event,
+            average_rating: parseFloat(event.average_rating)
         });
     }
 
-    try {
-        let queryText = `
-            SELECT e.*, 
-                   COALESCE(ROUND(AVG(r.score), 1), 0) as average_rating,
-                   CASE 
-                       WHEN (e.event_day + e.start_time) < NOW() THEN 'завершена'
-                       ELSE 'активна'
-                   END as status
-            FROM events e
-            LEFT JOIN ratings r ON e.event_id = r.event_id
-            WHERE e.event_day >= $1 AND e.event_day <= $2
-        `;
-        let queryParams = [from, to];
-        let paramIndex = 3;
-
-        // Фільтр за творцем
-        if (creator_id) {
-            queryText += ` AND e.creator_id = $${paramIndex}`;
-            queryParams.push(creator_id);
-            paramIndex++;
-        }
-
-        // Фільтр за регіоном
-        if (region) {
-            queryText += ` AND e.region = $${paramIndex}`;
-            queryParams.push(region);
-            paramIndex++;
-        }
-
-        // Фільтр за категорією
-        if (category_id) {
-            queryText += ` AND e.category_id = $${paramIndex}`;
-            queryParams.push(category_id);
-            paramIndex++;
-        }
-
-        queryText += ' GROUP BY e.event_id ORDER BY e.event_day ASC, e.start_time ASC';
-
-        const result = await pool.query(queryText, queryParams);
-
-        // Групування подій за датами (зручно для календаря)
-        const eventsByDate = {};
-        for (const event of result.rows) {
-            const dateKey = event.event_day instanceof Date 
-                ? event.event_day.toISOString().split('T')[0] 
-                : String(event.event_day).split('T')[0];
-            
-            if (!eventsByDate[dateKey]) {
-                eventsByDate[dateKey] = [];
-            }
-            eventsByDate[dateKey].push({
-                ...event,
-                average_rating: parseFloat(event.average_rating)
-            });
-        }
-
-        res.json({
-            status: 'success',
-            period: { from, to },
-            total_events: result.rows.length,
-            dates_with_events: Object.keys(eventsByDate).length,
-            events_by_date: eventsByDate,
-            events: result.rows.map(event => ({
-                ...event,
-                average_rating: parseFloat(event.average_rating)
-            }))
-        });
-    } catch (err) {
-        console.error('Помилка фільтрації подій за датами:', err.message);
-        res.status(500).json({ error: "Внутрішня помилка сервера" });
-    }
-});
+    res.json({
+        status: 'success',
+        period: { from, to },
+        total_events: rows.length,
+        dates_with_events: Object.keys(eventsByDate).length,
+        events_by_date: eventsByDate,
+        events: rows.map(event => ({
+            ...event,
+            average_rating: parseFloat(event.average_rating)
+        }))
+    });
+}));
 
 // ==========================================
 // 4. Отримання однієї події за ID
 // ==========================================
-router.get('/:id', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM events WHERE event_id = $1', [req.params.id]);
-        if (result.rows.length === 0) return res.status(404).json({ msg: "Не знайдено" });
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).send("Server error");
-    }
-});
+router.get('/:id', asyncHandler(async (req, res) => {
+    const event = await eventRepo.findById(req.params.id);
+    if (!event) throw AppError.notFound("Не знайдено");
+    res.json(event);
+}));
 
 // ==========================================
 // 5. Створення нової події
 // ==========================================
-router.post('/', async (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
     const {
         title, description, event_day, start_time, end_time,
         latitude, longitude, category_id, creator_id,
@@ -524,275 +399,145 @@ router.post('/', async (req, res) => {
     } = req.body;
 
     // Валідація
-    if (!title || title.length < 5) return res.status(400).json({ error: "Назва коротка" });
-    if (!region) return res.status(400).json({ error: "Вкажіть область" });
-    if (price !== undefined && price < 0) return res.status(400).json({ error: "Ціна не може бути від'ємною" });
+    if (!title || title.length < 5) throw AppError.badRequest("Назва коротка");
+    if (!region) throw AppError.badRequest("Вкажіть область");
+    if (price !== undefined && price < 0) throw AppError.badRequest("Ціна не може бути від'ємною");
 
     // Перевірка ліміту Trial/Starter плану (макс. 3 активні події)
     if (creator_id) {
         try {
             const canCreate = await trialService.canCreateEvent(creator_id);
             if (!canCreate.allowed) {
-                return res.status(403).json({
-                    error: canCreate.reason,
+                throw AppError.forbidden(canCreate.reason, {
                     current_count: canCreate.current_count,
                     max_count: canCreate.max_count
                 });
             }
         } catch (limitErr) {
-            console.error('Помилка перевірки ліміту:', limitErr.message);
-            // Graceful degradation — дозволяємо створення
+            // Якщо це наша AppError — прокидуємо далі
+            if (limitErr.isOperational) throw limitErr;
+            // Інакше — Graceful degradation (дозволяємо створення)
+            logger.warn('EVENTS', `Помилка перевірки ліміту: ${limitErr.message}`);
         }
     }
 
     // Check for Pro features (Design Constructor)
+    let eventData = { ...req.body };
     if ((req.body.banner_url || req.body.button_color || req.body.theme !== 'light')) {
-        const userRes = await pool.query('SELECT role FROM users WHERE user_id = $1', [creator_id]);
-        if (userRes.rows.length === 0 || userRes.rows[0].role !== 'pro') {
-            // If user is not pro, we ignore design fields or return error
-            // For now, let's just nullify them to prevent free users from using them
-            req.body.banner_url = null;
-            req.body.button_color = null;
-            req.body.theme = 'light';
+        const creatorInfo = await eventRepo.getCreatorRole(creator_id);
+        if (!creatorInfo || creatorInfo.role !== 'pro') {
+            eventData.banner_url = null;
+            eventData.button_color = null;
+            eventData.theme = 'light';
         }
     }
 
-    try {
-        const query = `
-            INSERT INTO events (
-                title, description, event_day, start_time, end_time, 
-                latitude, longitude, category_id, creator_id, region, 
-                is_private, price, currency,
-                banner_url, button_color, theme
-            ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
-            RETURNING *`;
-
-        const values = [
-            title, description, event_day, start_time, end_time, 
-            latitude, longitude, category_id, creator_id, region, 
-            is_private ?? true, price || 0, currency || 'UAH',
-            req.body.banner_url || null, req.body.button_color || null, req.body.theme || 'light'
-        ];
-
-        const result = await pool.query(query, values);
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Помилка БД" });
-    }
-});
+    // ПАТЕРН: Repository
+    const newEvent = await eventRepo.create(eventData);
+    logger.info('EVENTS', `Подію створено: "${title}" (ID: ${newEvent.event_id})`);
+    res.status(201).json(newEvent);
+}));
 
 // ==========================================
 // 🟢 НОВИЙ МАРШРУТ: POST /events/:id/image - Завантаження фото
 // ==========================================
-router.post('/:id/image', upload.single('image'), async (req, res) => {
+router.post('/:id/image', upload.single('image'), asyncHandler(async (req, res) => {
     const eventId = req.params.id;
 
     // Перевіряємо, чи файл взагалі прийшов
     if (!req.file) {
-        return res.status(400).json({ error: "Файл не завантажено або неправильний формат" });
+        throw AppError.badRequest("Файл не завантажено або неправильний формат");
     }
 
     // Формуємо шлях до картинки, який запишемо в БД
     const imageUrl = `/uploads/${req.file.filename}`;
 
-    try {
-        // Оновлюємо подію в базі даних
-        const query = `
-            UPDATE events 
-            SET image_url = $1 
-            WHERE event_id = $2 
-            RETURNING *`;
-        
-        const result = await pool.query(query, [imageUrl, eventId]);
+    // ПАТЕРН: Repository
+    const updatedEvent = await eventRepo.updateImage(eventId, imageUrl);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Подію не знайдено" });
-        }
-
-        res.json({ 
-            message: "Фото успішно додано", 
-            image_url: imageUrl,
-            event: result.rows[0] 
-        });
-
-    } catch (err) {
-        console.error("Помилка завантаження фото:", err.message);
-        res.status(500).json({ error: "Помилка бази даних" });
+    if (!updatedEvent) {
+        throw AppError.notFound("Подію не знайдено");
     }
-});
+
+    res.json({
+        message: "Фото успішно додано",
+        image_url: imageUrl,
+        event: updatedEvent
+    });
+}));
 
 // ==========================================
 // 6. ВИДАЛЕННЯ ПОДІЇ (DELETE)
 // ==========================================
-router.delete('/:id', async (req, res) => {
-    const eventId = req.params.id;
+router.delete('/:id', asyncHandler(async (req, res) => {
+    const deletedEvent = await eventRepo.delete(req.params.id);
 
-    try {
-        const result = await pool.query(
-            'DELETE FROM events WHERE event_id = $1 RETURNING *',
-            [eventId]
-        );
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Подію не знайдено або вже видалено" });
-        }
-
-        res.json({
-            msg: "Подію успішно видалено",
-            deleted_event: result.rows[0]
-        });
-    } catch (err) {
-        console.error('Помилка при видаленні події:', err.message);
-        res.status(500).json({ error: "Внутрішня помилка сервера при видаленні" });
+    if (!deletedEvent) {
+        throw AppError.notFound("Подію не знайдено або вже видалено");
     }
-});
+
+    logger.info('EVENTS', `Подію видалено: ID ${req.params.id}`);
+    res.json({
+        msg: "Подію успішно видалено",
+        deleted_event: deletedEvent
+    });
+}));
 
 // ==========================================
 // 8. СТВОРЕННЯ ПРИВАТНОЇ ПОДІЇ ТА ДОДАВАННЯ ФОТО (POST)
 // ==========================================
-router.post('/private', async (req, res) => {
-    const { 
-        title, description, event_day, start_time, end_time, 
-        latitude, longitude, category_id, creator_id,
-        region, price, currency, photo_url 
-    } = req.body;
+router.post('/private', asyncHandler(async (req, res) => {
+    const { title, creator_id } = req.body;
 
-    if (!title || title.trim().length < 3) return res.status(400).json({ error: "Назва занадто коротка" });
-    if (!creator_id) return res.status(400).json({ error: "Не вказано creator_id" });
+    if (!title || title.trim().length < 3) throw AppError.badRequest("Назва занадто коротка");
+    if (!creator_id) throw AppError.badRequest("Не вказано creator_id");
 
-    try {
-        const query = `
-            INSERT INTO events (
-                title, description, event_day, start_time, end_time, 
-                latitude, longitude, category_id, creator_id, region, 
-                is_private, price, currency, photo_url
-            ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, TRUE, $11, $12, $13) 
-            RETURNING *`;
-        
-        const values = [
-            title, description, event_day, start_time, end_time, 
-            latitude, longitude, category_id, creator_id, region, 
-            price || 0, currency || 'UAH', photo_url
-        ];
-        
-        const result = await pool.query(query, values);
-        res.status(201).json({
-            msg: "Приватна подія успішно створена",
-            event: result.rows[0]
-        });
-    } catch (err) {
-        console.error('Помилка при створенні приватної події:', err.message);
-        res.status(500).json({ error: "Внутрішня помилка сервера" });
-    }
-});
+    // ПАТЕРН: Repository
+    const newEvent = await eventRepo.createPrivate(req.body);
+    logger.info('EVENTS', `Приватну подію створено: "${title}"`);
+
+    res.status(201).json({
+        msg: "Приватна подія успішно створена",
+        event: newEvent
+    });
+}));
 
 // ==========================================
 // 9. РЕДАГУВАННЯ ПРИВАТНОЇ ПОДІЇ (PUT)
 // ==========================================
-router.put('/private/:id', async (req, res) => {
+router.put('/private/:id', asyncHandler(async (req, res) => {
     const eventId = req.params.id;
-    const { 
-        title, description, event_day, start_time, end_time, 
-        latitude, longitude, category_id,
-        region, price, currency, photo_url 
-    } = req.body;
 
-    try {
-        const query = `
-            UPDATE events 
-            SET 
-                title = COALESCE($1, title),
-                description = COALESCE($2, description),
-                event_day = COALESCE($3, event_day),
-                start_time = COALESCE($4, start_time),
-                end_time = COALESCE($5, end_time),
-                latitude = COALESCE($6, latitude),
-                longitude = COALESCE($7, longitude),
-                category_id = COALESCE($8, category_id),
-                region = COALESCE($9, region),
-                price = COALESCE($10, price),
-                currency = COALESCE($11, currency),
-                photo_url = COALESCE($12, photo_url),
-                banner_url = COALESCE($14, banner_url),
-                button_color = COALESCE($15, button_color),
-                theme = COALESCE($16, theme)
-            WHERE event_id = $13 AND is_private = TRUE
-            RETURNING *`;
+    // ПАТЕРН: Repository
+    const updatedEvent = await eventRepo.updatePrivate(eventId, req.body);
 
-        const values = [
-            title, description, event_day, start_time, end_time, 
-            latitude, longitude, category_id, region, 
-            price, currency, photo_url,
-            eventId,
-            req.body.banner_url, req.body.button_color, req.body.theme
-        ];
-
-        const result = await pool.query(query, values);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Приватну подію не знайдено, або ви не можете її змінити (можливо вона публічна)" });
-        }
-
-        res.json({ msg: "Приватну подію успішно оновлено", updated_event: result.rows[0] });
-    } catch (err) {
-        console.error('Помилка при оновленні приватної події:', err.message);
-        res.status(500).json({ error: "Внутрішня помилка сервера при оновленні" });
+    if (!updatedEvent) {
+        throw AppError.notFound("Приватну подію не знайдено, або ви не можете її змінити (можливо вона публічна)");
     }
-});
+
+    res.json({ msg: "Приватну подію успішно оновлено", updated_event: updatedEvent });
+}));
 
 // ==========================================
 // 10. ЗАПРОШЕННЯ ДРУЗІВ (POST)
 // ==========================================
-router.post('/:id/invite', async (req, res) => {
+router.post('/:id/invite', asyncHandler(async (req, res) => {
     const eventId = req.params.id;
-    // Очікуємо масив ID користувачів для запрошення
-    const { user_ids } = req.body; 
+    const { user_ids } = req.body;
 
     if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
-        return res.status(400).json({ error: "Передайте масив user_ids (IDs друзів) для запрошення" });
+        throw AppError.badRequest("Передайте масив user_ids (IDs друзів) для запрошення");
     }
 
-    try {
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
+    // ПАТЕРН: Repository (транзакція інкапсульована)
+    const results = await eventRepo.inviteParticipants(eventId, user_ids);
 
-            const results = [];
-            for (let uid of user_ids) {
-                // Додаємо друзів в event_participants зі статусом 'invited'
-                // ON CONFLICT DO NOTHING дозволяє уникати помилок, якщо друга вже запрошували (унікальний індекс)
-                const inviteQuery = `
-                    INSERT INTO event_participants (user_id, event_id, status)
-                    VALUES ($1, $2, 'invited')
-                    ON CONFLICT (user_id, event_id) DO NOTHING
-                    RETURNING *;
-                `;
-                const resInvite = await client.query(inviteQuery, [uid, eventId]);
-                if (resInvite.rows.length > 0) {
-                    results.push(resInvite.rows[0]);
-                }
-            }
-
-            await client.query('COMMIT');
-            res.status(200).json({ 
-                msg: "Запрошення успішно надіслані", 
-                invited_count: results.length,
-                invites: results
-            });
-        } catch (e) {
-            await client.query('ROLLBACK');
-            throw e;
-        } finally {
-            client.release();
-        }
-    } catch (err) {
-        console.error('Помилка при надсиланні запрошень:', err.message);
-        res.status(500).json({ error: "Внутрішня помилка сервера при надсиланні запрошень" });
-    }
-});
+    res.status(200).json({
+        msg: "Запрошення успішно надіслані",
+        invited_count: results.length,
+        invites: results
+    });
+}));
 
 // ==========================================
 // ПАТЕРН 4: State Machine (Кінцевий автомат) для статусів події
@@ -812,11 +557,11 @@ class EventStateMachine {
     canTransition(currentStatus, newStatus) {
         // Якщо статус не змінюється, це ок (наприклад, при іншому апдейті)
         if (currentStatus === newStatus) return true;
-        
+
         const allowedNext = this.transitions[currentStatus] || [];
         return allowedNext.includes(newStatus);
     }
-    
+
     get validStatuses() {
         return Object.keys(this.transitions);
     }
@@ -826,75 +571,57 @@ const eventStateMachine = new EventStateMachine();
 // ==========================================
 // 11. ОНОВЛЕННЯ СТАТУСУ ПОДІЇ ТА УЧАСНИКА (PATCH)
 // ==========================================
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', asyncHandler(async (req, res) => {
     const eventId = req.params.id;
     const { status: newStatus } = req.body;
 
     if (!newStatus || !eventStateMachine.validStatuses.includes(newStatus)) {
-        return res.status(400).json({ error: "Недійсний статус. Допустимі: " + eventStateMachine.validStatuses.join(', ') });
+        throw AppError.badRequest("Недійсний статус. Допустимі: " + eventStateMachine.validStatuses.join(', '));
     }
 
-    try {
-        // Спочатку отримуємо поточний статус
-        const currentEventRes = await pool.query('SELECT status FROM events WHERE event_id = $1', [eventId]);
-        
-        if (currentEventRes.rows.length === 0) {
-            return res.status(404).json({ error: "Подію не знайдено" });
-        }
+    // ПАТЕРН: Repository
+    const currentEvent = await eventRepo.getStatus(eventId);
 
-        const currentStatus = currentEventRes.rows[0].status || 'planned';
-
-        // Використовуємо патерн State Machine для перевірки логіки переходу
-        if (!eventStateMachine.canTransition(currentStatus, newStatus)) {
-            return res.status(400).json({ 
-                error: `Помилка бізнес-логіки: неможливо перейти зі статусу '${currentStatus}' в '${newStatus}'` 
-            });
-        }
-
-        // Якщо перехід валідний, оновлюємо статус
-        const updateQuery = `
-            UPDATE events 
-            SET status = $1
-            WHERE event_id = $2
-            RETURNING *`;
-            
-        const result = await pool.query(updateQuery, [newStatus, eventId]);
-
-        res.json({ msg: "Статус події оновлено", event: result.rows[0] });
-    } catch (err) {
-        console.error('Помилка при оновленні статусу події:', err.message);
-        res.status(500).json({ error: "Помилка сервера" });
+    if (!currentEvent) {
+        throw AppError.notFound("Подію не знайдено");
     }
-});
 
-router.patch('/:id/participants/:user_id/status', async (req, res) => {
+    const currentStatus = currentEvent.status || 'planned';
+
+    // Використовуємо патерн State Machine для перевірки логіки переходу
+    if (!eventStateMachine.canTransition(currentStatus, newStatus)) {
+        throw AppError.badRequest(
+            `Помилка бізнес-логіки: неможливо перейти зі статусу '${currentStatus}' в '${newStatus}'`
+        );
+    }
+
+    const updatedEvent = await eventRepo.updateStatus(eventId, newStatus);
+    logger.info('EVENTS', `Статус події ${eventId} змінено: ${currentStatus} → ${newStatus}`);
+
+    res.json({ msg: "Статус події оновлено", event: updatedEvent });
+}));
+
+router.patch('/:id/participants/:user_id/status', asyncHandler(async (req, res) => {
     const { id: eventId, user_id: userId } = req.params;
     const { status } = req.body;
 
+    // ==========================================
+    // ПАТЕРН: Registry (реєстр допустимих значень)
+    // ==========================================
     const allowedStatuses = ['going', 'interested', 'invited', 'declined'];
 
     if (!status || !allowedStatuses.includes(status)) {
-        return res.status(400).json({ error: "Недійсний статус учасника. Допустимі: " + allowedStatuses.join(', ') });
+        throw AppError.badRequest("Недійсний статус учасника. Допустимі: " + allowedStatuses.join(', '));
     }
 
-    try {
-        const query = `
-            UPDATE event_participants 
-            SET status = $1
-            WHERE event_id = $2 AND user_id = $3
-            RETURNING *`;
-            
-        const result = await pool.query(query, [status, eventId, userId]);
+    // ПАТЕРН: Repository
+    const updatedParticipant = await eventRepo.updateParticipantStatus(eventId, userId, status);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Учасника не знайдено" });
-        }
-
-        res.json({ msg: "Статус учасника оновлено", participant: result.rows[0] });
-    } catch (err) {
-        console.error('Помилка оновлення статусу учасника:', err.message);
-        res.status(500).json({ error: "Помилка сервера" });
+    if (!updatedParticipant) {
+        throw AppError.notFound("Учасника не знайдено");
     }
-});
+
+    res.json({ msg: "Статус учасника оновлено", participant: updatedParticipant });
+}));
 
 module.exports = router;

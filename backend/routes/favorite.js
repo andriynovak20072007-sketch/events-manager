@@ -1,96 +1,85 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
+
+// ==========================================
+// ПАТЕРН: Decorator (asyncHandler)
+// ==========================================
+const asyncHandler = require('../middleware/asyncHandler');
+
+// ==========================================
+// ПАТЕРН: Repository
+// ==========================================
+const favoriteRepo = require('../repositories/FavoriteRepository');
+
+// ==========================================
+// ПАТЕРН: Custom Error Hierarchy
+// ==========================================
+const AppError = require('../utils/AppError');
+
+// ==========================================
+// ПАТЕРН: Logger Singleton
+// ==========================================
+const logger = require('../utils/Logger');
 
 // =======================================================
 // 1. GET /api/favorites/:user_id - Отримання списку обраних подій
+// ПАТЕРН: Repository + Decorator
 // =======================================================
-router.get('/:user_id', async (req, res) => {
+router.get('/:user_id', asyncHandler(async (req, res) => {
     const { user_id } = req.params;
 
-    try {
-        // Використовуємо INNER JOIN, щоб об'єднати таблиці
-        // Беремо всі поля події (e.*) та ID самої "вподобайки" (f.favorite_id)
-        const query = `
-            SELECT e.*, f.favorite_id 
-            FROM events e
-            INNER JOIN favorites f ON e.event_id = f.event_id
-            WHERE f.user_id = $1
-            ORDER BY f.favorite_id DESC
-        `;
-        
-        const result = await pool.query(query, [user_id]);
-        
-        // Якщо обраних подій немає, повертаємо порожній масив (це нормально для фронтенду)
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Помилка отримання обраних подій:', err.message);
-        res.status(500).json({ error: "Server error" });
-    }
-});
+    // ПАТЕРН: Repository — делегуємо SQL-запит
+    const favorites = await favoriteRepo.findByUserId(user_id);
+    
+    // Якщо обраних подій немає, повертаємо порожній масив (це нормально для фронтенду)
+    res.json(favorites);
+}));
 
 // =======================================================
 // 2. POST /api/favorites - Додати подію в обране
+// ПАТЕРН: Repository + Decorator
 // =======================================================
-router.post('/', async (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
     const { user_id, event_id } = req.body;
 
     if (!user_id || !event_id) {
-        return res.status(400).json({ error: "Не вказано user_id або event_id" });
+        throw AppError.badRequest("Не вказано user_id або event_id");
     }
 
-    try {
-        // Перевіряємо, чи вже є така подія в обраному (захист від дублікатів)
-        const checkQuery = 'SELECT * FROM favorites WHERE user_id = $1 AND event_id = $2';
-        const checkResult = await pool.query(checkQuery, [user_id, event_id]);
+    // ПАТЕРН: Repository — перевірка дублікатів
+    const alreadyExists = await favoriteRepo.exists(user_id, event_id);
 
-        if (checkResult.rows.length > 0) {
-            return res.status(400).json({ error: "Ця подія вже є в обраному" });
-        }
-
-        // Додаємо в базу
-        const insertQuery = `
-            INSERT INTO favorites (user_id, event_id) 
-            VALUES ($1, $2) 
-            RETURNING *`;
-        const result = await pool.query(insertQuery, [user_id, event_id]);
-        
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error('Помилка додавання в обране:', err.message);
-        res.status(500).json({ error: "Server error" });
+    if (alreadyExists) {
+        throw AppError.conflict("Ця подія вже є в обраному");
     }
-});
+
+    // ПАТЕРН: Repository — додавання
+    const newFavorite = await favoriteRepo.add(user_id, event_id);
+    logger.info('FAVORITES', `Подію ${event_id} додано в обране для user ${user_id}`);
+    
+    res.status(201).json(newFavorite);
+}));
 
 // =======================================================
 // 3. DELETE /api/favorites/:user_id/:event_id - Видалити з обраного
+// ПАТЕРН: Repository + Decorator
 // =======================================================
-router.delete('/:user_id/:event_id', async (req, res) => {
-    // Отримуємо параметри прямо з URL
+router.delete('/:user_id/:event_id', asyncHandler(async (req, res) => {
     const { user_id, event_id } = req.params;
 
-    try {
-        // Використовуємо RETURNING *, щоб перевірити, чи дійсно щось видалилося за один запит
-        const deleteQuery = `
-            DELETE FROM favorites 
-            WHERE user_id = $1 AND event_id = $2 
-            RETURNING *`;
-            
-        const result = await pool.query(deleteQuery, [user_id, event_id]);
+    // ПАТЕРН: Repository — видалення
+    const deletedRecord = await favoriteRepo.remove(user_id, event_id);
 
-        // Перевіряємо, чи існував такий запис взагалі
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Цієї події немає в обраному" });
-        }
-
-        res.json({ 
-            message: "Подію успішно видалено з обраного",
-            deleted_record: result.rows[0] 
-        });
-    } catch (err) {
-        console.error('Помилка видалення з обраного:', err.message);
-        res.status(500).json({ error: "Server error" });
+    if (!deletedRecord) {
+        throw AppError.notFound("Цієї події немає в обраному");
     }
-});
+
+    logger.info('FAVORITES', `Подію ${event_id} видалено з обраного для user ${user_id}`);
+
+    res.json({ 
+        message: "Подію успішно видалено з обраного",
+        deleted_record: deletedRecord 
+    });
+}));
 
 module.exports = router;

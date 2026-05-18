@@ -69,8 +69,8 @@ router.post('/:userId/upgrade', async (req, res) => {
         // Валідація назви тарифу
         const validPlans = ['free', 'pro', 'premium'];
         if (!validPlans.includes(plan)) {
-            return res.status(400).json({ 
-                error: `Невалідний тариф "${plan}". Доступні: ${validPlans.join(', ')}` 
+            return res.status(400).json({
+                error: `Невалідний тариф "${plan}". Доступні: ${validPlans.join(', ')}`
             });
         }
 

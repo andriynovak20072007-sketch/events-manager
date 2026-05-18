@@ -22,6 +22,10 @@ const originalFetch = global.fetch;
 
 beforeEach(() => {
     jest.clearAllMocks();
+    // Очищаємо кеш HotelService перед кожним тестом,
+    // щоб закешовані результати не впливали на інші тести
+    const hotelService = require('../services/HotelService');
+    hotelService.clearCache();
 });
 
 afterAll(() => {
@@ -281,7 +285,7 @@ describe('Тестування помилок зовнішнього API (Overpa
             .query({ lat: 49.8397, lng: 24.0297 });
 
         expect(res.statusCode).toEqual(500);
-        expect(res.body.error).toContain("Помилка сервера при пошуку готелів");
+        expect(res.body.error).toContain("Внутрішня помилка сервера");
     });
 
     it('TC-H12: Помилка 500, якщо fetch впав з мережевою помилкою', async () => {
@@ -294,7 +298,7 @@ describe('Тестування помилок зовнішнього API (Overpa
             .query({ lat: 49.8397, lng: 24.0297 });
 
         expect(res.statusCode).toEqual(500);
-        expect(res.body.error).toContain("Помилка сервера при пошуку готелів");
+        expect(res.body.error).toContain("Внутрішня помилка сервера");
     });
 });
 

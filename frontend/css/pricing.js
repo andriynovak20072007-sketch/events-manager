@@ -114,14 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
         
         try {
-            const response = await fetch('/users/upgrade', {
+            const response = await fetch('http://localhost:5000/users/upgrade', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
             });
 
             if (response.ok) {
-                localStorage.setItem('userRole', 'pro'); // Set role to pro on success
+                localStorage.setItem('userRole', 'pro_plus'); // Set role to pro_plus on success
                 setTimeout(() => {
                     paymentModal.style.display = 'none';
                     successModal.style.display = 'flex';
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Payment error:', error);
             // Demo fallback
             setTimeout(() => {
-                localStorage.setItem('userRole', 'pro'); // Set role to pro for demo
+                localStorage.setItem('userRole', 'pro_plus'); // Set role to pro_plus for demo
                 paymentModal.style.display = 'none';
                 successModal.style.display = 'flex';
             }, 1500);

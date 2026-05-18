@@ -2,7 +2,7 @@ name: Backend Integration Tests
 
 # 🟢 Додаємо цю змінну, щоб GitHub використовував нову версію і не сварився
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
   
 # Коли запускати тести? При кожному пуші в гілку main або master
 on:
@@ -25,11 +25,11 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # 2. Встановлюємо Node.js (наприклад, 18-ту версію)
+    # 2. Встановлюємо Node.js
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
 
     # 3. Встановлюємо бібліотеки (Express, Jest тощо)
     - name: Install Dependencies
@@ -37,6 +37,6 @@ jobs:
 
     # 4. Запускаємо наші інтеграційні тести
     - name: Run Tests
-      run: NODE_ENV=test npx jest --forceExit
+      run: npx jest --forceExit
       env:
         NODE_ENV: test

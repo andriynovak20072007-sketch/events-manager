@@ -120,24 +120,9 @@ jest.mock('../db', () => ({
 
         // --- notification_schedule ---
 
-        // SELECT нагадувань для юзера (JOIN з events)
-        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('notification_schedule') && trimmedSql.includes('ns.user_id')) {
-            const userId = values[0];
-            const userReminders = Object.values(mockScheduleStore).filter(r => r.user_id == userId);
-            return Promise.resolve({
-                rows: userReminders.map(r => {
-                    const event = mockEventsStore[r.event_id] || {};
-                    return {
-                        ...r,
-                        event_title: event.title || 'Unknown',
-                        event_day: event.event_day || '2026-01-01',
-                        start_time: event.start_time || '00:00'
-                    };
-                })
-            });
-        }
-
         // SELECT pending нагадувань для processQueue (JOIN з events + users)
+        // ВАЖЛИВО: цей блок повинен бути ПЕРЕД перевіркою ns.user_id,
+        // бо SQL processQueue теж містить ns.user_id
         if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('notification_schedule') && trimmedSql.includes('ns.status') && trimmedSql.includes('users')) {
             const pendingItems = Object.values(mockScheduleStore).filter(r => r.status === 'pending');
             return Promise.resolve({
@@ -151,6 +136,23 @@ jest.mock('../db', () => ({
                         start_time: event.start_time,
                         username: user.username,
                         email: user.email
+                    };
+                })
+            });
+        }
+
+        // SELECT нагадувань для юзера (JOIN з events)
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('notification_schedule') && trimmedSql.includes('ns.user_id')) {
+            const userId = values[0];
+            const userReminders = Object.values(mockScheduleStore).filter(r => r.user_id == userId);
+            return Promise.resolve({
+                rows: userReminders.map(r => {
+                    const event = mockEventsStore[r.event_id] || {};
+                    return {
+                        ...r,
+                        event_title: event.title || 'Unknown',
+                        event_day: event.event_day || '2026-01-01',
+                        start_time: event.start_time || '00:00'
                     };
                 })
             });
@@ -216,14 +218,9 @@ jest.mock('../db', () => ({
 
         // --- events ---
 
-        // SELECT подію за ID
-        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('events') && trimmedSql.includes('event_id')) {
-            const eventId = parseInt(values[0]);
-            const event = mockEventsStore[eventId];
-            return Promise.resolve({ rows: event ? [event] : [] });
-        }
-
         // --- Upcoming events (для scanUpcomingEvents) ---
+        // ВАЖЛИВО: цей блок повинен бути ПЕРЕД перевіркою event_id,
+        // бо SQL scanUpcomingEvents теж містить event_id (в SELECT), але не має values
         if (trimmedSql.includes('events') && trimmedSql.includes("NOW()") && trimmedSql.includes('25 hours')) {
             // Повертаємо події 1 та 2 як "майбутні"
             const upcoming = [mockEventsStore[1], mockEventsStore[2]].map(e => ({
@@ -231,6 +228,13 @@ jest.mock('../db', () => ({
                 event_datetime: `${e.event_day}T${e.start_time}`
             }));
             return Promise.resolve({ rows: upcoming });
+        }
+
+        // SELECT подію за ID
+        if (trimmedSql.startsWith('SELECT') && trimmedSql.includes('events') && trimmedSql.includes('event_id')) {
+            const eventId = parseInt(values[0]);
+            const event = mockEventsStore[eventId];
+            return Promise.resolve({ rows: event ? [event] : [] });
         }
 
         // --- participants ---
@@ -487,20 +491,34 @@ describe('Інтеграція: Повний цикл сповіщень (CRUD)'
 describe('Інтеграція: Email-сповіщення та Dispatcher', () => {
 
     it('TC-EMAIL-01: NotificationDispatcher ініціалізується без помилок', () => {
-        const NotificationDispatcher = require('../services/NotificationDispatcher');
-        const pool = require('../db');
-        const dispatcher = new NotificationDispatcher(pool);
+        const tempHost = process.env.SMTP_HOST;
+        delete process.env.SMTP_HOST;
+
+        let dispatcher;
+        jest.isolateModules(() => {
+            const NotificationDispatcher = require('../services/NotificationDispatcher');
+            const pool = require('../db');
+            dispatcher = new NotificationDispatcher(pool);
+        });
 
         expect(dispatcher).toBeDefined();
         expect(dispatcher.chain).toBeDefined();
         // SMTP не налаштовано в тестах — email не активний
         expect(dispatcher.isEmailConfigured()).toBe(false);
+
+        if (tempHost) process.env.SMTP_HOST = tempHost;
     });
 
     it('TC-EMAIL-02: Dispatch in_app сповіщення без SMTP', async () => {
-        const NotificationDispatcher = require('../services/NotificationDispatcher');
-        const pool = require('../db');
-        const dispatcher = new NotificationDispatcher(pool);
+        const tempHost = process.env.SMTP_HOST;
+        delete process.env.SMTP_HOST;
+
+        let dispatcher;
+        jest.isolateModules(() => {
+            const NotificationDispatcher = require('../services/NotificationDispatcher');
+            const pool = require('../db');
+            dispatcher = new NotificationDispatcher(pool);
+        });
 
         const results = await dispatcher.dispatch({
             userId: 1,
@@ -513,10 +531,11 @@ describe('Інтеграція: Email-сповіщення та Dispatcher', () 
         });
 
         expect(results).toBeInstanceOf(Array);
-        // Тільки in_app канал має спрацювати
         const inApp = results.find(r => r.channel === 'in_app');
         expect(inApp).toBeDefined();
         expect(inApp.success).toBe(true);
+
+        if (tempHost) process.env.SMTP_HOST = tempHost;
     });
 
     it('TC-EMAIL-03: ReminderStrategy форматує повідомлення правильно', () => {
@@ -538,9 +557,15 @@ describe('Інтеграція: Email-сповіщення та Dispatcher', () 
     });
 
     it('TC-EMAIL-04: Канал "all" проходить через весь ланцюг обробників', async () => {
-        const NotificationDispatcher = require('../services/NotificationDispatcher');
-        const pool = require('../db');
-        const dispatcher = new NotificationDispatcher(pool);
+        const tempHost = process.env.SMTP_HOST;
+        delete process.env.SMTP_HOST;
+
+        let dispatcher;
+        jest.isolateModules(() => {
+            const NotificationDispatcher = require('../services/NotificationDispatcher');
+            const pool = require('../db');
+            dispatcher = new NotificationDispatcher(pool);
+        });
 
         const results = await dispatcher.dispatch({
             userId: 1,
@@ -557,6 +582,8 @@ describe('Інтеграція: Email-сповіщення та Dispatcher', () 
         const inApp = results.find(r => r.channel === 'in_app');
         expect(inApp).toBeDefined();
         expect(inApp.success).toBe(true);
+
+        if (tempHost) process.env.SMTP_HOST = tempHost;
     });
 });
 
@@ -625,5 +652,268 @@ describe('Інтеграція: EventSchedulerService (планувальник)
         expect(res.body.strategy.type).toEqual('1h');
         expect(res.body.strategy.label).toEqual('За 1 годину');
         expect(res.body.event_title).toEqual('Конференція JavaScript');
+    });
+});
+
+// =======================================================
+// ІНТЕГРАЦІЙНІ ТЕСТИ: EMAIL З НАЛАШТОВАНИМ SMTP
+// Перевірка відправки листів через мок nodemailer
+// =======================================================
+
+describe('Інтеграція: Email-відправка з SMTP', () => {
+
+    let dispatcher;
+
+    beforeEach(() => {
+        process.env.SMTP_HOST = 'smtp.test.com';
+        process.env.SMTP_PORT = '587';
+        process.env.SMTP_USER = 'test@test.com';
+        process.env.SMTP_PASS = 'secret';
+        process.env.SMTP_FROM = 'EventManager <noreply@test.com>';
+        mockSendMail.mockClear();
+
+        jest.isolateModules(() => {
+            const ND = require('../services/NotificationDispatcher');
+            const p = require('../db');
+            dispatcher = new ND(p);
+        });
+    });
+
+    afterEach(() => {
+        delete process.env.SMTP_HOST;
+        delete process.env.SMTP_PORT;
+        delete process.env.SMTP_USER;
+        delete process.env.SMTP_PASS;
+        delete process.env.SMTP_FROM;
+    });
+
+    it('TC-EMAIL-05: Email відправляється коли SMTP налаштовано', async () => {
+        const results = await dispatcher.dispatch({
+            userId: 1, email: 'user@example.com', username: 'TestUser',
+            message: 'Завтра конференція!', eventTitle: 'JS Conf',
+            type: '24h', channel: 'email'
+        });
+
+        const emailResult = results.find(r => r.channel === 'email');
+        expect(emailResult).toBeDefined();
+        expect(emailResult.success).toBe(true);
+        expect(emailResult.result.messageId).toEqual('test-msg-001');
+        expect(mockSendMail).toHaveBeenCalledTimes(1);
+
+        const mailArgs = mockSendMail.mock.calls[0][0];
+        expect(mailArgs.to).toEqual('user@example.com');
+        expect(mailArgs.subject).toContain('JS Conf');
+        expect(mailArgs.html).toContain('TestUser');
+    });
+
+    it('TC-EMAIL-06: Канал "all" відправляє і email, і in_app', async () => {
+        const results = await dispatcher.dispatch({
+            userId: 1, email: 'both@example.com', username: 'BothUser',
+            message: 'Повний ланцюг', eventTitle: 'Full Chain',
+            type: '1h', channel: 'all'
+        });
+
+        expect(results.length).toEqual(2);
+        expect(results.find(r => r.channel === 'email').success).toBe(true);
+        expect(results.find(r => r.channel === 'in_app').success).toBe(true);
+        expect(mockSendMail).toHaveBeenCalledTimes(1);
+    });
+
+    it('TC-EMAIL-07: Email HTML містить правильну структуру', async () => {
+        await dispatcher.dispatch({
+            userId: 2, email: 'html@example.com', username: 'HTMLUser',
+            message: 'Шаблон листа', eventTitle: 'Template Test',
+            type: '24h', channel: 'email'
+        });
+
+        const html = mockSendMail.mock.calls[0][0].html;
+        expect(html).toContain('<!DOCTYPE html>');
+        expect(html).toContain('HTMLUser');
+        expect(html).toContain('Template Test');
+        expect(html).toContain('Event Manager');
+    });
+
+    it('TC-EMAIL-08: Помилка sendMail не ламає ланцюг', async () => {
+        mockSendMail.mockRejectedValueOnce(new Error('SMTP connection refused'));
+
+        const results = await dispatcher.dispatch({
+            userId: 1, email: 'fail@example.com', username: 'FailUser',
+            message: 'Має впасти email', eventTitle: 'Fail Event',
+            type: '24h', channel: 'all'
+        });
+
+        expect(results.find(r => r.channel === 'email').success).toBe(false);
+        expect(results.find(r => r.channel === 'email').error).toContain('SMTP connection refused');
+        expect(results.find(r => r.channel === 'in_app').success).toBe(true);
+    });
+
+    it('TC-EMAIL-09: Без email адреси — email-канал пропускається', async () => {
+        const results = await dispatcher.dispatch({
+            userId: 1, email: null, username: 'NoEmail',
+            message: 'Без email', eventTitle: 'No Email',
+            type: '24h', channel: 'all'
+        });
+
+        expect(results.length).toEqual(1);
+        expect(results[0].channel).toEqual('in_app');
+        expect(mockSendMail).not.toHaveBeenCalled();
+    });
+});
+
+// =======================================================
+// ІНТЕГРАЦІЙНІ ТЕСТИ: PIPELINE ПЛАНУВАЛЬНИКА
+// =======================================================
+
+describe('Інтеграція: Pipeline планувальника', () => {
+
+    it('TC-PIPE-01: scanUpcomingEvents повертає майбутні події', async () => {
+        const scheduler = require('../services/EventSchedulerService');
+        const events = await scheduler.scanUpcomingEvents();
+
+        expect(events).toBeInstanceOf(Array);
+        expect(events.length).toEqual(2);
+        expect(events[0].title).toEqual('Конференція JavaScript');
+        expect(events[1].title).toEqual('Воркшоп з React');
+    });
+
+    it('TC-PIPE-02: enqueueReminders створює записи для учасників', async () => {
+        const scheduler = require('../services/EventSchedulerService');
+        const events = await scheduler.scanUpcomingEvents();
+        const enqueued = await scheduler.enqueueReminders(events);
+        expect(enqueued).toBeGreaterThan(0);
+    });
+
+    it('TC-PIPE-03: processQueue повертає структуру sent/failed/total', async () => {
+        const scheduler = require('../services/EventSchedulerService');
+        const result = await scheduler.processQueue(null);
+        expect(result).toHaveProperty('sent');
+        expect(result).toHaveProperty('failed');
+        expect(result).toHaveProperty('total');
+    });
+
+    it('TC-PIPE-04: getStatus відображає актуальну статистику', () => {
+        const scheduler = require('../services/EventSchedulerService');
+        const status = scheduler.getStatus();
+        expect(status.isProcessing).toBe(false);
+        expect(typeof status.stats.scanned).toBe('number');
+        expect(typeof status.stats.sent).toBe('number');
+        expect(typeof status.stats.failed).toBe('number');
+    });
+});
+
+// =======================================================
+// ІНТЕГРАЦІЙНІ ТЕСТИ: ІЗОЛЯЦІЯ МІЖ КОРИСТУВАЧАМИ
+// =======================================================
+
+describe('Інтеграція: Ізоляція сповіщень між користувачами', () => {
+
+    it('TC-ISO-01: Сповіщення user1 не видні user2', async () => {
+        await request(app).post('/api/notifications').send({
+            user_id: 1, type: 'reminder', message: 'Тільки для юзера 1'
+        });
+        await request(app).post('/api/notifications').send({
+            user_id: 2, type: 'invite', message: 'Тільки для юзера 2'
+        });
+
+        const u1 = await request(app).get('/api/notifications/1');
+        const u2 = await request(app).get('/api/notifications/2');
+
+        expect(u1.body.length).toEqual(1);
+        expect(u2.body.length).toEqual(1);
+        expect(u1.body[0].user_id).toEqual(1);
+        expect(u2.body[0].user_id).toEqual(2);
+    });
+
+    it('TC-ISO-02: Видалення сповіщення user1 не впливає на user2', async () => {
+        const n1 = await request(app).post('/api/notifications').send({
+            user_id: 1, type: 'reminder', message: 'User1 msg'
+        });
+        await request(app).post('/api/notifications').send({
+            user_id: 2, type: 'reminder', message: 'User2 msg'
+        });
+
+        await request(app).delete(`/api/notifications/${n1.body.notification_id}`);
+
+        const u2 = await request(app).get('/api/notifications/2');
+        expect(u2.body.length).toEqual(1);
+        expect(u2.body[0].message).toEqual('User2 msg');
+    });
+});
+
+// =======================================================
+// ІНТЕГРАЦІЙНІ ТЕСТИ: E2E — ПОДІЯ → НАГАДУВАННЯ → EMAIL
+// =======================================================
+
+describe('Інтеграція: E2E — Календар → Планувальник → Доставка', () => {
+
+    it('TC-E2E-01: Створення нагадування → Список → Доставка dispatcher', async () => {
+        const createRes = await request(app)
+            .post('/api/notifications/reminders')
+            .send({ event_id: 1, user_id: 1, type: '24h', channel: 'all' });
+
+        expect(createRes.statusCode).toEqual(201);
+        expect(createRes.body.event_title).toEqual('Конференція JavaScript');
+
+        const listRes = await request(app).get('/api/notifications/1/reminders');
+        expect(listRes.body.count).toBeGreaterThanOrEqual(1);
+
+        const NotificationDispatcher = require('../services/NotificationDispatcher');
+        const pool = require('../db');
+        const disp = new NotificationDispatcher(pool);
+
+        const results = await disp.dispatch({
+            userId: 1, email: 'test@example.com', username: 'testuser',
+            message: 'Конференція завтра!', eventTitle: 'Конференція JavaScript',
+            type: '24h', channel: 'all'
+        });
+        expect(results.some(r => r.success)).toBe(true);
+    });
+
+    it('TC-E2E-02: Множинні юзери → Масові нагадування → Статус', async () => {
+        await request(app).post('/api/notifications/reminders').send({
+            event_id: 1, user_id: 1, type: '1h', channel: 'in_app'
+        });
+        await request(app).post('/api/notifications/reminders').send({
+            event_id: 1, user_id: 2, type: '1h', channel: 'in_app'
+        });
+
+        const u1 = await request(app).get('/api/notifications/1/reminders');
+        const u2 = await request(app).get('/api/notifications/2/reminders');
+
+        expect(u1.body.reminders.some(r => r.type === '1h')).toBe(true);
+        expect(u2.body.reminders.some(r => r.type === '1h')).toBe(true);
+
+        const status = await request(app).get('/api/notifications/scheduler/status');
+        expect(status.statusCode).toEqual(200);
+        expect(status.body.available_types.length).toEqual(3);
+    });
+
+    it('TC-E2E-03: Повний lifecycle сповіщення (create→read→delete)', async () => {
+        const c = await request(app).post('/api/notifications').send({
+            user_id: 2, type: 'reminder', message: 'E2E lifecycle'
+        });
+        const id = c.body.notification_id;
+
+        const r = await request(app).put(`/api/notifications/${id}/read`);
+        expect(r.body.notification.is_read).toBe(true);
+
+        await request(app).delete(`/api/notifications/${id}`);
+
+        const list = await request(app).get('/api/notifications/2');
+        expect(list.body.length).toEqual(0);
+    });
+
+    it('TC-E2E-04: Нагадування on_start → скасування до обробки', async () => {
+        const create = await request(app).post('/api/notifications/reminders').send({
+            event_id: 2, user_id: 1, type: 'on_start', channel: 'email'
+        });
+        expect(create.body.strategy.label).toEqual('При старті');
+        const scheduleId = create.body.reminder.schedule_id;
+
+        const cancel = await request(app).delete(`/api/notifications/reminders/${scheduleId}`);
+        expect(cancel.body.msg).toContain('скасовано');
+
+        const list = await request(app).get('/api/notifications/1/reminders');
+        expect(list.body.reminders.find(r => r.schedule_id === scheduleId)).toBeUndefined();
     });
 });
