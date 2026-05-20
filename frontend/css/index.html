@@ -224,15 +224,15 @@
     </div>
 
     <main class="map-area">
-      <div class="categories">
-        <button class="category-pill concert"><i class="fa-solid fa-music"></i> Концерти</button>
-        <button class="category-pill festival"><i class="fa-solid fa-tent"></i> Фестивалі</button>
-        <button class="category-pill education"><i class="fa-solid fa-graduation-cap"></i> Освіта</button>
-        <button class="category-pill sport"><i class="fa-solid fa-person-running"></i> Спорт</button>
-      </div>
-
       <div class="map-wrapper" style="position: relative; width: 100%; min-height: 500px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
         
+        <div class="categories">
+          <button class="category-pill concert" data-category="concert"><i class="fa-solid fa-music"></i> Концерти</button>
+          <button class="category-pill festival" data-category="festival"><i class="fa-solid fa-tent"></i> Фестивалі</button>
+          <button class="category-pill education" data-category="education"><i class="fa-solid fa-graduation-cap"></i> Освіта</button>
+          <button class="category-pill sport" data-category="sport"><i class="fa-solid fa-person-running"></i> Спорт</button>
+        </div>
+
         <button id="toggle-map-type" class="map-toggle-btn" style="position: absolute; top: 20px; right: 20px; z-index: 2000;">
           <i class="fa-solid fa-layer-group"></i> <span>Реальна карта</span>
         </button>
