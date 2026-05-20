@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const newStatus = action === 'approve' ? 'approved' : 'rejected';
 
-            const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+            const res = await fetch(`/api/events/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function loadEventsFromBackend() {
         try {
-            const res = await fetch('http://localhost:5000/api/events', {
+            const res = await fetch('/api/events', {
                 credentials: 'include'
             });
 
@@ -637,7 +637,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             
             // Only try fetch if eventId is a number
             if (!isNaN(eventId)) {
-                const res = await fetch(`http://localhost:5000/api/analytics/${eventId}/summary`);
+                const res = await fetch(`/api/analytics/${eventId}/summary`);
                 if (res.ok) {
                     const realStats = await res.json();
                     // If we have real views, use them, otherwise stick to dummy for demo
@@ -720,7 +720,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             let data = null;
             
             if (!isNaN(eventId)) {
-                const res = await fetch(`http://localhost:5000/api/analytics/${eventId}/detailed?user_id=${localStorage.getItem('userId') || 1}`);
+                const res = await fetch(`/api/analytics/${eventId}/detailed?user_id=${localStorage.getItem('userId') || 1}`);
                 if (res.ok) data = await res.json();
             }
 

@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function getCreatedEventsCount() {
     try {
-      const response = await fetch('http://localhost:5000/api/events');
+      const response = await fetch('/api/events');
 
       if (!response.ok) {
         throw new Error('Не вдалося отримати список подій');
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/can-create-event`, {
+      const response = await fetch(`/api/users/${userId}/can-create-event`, {
         credentials: 'include'
       });
 
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Одна функція приховує всю логіку створення email-нагадування.
   */
   async function createEmailReminderForEvent(eventId) {
-    const response = await fetch('http://localhost:5000/api/notifications/reminders', {
+    const response = await fetch('/api/notifications/reminders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -326,8 +326,8 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       const apiUrl = isEditMode
-        ? `http://localhost:5000/api/events/${isEditMode}`
-        : 'http://localhost:5000/api/events';
+        ? `/api/events/${isEditMode}`
+        : '/api/events';
 
       const response = await fetch(apiUrl, {
         method: isEditMode ? 'PUT' : 'POST',
@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Ви впевнені, що хочете видалити цю подію?')) return;
 
         try {
-          const response = await fetch(`http://localhost:5000/api/events/${editEventId}`, {
+          const response = await fetch(`/api/events/${editEventId}`, {
             method: 'DELETE',
             credentials: 'include'
           });
@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 9.2 Завантаження події з бекенду для редагування
   async function loadEventForEdit(eventId) {
     try {
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+      const response = await fetch(`/api/events/${eventId}`, {
         credentials: 'include'
       });
 

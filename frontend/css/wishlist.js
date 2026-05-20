@@ -26,7 +26,7 @@ async function loadWishlist() {
     }
 
     try {
-        const response = await fetch(`http://localhost:5000/api/favorites/${userId}`, {
+        const response = await fetch(`/api/favorites/${userId}`, {
             credentials: 'include'
         });
 
@@ -193,7 +193,7 @@ async function toggleFavorite(eventId) {
     const card = document.getElementById(`card-${eventId}`);
 
     try {
-        const response = await fetch(`http://localhost:5000/api/favorites/${userId}/${eventId}`, {
+        const response = await fetch(`/api/favorites/${userId}/${eventId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
@@ -228,7 +228,7 @@ async function addToWishlist(eventId) {
     }
 
     try {
-        const response = await fetch('http://localhost:5000/api/favorites', {
+        const response = await fetch('/api/favorites', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

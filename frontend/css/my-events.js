@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:5000/api/events/scheduled?creator_id=${userId}`, {
+            const response = await fetch(`/api/events/scheduled?creator_id=${userId}`, {
                 credentials: 'include'
             });
 
@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             setTimeout(async () => {
                 try {
-                    const response = await fetch(`http://localhost:5000/api/events/${id}`, {
+                    const response = await fetch(`/api/events/${id}`, {
                         method: 'DELETE',
                         credentials: 'include'
                     });

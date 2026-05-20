@@ -374,7 +374,7 @@ if (form) {
       submitBtn.style.opacity = '0.7';
 
       try {
-        const res = await fetch('http://localhost:5000/api/users/register', {
+        const res = await fetch('/api/users/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -431,7 +431,7 @@ if (form) {
       submitBtn.style.opacity = '0.7';
 
       try {
-        const res = await fetch('http://localhost:5000/api/users/login', {
+        const res = await fetch('http:/api/users/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -501,7 +501,7 @@ if (form) {
 
 async function logoutUser() {
   try {
-    await fetch('http://localhost:5000/api/users/logout', {
+    await fetch('/api/users/logout', {
       method: 'POST',
       credentials: 'include'
     });
@@ -874,7 +874,7 @@ googleScript.onload = function() {
 
 async function handleGoogleLogin(response) {
     try {
-        const res = await fetch('http://localhost:5000/api/auth/google', {
+        const res = await fetch('/api/auth/google', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: response.credential })
@@ -973,7 +973,7 @@ async function fetchNotifications() {
     const notifList = document.getElementById('notif-list');
     
     try {
-        const res = await fetch(`http://localhost:5000/api/notifications/${user.id}`);
+        const res = await fetch(`/api/notifications/${user.id}`);
         if (!res.ok) return;
         
         const notifications = await res.json();
@@ -1025,13 +1025,13 @@ async function fetchNotifications() {
                 item.addEventListener('click', async (e) => {
                     if (e.target.closest('.del-notif')) return;
                     if (!n.is_read) {
-                        await fetch(`http://localhost:5000/api/notifications/${n.notification_id}/read`, { method: 'PUT' });
+                        await fetch(`/api/notifications/${n.notification_id}/read`, { method: 'PUT' });
                         fetchNotifications();
                     }
                 });
 
                 item.querySelector('.del-notif').addEventListener('click', async () => {
-                    await fetch(`http://localhost:5000/api/notifications/${n.notification_id}`, { method: 'DELETE' });
+                    await fetch(`/api/notifications/${n.notification_id}`, { method: 'DELETE' });
                     fetchNotifications();
                 });
 
@@ -1086,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchCalendarEvents() {
         try {
-            const res = await fetch('http://localhost:5000/api/events');
+            const res = await fetch('/api/events');
             if (res.ok) {
                 const data = await res.json();
                 processEventsData(data);

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://events-manager-rjrc.onrender.com/sitemap.xml

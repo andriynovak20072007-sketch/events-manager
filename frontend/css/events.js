@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return false;
         }
 
-        const response = await fetch('http://localhost:5000/api/favorites', {
+        const response = await fetch('/api/favorites', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return false;
         }
 
-        const response = await fetch(`http://localhost:5000/api/favorites/${userId}/${eventId}`, {
+        const response = await fetch(`/api/favorites/${userId}/${eventId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let eventsData = [];
     try {
-        const response = await fetch('http://localhost:5000/api/events');
+        const response = await fetch('/api/events');
         if (response.ok) {
             eventsData = await response.json();
         } else {
@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                // Додаємо перехід на зовнішній сайт
                buyBtn.addEventListener('click', async () => {
                    // Analytics: record "sale" (click-to-buy)
-                   fetch(`http://localhost:5000/api/analytics/${eventId}/sale`, {
+                   fetch(`/api/analytics/${eventId}/sale`, {
                        method: 'POST',
                        headers: { 'Content-Type': 'application/json' },
                        body: JSON.stringify({
@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const utmMedium = urlParams.get('utm_medium');
             const utmCampaign = urlParams.get('utm_campaign');
 
-            fetch(`http://localhost:5000/api/analytics/${eventId}/view`, {
+            fetch(`/api/analytics/${eventId}/view`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         try {
-            const res = await fetch(`http://localhost:5000/api/events/${eventId}`);
+            const res = await fetch(`/api/events/${eventId}`);
             if (res.ok) {
                 const data = await res.json();
                 eventId = data.event_id;

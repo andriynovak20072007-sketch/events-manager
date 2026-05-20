@@ -1,5 +1,33 @@
-/* Premium Event Creation Page Styles */
 
+:root {
+  --color-primary: #00AAFF;
+  --color-danger: #EF4444;
+  --color-bg-page: #FFFFFF;
+  --color-text-main: #111827;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --border-radius-pill: 30px;
+  --font-main: 'Montserrat', sans-serif;
+}
+
+.create-event-page {
+  background-color: var(--color-bg-page);
+  font-family: var(--font-main);
+  padding: var(--spacing-lg);
+}
+
+.large-blue-btn {
+  background-color: var(--color-primary);
+  border-radius: var(--border-radius-pill);
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: var(--color-bg-page);
+}
+
+.error-message {
+  color: var(--color-danger);
+  margin-top: var(--spacing-sm);
+}
 .create-event-page {
   padding: 60px 20px;
   max-width: 1100px;

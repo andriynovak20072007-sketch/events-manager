@@ -2,8 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_URL = 'http://localhost:5000/api';
-
+    const API_URL = '/api';
+    
     async function loadProfileData() {
         const userId = localStorage.getItem('userId');
         const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => toast.remove(), 400);
         }, 3000);
     }
-
+/*
     // Enhance Event Action buttons
     const viewBtns = document.querySelectorAll('.view-btn');
     const editBtns = document.querySelectorAll('.edit-btn');
@@ -294,15 +294,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-
+*/
     // Logout enhancement
     const logoutBtn = document.querySelector('.logout-btn');
-    if(logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            if(confirm('Ви впевнені, що хочете вийти з акаунту?')) {
-                logoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Виходимо...';
-                setTimeout(() => window.location.href = 'index.html', 800);
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            if (!confirm('Ви впевнені, що хочете вийти з акаунту?')) return;
+
+            logoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Виходимо...';
+
+            try {
+                await fetch(`${API_URL}/users/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
             }
+
+            localStorage.removeItem('user');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+
+            window.location.href = 'index.html';
         });
     }
 

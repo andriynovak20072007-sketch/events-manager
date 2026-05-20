@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
 const pool = require('./db');
@@ -53,7 +54,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false } // Для локальної розробки HTTP. На продакшені (HTTPS) має бути true
 }));
-
+app.use(express.static(path.join(__dirname, '../frontend')));
 // ==========================================
 // 3. ПІДКЛЮЧЕННЯ МАРШРУТІВ (РОУТИНГ)
 // ==========================================
@@ -73,7 +74,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/subscriptions', subscriptionsRoutes);
 
 // Базовий тестовий роут для перевірки працездатності
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
     res.send("Event Manager API працює 🚀");
 });
 
@@ -103,9 +104,15 @@ app.use((err, req, res, next) => {
 // ==========================================
 // 5. ЗАПУСК СЕРВЕРА
 // ==========================================
-const PORT = process.env.PORT || 5000;
+
 
 // Запускаємо сервер ТІЛЬКИ якщо це не тести
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
+const PORT = process.env.PORT || 5000;
+
 if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
         logger.success('SERVER', `Server працює на порту ${PORT}`);
