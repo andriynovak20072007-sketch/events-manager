@@ -125,7 +125,13 @@ router.post('/reminders', asyncHandler(async (req, res) => {
     }
 
     const event = eventResult.rows[0];
-    const eventDateTime = new Date(`${event.event_day}T${event.start_time}`);
+    
+    // pg може повертати DATE як об'єкт Date, або як рядок
+    const dateString = event.event_day instanceof Date 
+        ? event.event_day.toISOString().split('T')[0] 
+        : String(event.event_day).split('T')[0];
+        
+    const eventDateTime = new Date(`${dateString}T${event.start_time}`);
 
     // Обчислюємо час нагадування через стратегію
     const availableTypes = schedulerService.constructor.getAvailableTypes();
