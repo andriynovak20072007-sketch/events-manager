@@ -221,11 +221,19 @@ router.post('/', async (req, res) => {
         const eventIsPrivate = is_private !== undefined ? is_private : true;
         const values = [title, description, event_day, start_time, end_time, latitude, longitude, category_id, creator_id, region, eventIsPrivate, eventPrice, eventCurrency];
         
+        console.log('=== EVENT CREATION PAYLOAD ===');
+        console.log('Body:', JSON.stringify(req.body));
+        console.log('Values:', JSON.stringify(values));
+        
         const result = await pool.query(query, values);
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Помилка при створенні події в БД" });
+        console.error('=== EVENT CREATION ERROR ===');
+        console.error('Error message:', err.message);
+        console.error('Error detail:', err.detail);
+        console.error('Error code:', err.code);
+        console.error('Full error:', err);
+        res.status(500).json({ error: err.message || "Помилка при створенні події в БД" });
     }
 });
 
