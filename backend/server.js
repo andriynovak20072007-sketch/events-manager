@@ -46,8 +46,7 @@ app.use(express.json()); // Дозволяє серверу читати JSON з
 
 
 // 🟢 ДОДАНО: Робимо папку 'uploads' публічною, щоб фронтенд міг читати фотографії
-app.use('/uploads', express.static('uploads'));
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(session({
     secret: process.env.SESSION_SECRET || "fallback_secret_key",
     resave: false,
@@ -107,7 +106,7 @@ app.use((err, req, res, next) => {
 
 
 // Запускаємо сервер ТІЛЬКИ якщо це не тести
-app.get('*', (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
