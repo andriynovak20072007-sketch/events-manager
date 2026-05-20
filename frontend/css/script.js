@@ -499,32 +499,45 @@ if (form) {
 // ==========================================
 function updatePanelUI(user) {
     const panelFooter = document.querySelector('.panel-footer');
-    if (panelFooter && user) {
-        panelFooter.innerHTML = `
-            <div style="text-align: center; padding: 10px 0;">
-                <div style="font-weight: 700; font-size: 16px; color: #0F172A; margin-bottom: 4px;">
-                    ${user.username}
+    const panelNav = document.querySelector('.panel-nav');
+
+    if (user) {
+        if (panelNav) panelNav.style.display = 'flex';
+        if (panelFooter) {
+            panelFooter.innerHTML = `
+                <div style="text-align: center; padding: 10px 0;">
+                    <div style="font-weight: 700; font-size: 16px; color: #0F172A; margin-bottom: 4px;">
+                        ${user.username}
+                    </div>
+                    <div style="font-size: 13px; color: #64748B;">${user.email}</div>
+                    <div style="margin-top: 8px;">
+                        <span style="
+                            display: inline-block;
+                            padding: 3px 12px;
+                            border-radius: 20px;
+                            font-size: 11px;
+                            font-weight: 700;
+                            text-transform: uppercase;
+                            background: ${user.role === 'pro' ? 'linear-gradient(135deg, #2854C5, #00AAFF)' : '#F1F5F9'};
+                            color: ${user.role === 'pro' ? 'white' : '#64748B'};
+                        ">${user.role}</span>
+                    </div>
                 </div>
-                <div style="font-size: 13px; color: #64748B;">${user.email}</div>
-                <div style="margin-top: 8px;">
-                    <span style="
-                        display: inline-block;
-                        padding: 3px 12px;
-                        border-radius: 20px;
-                        font-size: 11px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        background: ${user.role === 'pro' ? 'linear-gradient(135deg, #2854C5, #00AAFF)' : '#F1F5F9'};
-                        color: ${user.role === 'pro' ? 'white' : '#64748B'};
-                    ">${user.role}</span>
-                </div>
-            </div>
-            <button class="panel-auth-btn register-btn" 
-                    onclick="localStorage.removeItem('user'); showToast('Ви вийшли з системи', 'info'); location.reload();" 
-                    style="background: #EF4444; margin-top: 10px;">
-                Вийти
-            </button>
-        `;
+                <button class="panel-auth-btn register-btn" 
+                        onclick="localStorage.removeItem('user'); showToast('Ви вийшли з системи', 'info'); location.reload();" 
+                        style="background: #EF4444; margin-top: 10px;">
+                    Вийти
+                </button>
+            `;
+        }
+    } else {
+        if (panelNav) panelNav.style.display = 'none';
+        if (panelFooter) {
+            panelFooter.innerHTML = `
+                <button class="panel-auth-btn login-btn" onclick="openAuthFromPanel('login')">Увійти</button>
+                <button class="panel-auth-btn register-btn" onclick="openAuthFromPanel('register')">Зареєструватися</button>
+            `;
+        }
     }
 }
 
@@ -533,13 +546,18 @@ function updatePanelUI(user) {
 // Відновлення стану після перезавантаження сторінки
 // ==========================================
 const savedUser = localStorage.getItem('user');
-if (savedUser) {
-    try {
-        const userData = JSON.parse(savedUser);
-        // Відкладаємо до повного завантаження DOM
-        document.addEventListener('DOMContentLoaded', () => updatePanelUI(userData));
-    } catch(e) { /* ignore parse errors */ }
-}
+document.addEventListener('DOMContentLoaded', () => {
+    if (savedUser) {
+        try {
+            const userData = JSON.parse(savedUser);
+            updatePanelUI(userData);
+        } catch(e) { 
+            updatePanelUI(null);
+        }
+    } else {
+        updatePanelUI(null);
+    }
+});
 
 const authModal = document.getElementById("authModal");
 const profileBtn = document.getElementById("profileBtn");
@@ -571,7 +589,13 @@ if (userPanelOverlay) userPanelOverlay.addEventListener('click', toggleUserPanel
 
 // Функція для кнопок внизу панелі (відкриває модалку і потрібну форму)
 function openAuthFromPanel(formType) {
-  toggleUserPanel(); // Спочатку ховаємо бічну панель
+  // Спочатку ховаємо бічну панель (динамічно знаходимо елементи)
+  const panel = document.getElementById('userPanel');
+  const overlay = document.getElementById('userPanelOverlay');
+  if (panel && overlay) {
+    panel.classList.remove('open');
+    overlay.classList.remove('active');
+  }
   
   const authModal = document.getElementById("authModal");
   if (authModal) {
@@ -835,7 +859,7 @@ document.head.appendChild(googleScript);
 
 googleScript.onload = function() {
     google.accounts.id.initialize({
-        client_id: 'YOUR_GOOGLE_CLIENT_ID', // ЗАМІНИТИ НА РЕАЛЬНИЙ КЛІЄНТ ID
+        client_id: '434377100313-pfs5ti7gdh0oi19o1vtd7oes099if5hs.apps.googleusercontent.com',
         callback: handleGoogleLogin
     });
 
