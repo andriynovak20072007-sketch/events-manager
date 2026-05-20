@@ -2964,3 +2964,85 @@ input.input-error {
 .modal-overlay {
     background: rgba(15, 23, 42, 0.6) !important;
 }
+
+/* Контейнер для категорій під хедером */
+.top-categories-bar {
+    width: 100%;
+    padding-top: 100px; /* Відступ, щоб не ховалося під фіксованим хедером */
+    display: flex;
+    justify-content: center;
+    background: transparent;
+    z-index: 100;
+    position: relative;
+}
+
+/* Оновлюємо стилі самих кнопок, щоб вони стояли в ряд */
+.top-categories-bar .categories {
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* Якщо .categories залишився в map.css з абсолютним позиціонуванням, 
+   цей рядок його "скине" для нового місця */
+.top-categories-bar .categories {
+    position: static !important; 
+}
+
+/* Робимо бейджі відносними, щоб меню випадало чітко під ними */
+.filter-pill {
+    position: relative !important; 
+}
+
+/* Стилі для самого контейнера випадаючого меню */
+.city-dropdown, 
+.category-dropdown {
+    position: absolute;
+    top: calc(100% + 10px); /* Відступ 10px вниз від бейджа */
+    left: 0;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px; /* Мінімальна ширина меню */
+    z-index: 10000;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Ховаємо меню, коли є клас hidden */
+.city-dropdown.hidden, 
+.category-dropdown.hidden {
+    display: none !important;
+}
+
+/* Красиві стилі для самих кнопок всередині меню */
+.city-dropdown button, 
+.category-dropdown button {
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #4a4a4a;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+/* Ефект при наведенні на кнопку в меню */
+.city-dropdown button:hover, 
+.category-dropdown button:hover {
+    background: #F0F7FF;
+    color: #2854C5; /* Твій фірмовий синій колір */
+    padding-left: 20px; /* Легкий ефект зсуву при наведенні */
+}

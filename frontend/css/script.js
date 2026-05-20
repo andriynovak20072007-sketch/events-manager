@@ -1339,3 +1339,69 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Знаходимо елементи фільтрів
+    const cityFilter = document.querySelector('.city-filter');
+    const cityDropdown = document.querySelector('.city-dropdown');
+    const cityFilterText = document.querySelector('.city-filter-text');
+
+    const categoryFilter = document.querySelector('.category-filter');
+    const categoryDropdown = document.querySelector('.category-dropdown');
+    const categoryFilterText = document.querySelector('.category-filter-text');
+
+    // Логіка для випадаючого списку "Місто"
+    if (cityFilter && cityDropdown) {
+        cityFilter.addEventListener('click', (e) => {
+            e.stopPropagation();
+            cityDropdown.classList.toggle('hidden');
+            // Ховаємо інший дропдаун, якщо він відкритий
+            if (categoryDropdown) categoryDropdown.classList.add('hidden');
+        });
+
+        const cityOptions = cityDropdown.querySelectorAll('button');
+        cityOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Змінюємо текст у хедері на обране місто
+                cityFilterText.textContent = option.textContent;
+                cityDropdown.classList.add('hidden');
+                
+                // ТУТ МОЖНА ВИКЛИКАТИ ФУНКЦІЮ ФІЛЬТРАЦІЇ КАРТИ 
+                // наприклад: filterEventsByCity(option.textContent);
+            });
+        });
+    }
+
+    // Логіка для випадаючого списку "Категорії"
+    if (categoryFilter && categoryDropdown) {
+        categoryFilter.addEventListener('click', (e) => {
+            e.stopPropagation();
+            categoryDropdown.classList.toggle('hidden');
+            // Ховаємо інший дропдаун, якщо він відкритий
+            if (cityDropdown) cityDropdown.classList.add('hidden');
+        });
+
+        const categoryOptions = categoryDropdown.querySelectorAll('button');
+        categoryOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Змінюємо текст у хедері на обрану категорію
+                categoryFilterText.textContent = option.textContent;
+                categoryDropdown.classList.add('hidden');
+                
+                // ТУТ МОЖНА ВИКЛИКАТИ ФУНКЦІЮ ФІЛЬТРАЦІЇ КАРТИ
+            });
+        });
+    }
+
+    // Закриваємо списки, якщо клікаємо будь-де на сторінці
+    window.addEventListener('click', () => {
+        if (cityDropdown && !cityDropdown.classList.contains('hidden')) {
+            cityDropdown.classList.add('hidden');
+        }
+        if (categoryDropdown && !categoryDropdown.classList.contains('hidden')) {
+            categoryDropdown.classList.add('hidden');
+        }
+    });
+});

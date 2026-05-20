@@ -80,16 +80,22 @@ body {
 
 /* Контейнер кнопок */
 .categories {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    z-index: 2000;
+    position: absolute !important;
+    top: 25px !important; /* Відступ від верху карти */
+    left: 50% !important; /* Зсув рівно на половину ширини екрану */
+    transform: translateX(-50%) !important; /* Точне центрування самого блоку */
+    display: flex !important;
+    gap: 15px !important;
+    z-index: 2000 !important; /* Щоб кнопки завжди були поверх карти */
+    width: max-content !important; /* Щоб блок не стискався */
+    
+    /* Тло та тінь */
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    padding: 10px 20px !important;
+    border-radius: 50px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Базовий стиль "пігулки" */
