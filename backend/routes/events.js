@@ -467,6 +467,26 @@ router.post('/:id/image', upload.single('image'), asyncHandler(async (req, res) 
 }));
 
 // ==========================================
+// 5.1 РЕДАГУВАННЯ ПОДІЇ (PUT)
+// ==========================================
+router.put('/:id', asyncHandler(async (req, res) => {
+    const eventId = req.params.id;
+
+    const updatedEvent = await eventRepo.update(eventId, req.body);
+
+    if (!updatedEvent) {
+        throw AppError.notFound("Подію не знайдено");
+    }
+
+    logger.info('EVENTS', `Подію оновлено: ID ${eventId}`);
+
+    res.json({
+        msg: "Подію успішно оновлено",
+        event: updatedEvent
+    });
+}));
+
+// ==========================================
 // 6. ВИДАЛЕННЯ ПОДІЇ (DELETE)
 // ==========================================
 router.delete('/:id', asyncHandler(async (req, res) => {

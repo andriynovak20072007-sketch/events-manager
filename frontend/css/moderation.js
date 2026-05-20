@@ -131,20 +131,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             <tr>
                 <td>
                     <div class="event-info-cell">
-                        <img src="${ev.image || 'images/fest1..png'}" class="event-thumb">
+                        <img src="${ev.image_url || ev.banner_url || ev.image || 'images/fest1..png'}" class="event-thumb">
                         <div>
                             <div class="event-title-small">${ev.title}</div>
                             <div class="event-id-small">ID: ${ev.event_id}</div>
                         </div>
                     </div>
                 </td>
-                <td><strong>${ev.user_name}</strong></td>
-                <td>${ev.created_at}</td>
-                <td><span class="status-badge status-${ev.status}">${ev.status === 'approved' ? 'Схвалено' : 'На розгляді'}</span></td>
+                <td><strong>${ev.user_name || ev.creator_id || 'Невідомо'}</strong></td>
+                <td>${ev.created_at ? String(ev.created_at).split('T')[0] : '—'}</td>
+                <td>
+                    <span class="status-badge status-${ev.status}">
+                        ${ev.status === 'approved' ? 'Схвалено' : ev.status === 'rejected' ? 'Відхилено' : 'На розгляді'}
+                    </span>
+                </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-action btn-approve" onclick="handleEventAction(${ev.event_id}, 'approve')"><i class="fa-solid fa-check"></i></button>
-                        <button class="btn-action btn-reject" onclick="handleEventAction(${ev.event_id}, 'reject')"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn-action btn-approve" onclick="handleEventAction('${ev.event_id}', 'approve')"><i class="fa-solid fa-check"></i></button>
+                        <button class="btn-action btn-reject" onclick="handleEventAction('${ev.event_id}', 'reject')"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </td>
             </tr>
@@ -295,19 +299,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // --- ДІЇ (ACTIONS) ---
 
-    window.handleEventAction = (id, action) => {
-        const ev = allEvents.find(e => e.event_id === id);
-        if (ev && action === 'approve') {
-            ev.status = 'approved';
-            addLog('admin_max', 'Схвалено подію', ev.title);
-            showToast(`Подію "${ev.title}" схвалено!`);
-        } else if (ev && action === 'reject') {
-            allEvents = allEvents.filter(e => e.event_id !== id);
-            addLog('admin_max', 'Видалено подію', ev.title);
-            showToast('Подію видалено', 'red');
+    window.handleEventAction = async (id, action) => {
+        try {
+            const newStatus = action === 'approve' ? 'approved' : 'rejected';
+
+            const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error('Не вдалося оновити статус події');
+            }
+
+            const ev = allEvents.find(e => String(e.event_id) === String(id));
+
+            if (ev) {
+                ev.status = newStatus;
+                addLog('admin_max', action === 'approve' ? 'Схвалено подію' : 'Відхилено подію', ev.title);
+            }
+
+            showToast(action === 'approve' ? 'Подію схвалено!' : 'Подію відхилено', action === 'approve' ? 'var(--blue-dark)' : 'red');
+
+            await loadEventsFromBackend();
+            updateDashboardStats();
+
+        } catch (error) {
+            console.error('Moderation error:', error);
+            showToast('Помилка модерації події', 'red');
         }
-        renderEventsTable(allEvents);
-        updateDashboardStats();
     };
 
     window.handleUserAction = (id, action) => {
@@ -483,6 +507,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     updateStatusUI();
 
+    async function loadEventsFromBackend() {
+        try {
+            const res = await fetch('http://localhost:5000/api/events', {
+                credentials: 'include'
+            });
+
+            if (!res.ok) {
+                throw new Error('Не вдалося завантажити події');
+            }
+
+            const data = await res.json();
+
+            allEvents = data.map(e => ({
+                ...e,
+                status: e.status || 'pending'
+            }));
+
+        } catch (e) {
+            console.error('Помилка завантаження подій:', e);
+            allEvents = [...mockEvents];
+        }
+
+        renderEventsTable(allEvents);
+    }
+
     // --- ІНІЦІАЛІЗАЦІЯ ---
     async function init() {
         // --- MODE SWITCHING ---
@@ -549,18 +598,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // Load all events for moderation table regardless
-        try {
-            const res = await fetch('http://localhost:5000/events');
-            if (res.ok) {
-                const data = await res.json();
-                allEvents = data.map(e => ({ ...e, status: e.status || 'pending' }));
-            } else {
-                allEvents = [...mockEvents];
-            }
-        } catch (e) {
-            allEvents = [...mockEvents];
-        }
-        renderEventsTable(allEvents);
+        await loadEventsFromBackend();
     }
 
     async function loadEventsForPicker() {

@@ -9,14 +9,49 @@ const allEventsDB = [
 ];
 
 // State
-let selectedEvents = [
-  allEventsDB[0], // Summer Fest
-  allEventsDB[2], // CodeX
-  allEventsDB[5]  // Dynamo-Shakhtar
-];
+let selectedEvents = [];
+let popularEvents = [];
 
 let currentFilter = 'all';
 let searchQuery = '';
+
+async function loadWishlist() {
+    const userId = localStorage.getItem('userId');
+
+    if (!userId) {
+        selectedEvents = [];
+        renderEvents();
+        showToast('Увійдіть у профіль, щоб переглядати обране');
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:5000/api/favorites/${userId}`, {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Не вдалося завантажити обране');
+        }
+
+        const favorites = await response.json();
+
+        selectedEvents = favorites.map(item => ({
+            id: item.event_id,
+            title: item.title,
+            location: item.region || 'Місце не вказано',
+            date: String(item.event_day).split('T')[0],
+            time: item.start_time || '18:00',
+            description: item.description || '',
+            imageUrl: item.image_url || 'images/fest1..png'
+        }));
+
+        renderEvents();
+    } catch (error) {
+        console.error('Помилка wishlist:', error);
+        showToast('Помилка завантаження обраного');
+    }
+}
 
 // Icons
 const icons = {
@@ -147,27 +182,73 @@ function animateValue(obj, start, end, duration) {
     window.requestAnimationFrame(step);
 }
 
-function toggleFavorite(eventId) {
+async function toggleFavorite(eventId) {
+    const userId = localStorage.getItem('userId');
+
+    if (!userId) {
+        showToast('Спочатку увійдіть у профіль');
+        return;
+    }
+
     const card = document.getElementById(`card-${eventId}`);
-    if (card) {
-        card.style.transform = 'scale(0.8) rotate(-5deg)';
-        card.style.opacity = '0';
+
+    try {
+        const response = await fetch(`http://localhost:5000/api/favorites/${userId}/${eventId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Не вдалося видалити з обраного');
+        }
+
+        if (card) {
+            card.style.transform = 'scale(0.8) rotate(-5deg)';
+            card.style.opacity = '0';
+        }
+
         setTimeout(() => {
-            selectedEvents = selectedEvents.filter(event => event.id !== eventId);
+            selectedEvents = selectedEvents.filter(event => String(event.id) !== String(eventId));
             renderEvents();
             showToast('Видалено з обраного');
         }, 400);
+
+    } catch (error) {
+        console.error('Помилка видалення з обраного:', error);
+        showToast('Помилка видалення з обраного');
     }
 }
 
-function addToWishlist(eventId) {
-    const eventToAdd = allEventsDB.find(e => e.id === eventId);
-    if (eventToAdd && !selectedEvents.find(e => e.id === eventId)) {
-        selectedEvents.push(eventToAdd);
-        renderEvents();
+async function addToWishlist(eventId) {
+    const userId = localStorage.getItem('userId');
+
+    if (!userId) {
+        showToast('Спочатку увійдіть у профіль');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:5000/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                user_id: Number(userId),
+                event_id: Number(eventId)
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.error || 'Не вдалося додати в обране');
+        }
+
         showToast('Додано до обраного!');
-    } else {
-        showToast('Ця подія вже в обраному');
+        await loadWishlist();
+
+    } catch (error) {
+        console.error('Помилка додавання в обране:', error);
+        showToast(error.message || 'Помилка додавання в обране');
     }
 }
 
@@ -234,7 +315,7 @@ function initSidePanel() {
 // --- INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    renderEvents();
+    loadWishlist();
     initSidePanel();
     
     // Search listener

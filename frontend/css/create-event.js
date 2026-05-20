@@ -143,13 +143,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function canCreateEventByPlan() {
-    const userRole = localStorage.getItem('userRole') || 'free';
+    const userId = Number(localStorage.getItem('userId'));
     const extraCredits = Number(localStorage.getItem('extraEventCredits') || 0);
-    const createdEventsCount = await getCreatedEventsCount();
 
-    const strategy = eventLimitStrategies[userRole] || eventLimitStrategies.free;
+    if (extraCredits > 0) {
+      return true;
+    }
 
-    return strategy(createdEventsCount, extraCredits);
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${userId}/can-create-event`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Не вдалося перевірити ліміт створення подій');
+      }
+
+      const result = await response.json();
+      return result.data.allowed;
+    } catch (error) {
+      console.error('Помилка перевірки ліміту:', error);
+      return true;
+    }
   }
 
   function showExtraPaymentBox() {
@@ -200,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       body: JSON.stringify({
         event_id: eventId,
-        user_id: 1,
+        user_id: Number(localStorage.getItem('userId')),
         type: '1h',
         channel: 'email'
       })
@@ -228,6 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
       /*
       ТАСК 71: Перевірка ліміту перед створенням події
       */
+      if (!localStorage.getItem('userId')) {
+        alert('Спочатку увійдіть у профіль, щоб створити подію');
+        return;
+      }
       const allowedToCreate = await canCreateEventByPlan();
 
       if (!allowedToCreate) {
@@ -299,15 +318,19 @@ document.addEventListener('DOMContentLoaded', () => {
         latitude: null,
         longitude: null,
         category_id: categoryMap[categoryValue] || null,
-        creator_id: 1,
+        creator_id: Number(localStorage.getItem('userId')),
         region: eventLocationValue,
         is_private: visibility === 'private',
         price: Number(document.getElementById('ticket-price')?.value || 0),
         currency: 'UAH'
       };
 
-      const response = await fetch('http://localhost:5000/api/events', {
-        method: 'POST',
+      const apiUrl = isEditMode
+        ? `http://localhost:5000/api/events/${isEditMode}`
+        : 'http://localhost:5000/api/events';
+
+      const response = await fetch(apiUrl, {
+        method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -328,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ТАСК 64: Інтеграція email-сповіщень із подіями
       Після створення події автоматично створюється email-нагадування
       */
+     if (!isEditMode) {
       try {
         await createEmailReminderForEvent(createdEvent.event_id);
         console.log('Email-нагадування успішно створено');
@@ -340,6 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Помилка email-нагадування:', emailError);
         alert('Подію створено, але email-нагадування не вдалося налаштувати');
       }
+    }
       console.log('Подію створено в БД:', createdEvent);
 
         submitBtn.innerHTML = isEditMode ? '<i class="fa-solid fa-check"></i> Зміни збережено!' : '<i class="fa-solid fa-check"></i> Успішно відправлено!';
@@ -584,160 +609,82 @@ document.addEventListener('DOMContentLoaded', () => {
       deleteBtn.style.boxShadow = '0 4px 14px 0 rgba(239, 68, 68, 0.39)';
       deleteBtn.style.marginLeft = '15px';
       deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Видалити подію';
-      deleteBtn.onclick = function() {
-        if(confirm('Ви впевнені, що хочете видалити цю подію?')) {
-          // Remove from localStorage
-          const isEditMode = new URLSearchParams(window.location.search).get('id');
-          if (isEditMode) {
-              const events = JSON.parse(localStorage.getItem('myEvents') || '[]');
-              const filteredEvents = events.filter(e => e.id !== isEditMode);
-              localStorage.setItem('myEvents', JSON.stringify(filteredEvents));
+      deleteBtn.onclick = async function() {
+        if (!confirm('Ви впевнені, що хочете видалити цю подію?')) return;
+
+        try {
+          const response = await fetch(`http://localhost:5000/api/events/${editEventId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.error || 'Не вдалося видалити подію');
           }
+
           alert('Подію успішно видалено!');
-          window.location.href = 'index.html';
+          window.location.href = 'my-events.html';
+        } catch (error) {
+          console.error('Помилка видалення події:', error);
+          alert(error.message || 'Помилка видалення події');
         }
       };
       submitWrapper.appendChild(deleteBtn);
       submitWrapper.style.display = 'flex';
     }
 
-    // 9.2 Mock Data (Simulate fetching from DB)
-    const mockEventData = {
-      fest1: {
-          id: "fest1",
-          title: "Фестиваль \"Summer Fest\"",
-          description: "Найкращий літній фестиваль з живою музикою та розвагами для всієї родини! Чекаємо всіх.",
-          coverImage: "images/fest1.png",
-          gallery: ["images/event-1.webp", "images/event-3.jpg"],
-          date: "2026-04-28",
-          time: "18:00",
-          city: "Львів, Стадіон \"Прайм\"",
-          lat: 49.8500,
-          lng: 24.0300,
-          category: "Музика / Фестиваль",
-          emails: ["vip@example.com", "press@summerfest.ua"],
-          tickets: [
-            { name: "Стандарт", price: 500 },
-            { name: "VIP", price: 1500 }
-          ]
-      },
-      codex1: {
-          id: "codex1",
-          title: "ІТ Конференція \"CodeX\"",
-          description: "Наймасштабніша подія для розробників. Доповіді, нетворкінг, воркшопи.",
-          coverImage: "images/codeX.png",
-          gallery: [],
-          date: "2026-05-15",
-          time: "10:00",
-          city: "Київ, КВЦ Парковий",
-          lat: 50.4501,
-          lng: 30.5234,
-          category: "Освіта / Бізнес",
-          emails: ["info@codex.com.ua"],
-          tickets: [
-            { name: "Онлайн", price: 300 },
-            { name: "Офлайн", price: 1200 }
-          ]
+  // 9.2 Завантаження події з бекенду для редагування
+  async function loadEventForEdit(eventId) {
+    try {
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Не вдалося завантажити подію для редагування');
       }
-    };
 
-    const currentMock = mockEventData[editEventId];
+      const event = await response.json();
 
-    // If ID matches our mock (or just load it for demo purposes)
-    if (currentMock) {
-      setTimeout(() => {
-        // structural text
-        const titleInput = document.getElementById('event-title');
-        const descInput = document.getElementById('event-description');
-        if (titleInput) titleInput.value = currentMock.title;
-        if (descInput) descInput.value = currentMock.description;
+      const titleInput = document.getElementById('event-title');
+      const descInput = document.getElementById('event-description');
+      const locationInput = document.getElementById('event-location');
+      const startDateInput = document.getElementById('event-date-time');
+      const endDateInput = document.getElementById('event-end-date-time');
+      const priceInput = document.getElementById('ticket-price');
 
-        // Image background
-        if (imageUploadWrapper && currentMock.coverImage) {
-            imageUploadWrapper.style.backgroundImage = `url('${currentMock.coverImage}')`;
-            imageUploadWrapper.style.backgroundSize = 'cover';
-            imageUploadWrapper.style.backgroundPosition = 'center';
-            imageUploadWrapper.style.borderStyle = 'solid';
-            if (imagePlaceholder) imagePlaceholder.style.opacity = '0';
-            imageUploadWrapper.classList.add('has-image');
-        }
+      if (titleInput) titleInput.value = event.title || '';
+      if (descInput) descInput.value = event.description || '';
+      if (locationInput) locationInput.value = event.region || '';
 
-        // Open Date/Location/Tickets etc tabs using data-targets
-        const groupsToOpen = ['date-group', 'location-group', 'category-group'];
-        pillBtns.forEach(btn => {
-           if (groupsToOpen.includes(btn.getAttribute('data-target'))) {
-             btn.click(); // Programmatically open details blocks
-           }
-        });
+      const eventDay = String(event.event_day).split('T')[0];
 
-        // Date and Time
-        const dateInput = document.querySelector('input[type="date"]');
-        const timeInput = document.querySelector('input[type="time"]');
-        if (dateInput) dateInput.value = currentMock.date;
-        if (timeInput) timeInput.value = currentMock.time;
+      if (startDateInput) {
+        startDateInput.value = `${eventDay}T${event.start_time?.slice(0, 5) || '00:00'}`;
+      }
 
-        // Location text
-        const locInput = document.getElementById('event-location');
-        if (locInput) locInput.value = currentMock.city;
+      if (endDateInput) {
+        endDateInput.value = `${eventDay}T${event.end_time?.slice(0, 5) || '01:00'}`;
+      }
 
-        // Note: Map click automatically rendered
-        if (locationMap) {
-            const hLatLng = [currentMock.lat, currentMock.lng];
-            locationMap.setView(hLatLng, 14);
-            setTimeout(() => {
-                 locationMap.invalidateSize(); // Fix map render issue inside hidden div
-                 if (!locationMarker) {
-                     locationMarker = L.marker(hLatLng).addTo(locationMap);
-                 } else {
-                     locationMarker.setLatLng(hLatLng);
-                 }
-            }, 300);
-        }
+      if (priceInput) {
+        priceInput.value = event.price || 0;
+      }
 
-        // Invitations
-        if (emailTagsContainer && currentMock.emails) {
-            currentMock.emails.forEach(email => {
-                const tag = document.createElement('div');
-                tag.className = 'email-tag';
-                tag.innerHTML = `${email} <i class="fa-solid fa-xmark"></i>`;
-                tag.querySelector('i').addEventListener('click', () => tag.remove());
-                emailTagsContainer.appendChild(tag);
-            });
-        }
+      const visibilityInput = document.querySelector(
+        `input[name="eventVisibility"][value="${event.is_private ? 'private' : 'public'}"]`
+      );
 
-        // Tickets
-        if (ticketsList && currentMock.tickets) {
-            currentMock.tickets.forEach(ticket => {
-                const ticketItem = document.createElement('div');
-                ticketItem.className = 'ticket-item';
-                ticketItem.innerHTML = `
-                  <div class="ticket-info">
-                    <strong>${ticket.name}</strong>
-                    <span>${ticket.price} ₴</span>
-                  </div>
-                  <button type="button" class="delete-ticket-btn"><i class="fa-regular fa-trash-can"></i></button>
-                `;
-                ticketItem.querySelector('.delete-ticket-btn').addEventListener('click', () => ticketItem.remove());
-                ticketsList.appendChild(ticketItem);
-            });
-        }
+      if (visibilityInput) visibilityInput.checked = true;
 
-        // Gallery
-        if (galleryPreview && currentMock.gallery) {
-            currentMock.gallery.forEach(img => {
-                const thumb = document.createElement('div');
-                thumb.className = 'gallery-thumb';
-                thumb.style.backgroundImage = `url('${img}')`;
-                const removeBtn = document.createElement('div');
-                removeBtn.className = 'gallery-thumb-remove';
-                removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-                removeBtn.onclick = () => thumb.remove();
-                thumb.appendChild(removeBtn);
-                galleryPreview.appendChild(thumb);
-            });
-        }
-      }, 500); // Slight delay for UI elements to be attached
+    } catch (error) {
+      console.error('Помилка завантаження події:', error);
+      alert(error.message || 'Не вдалося завантажити подію');
     }
+  }
+
+  loadEventForEdit(editEventId);
   }
   // ==========================================
   // 10. DESIGN CONSTRUCTOR LOGIC (PRO FEATURE)

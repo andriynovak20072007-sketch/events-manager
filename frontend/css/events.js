@@ -23,23 +23,78 @@ document.addEventListener("DOMContentLoaded", async () => {
     const favoriteBtn = document.getElementById('favoriteToggleBtn');
     const favoriteIcon = document.getElementById('favoriteIcon');
     const favoriteText = document.getElementById('favoriteText');
+    let currentEventId = null;
+    
+    async function addFavoriteToBackend(eventId) {
+        const userId = localStorage.getItem('userId');
+
+        if (!userId) {
+            alert('Спочатку увійдіть у профіль');
+            return false;
+        }
+
+        const response = await fetch('http://localhost:5000/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                user_id: Number(userId),
+                event_id: Number(eventId)
+            })
+        });
+
+        return response.ok;
+    }
+
+    async function removeFavoriteFromBackend(eventId) {
+        const userId = localStorage.getItem('userId');
+
+        if (!userId) {
+            alert('Спочатку увійдіть у профіль');
+            return false;
+        }
+
+        const response = await fetch(`http://localhost:5000/api/favorites/${userId}/${eventId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        return response.ok;
+    }
 
     if (favoriteBtn) {
-        favoriteBtn.addEventListener('click', function(e) {
-            e.preventDefault(); // Зупиняємо стрибок сторінки вгору
-            
+        favoriteBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            const eventId = currentEventId;
+
+            if (!eventId) {
+                alert('Подію не знайдено. Відкрийте конкретну подію зі списку.');
+                return;
+            }
+
             const isFavorite = favoriteBtn.classList.contains('active');
-            
+
             if (isFavorite) {
-                // ВИДАЛЯЄМО З ОБРАНОГО
-                favoriteBtn.classList.remove('active');
-                favoriteIcon.style.fill = 'none'; // Робимо прозорим
-                favoriteText.innerText = 'Додати до обраного'; 
+                const removed = await removeFavoriteFromBackend(eventId);
+
+                if (removed) {
+                    favoriteBtn.classList.remove('active');
+                    favoriteIcon.style.fill = 'none';
+                    favoriteText.innerText = 'Додати до обраного';
+                } else {
+                    alert('Не вдалося видалити з обраного');
+                }
             } else {
-                // ДОДАЄМО В ОБРАНЕ
-                favoriteBtn.classList.add('active');
-                favoriteIcon.style.fill = '#ff4d4d'; // Заливаємо червоним (колір var(--red))
-                favoriteText.innerText = 'Видалити з обраного'; 
+                const added = await addFavoriteToBackend(eventId);
+
+                if (added) {
+                    favoriteBtn.classList.add('active');
+                    favoriteIcon.style.fill = '#ff4d4d';
+                    favoriteText.innerText = 'Видалити з обраного';
+                } else {
+                    alert('Не вдалося додати в обране');
+                }
             }
         });
     }
@@ -90,7 +145,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get('event');
+    let eventId = urlParams.get('event');
+    currentEventId = eventId;
     
     // Якщо ми на сторінці окремої події і є ID
     if (eventId) {
@@ -158,6 +214,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const res = await fetch(`http://localhost:5000/api/events/${eventId}`);
             if (res.ok) {
                 const data = await res.json();
+                eventId = data.event_id;
+                currentEventId = data.event_id;
                 updateEventPage(data);
             } else {
                 throw new Error('API повернув помилку або подія не знайдена');

@@ -127,18 +127,81 @@ class EventRepository {
                 price = COALESCE($10, price),
                 currency = COALESCE($11, currency),
                 photo_url = COALESCE($12, photo_url),
-                banner_url = COALESCE($14, banner_url),
-                button_color = COALESCE($15, button_color),
-                theme = COALESCE($16, theme)
-            WHERE event_id = $13 AND is_private = TRUE
+                banner_url = COALESCE($13, banner_url),
+                button_color = COALESCE($14, button_color),
+                theme = COALESCE($15, theme)
+                status = COALESCE($16, status)
+            WHERE event_id = $17 AND is_private = TRUE
             RETURNING *`;
 
         const values = [
-            data.title, data.description, data.event_day, data.start_time, data.end_time,
-            data.latitude, data.longitude, data.category_id, data.region,
-            data.price, data.currency, data.photo_url,
-            id,
-            data.banner_url, data.button_color, data.theme
+            data.title,
+            data.description,
+            data.event_day,
+            data.start_time,
+            data.end_time,
+            data.latitude,
+            data.longitude,
+            data.category_id,
+            data.region,
+            data.price,
+            data.currency,
+            data.photo_url,
+            data.banner_url,
+            data.button_color,
+            data.theme,
+            data.status,
+            id
+        ];
+
+        const result = await pool.query(query, values);
+        return result.rows[0] || null;
+    }
+
+    /**
+     * Оновити звичайну подію
+     */
+    async update(id, data) {
+        const query = `
+            UPDATE events 
+            SET 
+                title = COALESCE($1, title),
+                description = COALESCE($2, description),
+                event_day = COALESCE($3, event_day),
+                start_time = COALESCE($4, start_time),
+                end_time = COALESCE($5, end_time),
+                latitude = COALESCE($6, latitude),
+                longitude = COALESCE($7, longitude),
+                category_id = COALESCE($8, category_id),
+                region = COALESCE($9, region),
+                is_private = COALESCE($10, is_private),
+                price = COALESCE($11, price),
+                currency = COALESCE($12, currency),
+                banner_url = COALESCE($13, banner_url),
+                button_color = COALESCE($14, button_color),
+                theme = COALESCE($15, theme),
+                status = COALESCE($16, status)
+            WHERE event_id = $17
+            RETURNING *`;
+
+        const values = [
+            data.title,
+            data.description,
+            data.event_day,
+            data.start_time,
+            data.end_time,
+            data.latitude,
+            data.longitude,
+            data.category_id,
+            data.region,
+            data.is_private,
+            data.price,
+            data.currency,
+            data.banner_url,
+            data.button_color,
+            data.theme,
+            data.status,
+            id
         ];
 
         const result = await pool.query(query, values);

@@ -8,13 +8,54 @@ document.addEventListener("DOMContentLoaded", () => {
     const approvedCountEl = document.getElementById('approvedCount');
     const pendingCountEl = document.getElementById('pendingCount');
 
-    // Mock data for user's events
-    let myEvents = [
-        { id: 'fest1', title: 'Фестиваль "Summer Fest"', location: 'Львів, Стадіон "Прайм"', date: '2026-04-28', status: 'approved', img: 'images/fest1..png' },
-        { id: 'fest3', title: 'Музичний "Summer"', location: 'Одеса, Пляж "Аркадія"', date: '2026-06-15', status: 'pending', img: 'images/fest3.png' },
-        { id: 'user_event_1', title: 'Виставка ретро автомобілів', location: 'Київ, ВДНГ', date: '2026-05-10', status: 'pending', img: 'images/event-1.webp' },
-        { id: 'user_event_2', title: 'IT Weekend Lviv', location: 'Львів, Технопарк', date: '2026-07-20', status: 'approved', img: 'images/event-2.jpg' }
-    ];
+    let myEvents = [];
+
+    async function loadMyEvents() {
+        const userId = localStorage.getItem('userId');
+
+        if (!userId) {
+            eventsGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1; text-align:center; padding:100px 0;">
+                    <h3>Увійдіть у профіль</h3>
+                    <p>Щоб переглядати створені події, потрібно авторизуватися.</p>
+                </div>
+            `;
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/events/scheduled?creator_id=${userId}`, {
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Не вдалося завантажити ваші події');
+            }
+
+            const result = await response.json();
+
+            myEvents = result.events.map(ev => ({
+                id: ev.event_id,
+                title: ev.title,
+                location: ev.region || 'Місце не вказано',
+                date: String(ev.event_day).split('T')[0],
+                status: ev.status || 'pending',
+                img: ev.custom_image || ev.image_url || 'images/fest1..png'
+            }));
+
+            renderEvents(myEvents);
+            updateStats();
+
+        } catch (error) {
+            console.error('Помилка завантаження моїх подій:', error);
+            eventsGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1; text-align:center; padding:100px 0;">
+                    <h3>Помилка завантаження</h3>
+                    <p>Не вдалося отримати список ваших подій.</p>
+                </div>
+            `;
+        }
+    }
 
     function renderEvents(eventsToRender) {
         if (!eventsGrid) return;
@@ -156,24 +197,38 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = `create-event.html?id=${id}`;
     };
 
-    window.deleteEvent = (id) => {
+    window.deleteEvent = async (id) => {
         const card = document.querySelector(`.event-card[data-id="${id}"]`);
         if (card && confirm('Ви впевнені, що хочете видалити цю подію?')) {
             card.style.transform = 'scale(0.8) translateY(20px)';
             card.style.opacity = '0';
             card.style.transition = '0.4s cubic-bezier(0.4, 0, 0.2, 1)';
             
-            setTimeout(() => {
-                myEvents = myEvents.filter(e => e.id !== id);
-                renderEvents(myEvents);
-                updateStats();
+            setTimeout(async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/events/${id}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Не вдалося видалити подію');
+                    }
+
+                    myEvents = myEvents.filter(e => e.id !== id);
+                    renderEvents(myEvents);
+                    updateStats();
+
+                } catch (error) {
+                    console.error('Помилка видалення:', error);
+                    alert('Не вдалося видалити подію');
+                }
             }, 400);
         }
     };
 
     // Initialize
-    renderEvents(myEvents);
-    updateStats();
+    loadMyEvents();
     setTimeout(() => {
         const activeBtn = document.querySelector('.filter-btn.active');
         moveIndicator(activeBtn);

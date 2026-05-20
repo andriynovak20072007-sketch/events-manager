@@ -447,6 +447,11 @@ if (form) {
         } else {
           showToast('Вхід успішний! 👋', 'success');
           localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('userId', data.user.id);
+          localStorage.setItem('userRole', data.user.role);
+          localStorage.setItem('userName', data.user.username);
+          localStorage.setItem('userEmail', data.user.email);
+
           const authModal = document.getElementById("authModal");
           if (authModal) authModal.style.display = "none";
 
@@ -494,6 +499,26 @@ if (form) {
   });
 }
 
+async function logoutUser() {
+  try {
+    await fetch('http://localhost:5000/api/users/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+
+  localStorage.removeItem('user');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('userRole');
+  localStorage.removeItem('userName');
+  localStorage.removeItem('userEmail');
+
+  showToast('Ви вийшли з системи', 'info');
+  location.reload();
+}
+
 // ==========================================
 // ПАТЕРН: Observer — Оновлення UI панелі після логіну
 // ==========================================
@@ -520,7 +545,7 @@ function updatePanelUI(user) {
                 </div>
             </div>
             <button class="panel-auth-btn register-btn" 
-                    onclick="localStorage.removeItem('user'); showToast('Ви вийшли з системи', 'info'); location.reload();" 
+                    onclick="logoutUser()"
                     style="background: #EF4444; margin-top: 10px;">
                 Вийти
             </button>
@@ -859,6 +884,11 @@ async function handleGoogleLogin(response) {
         if (res.ok) {
             showToast('Вхід через Google успішний! 👋', 'success');
             localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('userId', data.user.id);
+            localStorage.setItem('userRole', data.user.role);
+            localStorage.setItem('userName', data.user.username);
+            localStorage.setItem('userEmail', data.user.email);
+
             const authModal = document.getElementById("authModal");
             if (authModal) authModal.style.display = "none";
             window.dispatchEvent(new Event('userLoginStateChanged'));
@@ -1084,20 +1114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           function processEventsData(data) {
             eventsByDate = {};
-            const userEvents = JSON.parse(localStorage.getItem('myEvents') || '[]');
-
-            const normalizedUserEvents = userEvents.map(event => ({
-                event_id: event.id,
-                title: event.title || 'Без назви',
-                event_day: event.date || event.dateTime || event.event_day,
-                start_time: event.start_time || 'Час не вказано',
-                img: event.img || event.image || 'images/fest1..png'
-            }));
-
-            const allCalendarEvents = [
-                ...(Array.isArray(data) ? data : []),
-                ...normalizedUserEvents
-            ];
+            const allCalendarEvents = Array.isArray(data) ? data : [];
 
             allCalendarEvents.forEach(ev => {
             if (!ev.event_day) return;

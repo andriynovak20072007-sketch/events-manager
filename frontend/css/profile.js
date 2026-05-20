@@ -1,7 +1,108 @@
 // profile.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
+    const API_URL = 'http://localhost:5000/api';
+
+    async function loadProfileData() {
+        const userId = localStorage.getItem('userId');
+        const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
+
+        if (!userId || !savedUser) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        document.getElementById('displayProfileHandle').textContent = '@' + savedUser.username;
+        document.getElementById('displayProfileDesc').textContent = savedUser.email;
+    }
+
+    async function loadProfileFavorites() {
+        const userId = localStorage.getItem('userId');
+        const grid = document.getElementById('profileFavoritesGrid');
+        if (!grid || !userId) return;
+
+        const res = await fetch(`${API_URL}/favorites/${userId}`, {
+            credentials: 'include'
+        });
+
+        const favorites = await res.json();
+
+        if (!favorites.length) {
+            grid.innerHTML = '<p>У вас ще немає обраних подій.</p>';
+            return;
+        }
+
+        grid.innerHTML = favorites.map(ev => `
+            <div class="event-card">
+                <div class="event-image-wrapper">
+                    <img src="${ev.image_url || 'images/fest1..png'}" alt="Event">
+                </div>
+                <div class="event-info">
+                    <h3>${ev.title}</h3>
+                    <p class="event-location"><i class="fa-solid fa-location-dot"></i> ${ev.region || 'Місце не вказано'}</p>
+                    <p class="event-date"><i class="fa-regular fa-calendar"></i> ${String(ev.event_day).split('T')[0]}, ${ev.start_time || ''}</p>
+                    <a href="events.html?event=${ev.event_id}" class="learn-more">Дізнатися більше</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function loadProfileCreatedEvents() {
+        const userId = localStorage.getItem('userId');
+        const container = document.getElementById('profileCreatedEvents');
+        if (!container || !userId) return;
+
+        const res = await fetch(`${API_URL}/events/scheduled?creator_id=${userId}`, {
+            credentials: 'include'
+        });
+
+        const data = await res.json();
+        const events = data.events || [];
+
+        if (!events.length) {
+            container.innerHTML = '<p>У вас ще немає створених подій.</p>';
+            return;
+        }
+
+        container.innerHTML = events.map(ev => `
+            <div class="created-event-item">
+                <div class="created-event-main">
+                    <img src="${ev.image_url || 'images/fest1..png'}" class="created-event-img" alt="Event">
+                    <div class="created-event-details">
+                        <h3>${ev.title}</h3>
+                        <p class="event-location"><i class="fa-solid fa-location-dot"></i> ${ev.region || 'Місце не вказано'}</p>
+                        <p class="event-date"><i class="fa-regular fa-calendar"></i> ${String(ev.event_day).split('T')[0]}, ${ev.start_time || ''}</p>
+                    </div>
+                </div>
+                <div class="created-event-actions">
+                    <button class="action-btn view-btn" onclick="window.location.href='events.html?event=${ev.event_id}'">Переглянути подію</button>
+                    <button class="action-btn edit-btn" onclick="window.location.href='create-event.html?id=${ev.event_id}'">Редагувати подію</button>
+                    <button class="action-btn delete-btn" onclick="deleteProfileEvent(${ev.event_id})">Видалити подію</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.deleteProfileEvent = async function(eventId) {
+        if (!confirm('Ви впевнені, що хочете видалити цю подію?')) return;
+
+        const res = await fetch(`${API_URL}/events/${eventId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (!res.ok) {
+            showToast('Не вдалося видалити подію', '#E84118');
+            return;
+        }
+
+        showToast('Подію видалено', '#10B981');
+        loadProfileCreatedEvents();
+    };
+    loadProfileData();
+    loadProfileFavorites();
+    loadProfileCreatedEvents(); 
     // Handle heart button toggles
     const heartBtns = document.querySelectorAll('.heart-btn');
     heartBtns.forEach(btn => {
