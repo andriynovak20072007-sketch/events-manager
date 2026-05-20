@@ -431,7 +431,7 @@ if (form) {
       submitBtn.style.opacity = '0.7';
 
       try {
-        const res = await fetch('http:/api/users/login', {
+        const res = await fetch('/api/users/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',

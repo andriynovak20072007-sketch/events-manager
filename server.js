@@ -29,10 +29,10 @@ app.use(
     })
 );
 
-app.use('/users', usersRoutes);
-app.use('/events', eventsRoutes);
-app.use('/categories', categoriesRoutes);
-app.use('/comments', commentsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/events', eventsRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/comments', commentsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 app.get('/', (req, res) => {
