@@ -36,6 +36,57 @@ require('./cron/scheduler');
 const app = express();
 
 // ==========================================
+// AUTO-MIGRATION: Додає відсутні колонки/таблиці при запуску
+// ==========================================
+async function runAutoMigration() {
+    try {
+        await pool.query(`
+            -- Events: додаємо відсутні колонки
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS banner_url TEXT;
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS button_color VARCHAR(20);
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS theme VARCHAR(20) DEFAULT 'light';
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'pending';
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS image_url VARCHAR(255);
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS photo_url TEXT;
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS region VARCHAR(100);
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS price NUMERIC(10, 2) DEFAULT 0.00;
+            ALTER TABLE events ADD COLUMN IF NOT EXISTS currency VARCHAR(3) DEFAULT 'UAH';
+
+            -- Users: trial-колонки
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_start TIMESTAMP;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_end TIMESTAMP;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS is_trial_active BOOLEAN DEFAULT FALSE;
+
+            -- Users: дозволяємо NULL password (Google Auth)
+            ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+        `);
+
+        // Створюємо таблицю notification_schedule
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS notification_schedule (
+                schedule_id SERIAL PRIMARY KEY,
+                event_id INTEGER REFERENCES events(event_id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+                remind_at TIMESTAMP NOT NULL,
+                type VARCHAR(20) DEFAULT '24h',
+                status VARCHAR(20) DEFAULT 'pending',
+                channel VARCHAR(20) DEFAULT 'all',
+                error_message TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                sent_at TIMESTAMP,
+                UNIQUE(event_id, user_id, type)
+            );
+        `);
+
+        logger.success('MIGRATION', 'Авто-міграція виконана успішно ✅');
+    } catch (err) {
+        logger.error('MIGRATION', 'Помилка авто-міграції', err);
+    }
+}
+runAutoMigration();
+
+
+// ==========================================
 // 2. МІДЛВЕРИ (MIDDLEWARES)
 // ==========================================
 app.use(cors({
