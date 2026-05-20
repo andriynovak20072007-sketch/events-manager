@@ -383,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (hotel) {
             document.querySelector('.event-page-title').innerText = hotel.title;
-            // РЈ hotel.js РјРё РјР°С”РјРѕ hotel1, hotel2 С– Р·РѕР±СЂР°Р¶РµРЅРЅСЏ Р·РІР°РЅС– РІС–РґРїРѕРІС–РґРЅРѕ.
+            // У hotel.js ми маємо hotel1, hotel2 і зображення звані відповідно.
             // Можна використовувати hotel.id, якщо зображення також hotel1.png
             document.querySelector('.event-poster-img').src = `images/${hotel.id}.png`; 
             
@@ -413,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Р”РѕРґР°С”РјРѕ Р»РѕРіС–РєСѓ РєРЅРѕРїРєРё "Р§РёС‚Р°С‚Рё РґР°Р»С–" РґР»СЏ РѕРїРёСЃСѓ
+    // Додаємо логіку кнопки "Читати далі" для опису
     const descriptionBlock = document.querySelector('.event-details-text');
     if (descriptionBlock) {
         if (!document.querySelector('.read-more-btn')) {
