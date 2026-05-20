@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (addRouteBtn) {
             addRouteBtn.onclick = () => {
                 if (window.addToRoute) {
-                    window.addToRoute(ev.title, ev.location, ev.dateStr, ev.lat, ev.lng);
+                    window.addToRoute(ev.title, ev.location, ev.dateStr, ev.lat, ev.lng, ev.city);
                 }
             };
         }
@@ -1463,7 +1463,7 @@ window.updateRouteLine = function () {
 window.routeEvents = window.routeEvents || [];
 
 // ОНОВЛЕНА ФУНКЦІЯ ДОДАВАННЯ ДО МАРШРУТУ
-window.addToRoute = function (title, location, time, lat, lng) {
+window.addToRoute = function (title, location, time, lat, lng, city) {
     const routeWidget = document.getElementById('route-planner-widget');
 
     // Перевіряємо, чи подія вже є в списку
@@ -1484,7 +1484,8 @@ window.addToRoute = function (title, location, time, lat, lng) {
         location: location,
         time: time,
         lat: parsedLat,
-        lng: parsedLng
+        lng: parsedLng,
+        city: city
     });
 
     // Показуємо віджет
@@ -1703,16 +1704,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Відмальовуємо додаткові маркери
             setTimeout(() => {
-                if (showHotels && typeof renderHotelMarkers === 'function' && typeof hotelsList !== 'undefined') {
-                    renderHotelMarkers(hotelsList);
-                } else if (!showHotels && typeof leafletHotelMarkers !== 'undefined') {
+                let routeCity = 'all';
+                if (window.routeEvents && window.routeEvents.length > 0) {
+                    routeCity = window.routeEvents[0].city || 'all';
+                }
+
+                if (showHotels) {
+                    if (typeof window.filterHotelsByCity === 'function') {
+                        window.filterHotelsByCity(routeCity);
+                    }
+                } else if (typeof leafletHotelMarkers !== 'undefined') {
                     leafletHotelMarkers.forEach(m => m.remove());
                     leafletHotelMarkers = [];
                 }
 
-                if (showRestaurants && typeof renderRestaurantMarkers === 'function' && typeof restaurantsList !== 'undefined') {
-                    renderRestaurantMarkers(restaurantsList);
-                } else if (!showRestaurants && typeof leafletRestaurantMarkers !== 'undefined') {
+                if (showRestaurants) {
+                    if (typeof window.filterRestaurantsByCity === 'function') {
+                        window.filterRestaurantsByCity(routeCity);
+                    }
+                } else if (typeof leafletRestaurantMarkers !== 'undefined') {
                     leafletRestaurantMarkers.forEach(m => m.remove());
                     leafletRestaurantMarkers = [];
                 }
@@ -1799,6 +1809,99 @@ document.addEventListener('DOMContentLoaded', () => {
             (error) => { console.warn('Геолокацію не отримано:', error); }
         );
     }
+
+    // --- Додано логіку фільтрації міста та категорій ---
+    const categoryPills = document.querySelectorAll('.category-pill');
+    const cityOptions = document.querySelectorAll('.city-option'); // from header dropdown
+    const sidebarCitySelect = document.getElementById('city-select');
+    const popularItems = document.querySelectorAll('.popular-item');
+    
+    let currentCategory = null;
+    let currentCity = null;
+
+    function applyAllFilters() {
+        let filtered = eventsList;
+        
+        if (currentCategory) {
+            filtered = filtered.filter(ev => ev.category === currentCategory);
+        }
+        
+        if (currentCity && currentCity !== 'all' && currentCity !== 'Всі міста') {
+            const cityLower = currentCity.toLowerCase();
+            filtered = filtered.filter(ev => {
+                // map.js events have city like 'kyiv', 'lviv' OR location string 'Київ...'
+                const evCity = ev.city ? ev.city.toLowerCase() : '';
+                const evLoc = ev.location ? ev.location.toLowerCase() : '';
+                return evCity === cityLower || evLoc.includes(cityLower);
+            });
+        }
+
+        if (typeof updateUIAfterCategoryFilter === 'function') {
+            updateUIAfterCategoryFilter(filtered);
+        } else if (typeof renderMarkers === 'function') {
+            renderMarkers(filtered);
+            if (typeof renderEventsList === 'function') renderEventsList(filtered);
+        }
+    }
+
+    categoryPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            const cat = pill.getAttribute('data-category');
+            
+            if (currentCategory === cat) {
+                // Відміна фільтру
+                currentCategory = null;
+                pill.classList.remove('active');
+                categoryPills.forEach(p => p.classList.remove('inactive'));
+            } else {
+                currentCategory = cat;
+                categoryPills.forEach(p => {
+                    p.classList.remove('active');
+                    p.classList.add('inactive');
+                });
+                pill.classList.remove('inactive');
+                pill.classList.add('active');
+            }
+            
+            applyAllFilters();
+        });
+    });
+
+    function setCityFilter(cityName) {
+        const cityMap = { 'Київ': 'kyiv', 'Львів': 'lviv', 'Одеса': 'odesa', 'Харків': 'kharkiv' };
+        currentCity = cityMap[cityName] || cityName;
+        
+        const btnText = document.querySelector('.city-filter span');
+        if (btnText) btnText.textContent = cityName;
+        
+        applyAllFilters();
+    }
+
+    cityOptions.forEach(opt => {
+        opt.addEventListener('click', (e) => {
+            let cityName = e.target.textContent.trim();
+            setCityFilter(cityName);
+        });
+    });
+    
+    popularItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const cityNameEl = item.querySelector('.city-name');
+            if (cityNameEl) {
+                // Отримуємо текст без іконки
+                let cityName = cityNameEl.textContent.trim();
+                setCityFilter(cityName);
+            }
+        });
+    });
+    
+    if (sidebarCitySelect) {
+        sidebarCitySelect.addEventListener('change', (e) => {
+            currentCity = e.target.value;
+            applyAllFilters();
+        });
+    }
+
 });
 
 // Робимо функції глобальними для виклику з onclick

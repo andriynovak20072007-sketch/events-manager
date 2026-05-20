@@ -67,19 +67,29 @@ body {
 }
 
 .popular-list li {
-    display: flex; justify-content: space-between; padding: 8px 0;
+    display: flex; justify-content: space-between; padding: 10px 8px;
     font-size: 14px; border-bottom: 1px solid #eee; list-style: none;
+    cursor: pointer; transition: all 0.2s ease; border-radius: 8px;
+}
+
+.popular-list li:hover {
+    background-color: #f0f7ff;
+    color: var(--primary);
+    transform: translateX(4px);
 }
 
 /* Контейнер кнопок */
 .categories {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 25px;
-    width: 100%;
+    gap: 15px;
+    z-index: 2000;
 }
 
 /* Базовий стиль "пігулки" */
@@ -109,6 +119,18 @@ body {
 .category-pill:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.category-pill.active {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.category-pill.inactive {
+    opacity: 0.6;
+    transform: scale(0.95);
 }
 
 /* Градієнти точно за макетом */

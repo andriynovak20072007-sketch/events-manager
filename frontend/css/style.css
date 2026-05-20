@@ -511,30 +511,34 @@ body {
 .header-filters {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 25px; /* Збільшив відступ між елементами для "повітряності" */
 }
 
 .filter-pill {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: #F0EEF6;
-    padding: 8px 14px;
-    border-radius: 20px;
-    border: none;
+    gap: 10px;
+    background: rgba(240, 238, 246, 0.7); /* Напівпрозорий фон */
+    backdrop-filter: blur(8px);
+    padding: 10px 18px; /* Трохи більші внутрішні відступи */
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Легка рамка */
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     font-weight: 600;
-    color: var(--black);
+    color: var(--text-main);
     cursor: pointer;
-    transition: 0.2s;
-    height: 36px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    height: 40px;
     white-space: nowrap;
     position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); /* Легка тінь */
 }
 
 .filter-pill:hover {
-    background: #E4E0ED;
+    background: #ffffff;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08); /* Сильніша тінь при наведенні */
+    transform: translateY(-1px);
 }
 
 .filter-pill input[type="date"] {
