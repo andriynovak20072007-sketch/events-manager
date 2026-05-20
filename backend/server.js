@@ -46,8 +46,7 @@ app.use(express.json()); // Дозволяє серверу читати JSON з
 
 
 // 🟢 ДОДАНО: Робимо папку 'uploads' публічною, щоб фронтенд міг читати фотографії
-app.use('/uploads', express.static('uploads'));
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(session({
     secret: process.env.SESSION_SECRET || "fallback_secret_key",
     resave: false,
@@ -107,17 +106,14 @@ app.use((err, req, res, next) => {
 
 
 // Запускаємо сервер ТІЛЬКИ якщо це не тести
-app.get('*', (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, () => {
-        logger.success('SERVER', `Server працює на порту ${PORT}`);
-    });
-}
-
+app.listen(PORT, () => {
+    logger.success('SERVER', `Server працює на порту ${PORT}`);
+});
 // ОБОВ'ЯЗКОВО ділимося додатком з іншими файлами (для Supertest)
 module.exports = app;

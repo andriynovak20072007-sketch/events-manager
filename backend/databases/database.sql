@@ -143,19 +143,14 @@ ADD COLUMN currency VARCHAR(3) DEFAULT 'UAH',
 ADD COLUMN photo_url TEXT;
 
 -- 1. Створюємо розробницького користувача з паролем
-ALTER USER event_dev WITH PASSWORD 'dev_password_123';
+
 
 -- 2. Даємо йому доступ підключатися до БД (заміни events_db на свою назву, якщо вона інша)
-GRANT CONNECT ON DATABASE "Event_Manager" TO event_dev;
+
 
 -- 3. Даємо права працювати в стандартній схемі
-GRANT USAGE ON SCHEMA public TO event_dev;
 
--- 4. Даємо права читати, додавати, змінювати та видаляти дані з усіх таблиць
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO event_dev;
 
--- 5. Даємо доступ до генератора ID (щоб працював SERIAL)
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO event_dev;
 
 ALTER TABLE events ADD COLUMN image_url VARCHAR(255);
 
