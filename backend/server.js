@@ -107,7 +107,7 @@ app.use((err, req, res, next) => {
 
 // Запускаємо сервер ТІЛЬКИ якщо це не тести
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/css/index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
