@@ -4,8 +4,7 @@
   "description": "Backend server for events manager project",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "set NODE_ENV=test&& jest --forceExit"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "Codex",
