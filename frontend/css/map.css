@@ -27,6 +27,7 @@ body {
     gap: 30px;
     padding: 0 40px 40px 40px;
     height: calc(100vh - 80px);
+    align-items: start;
 }
 
 .glass-panel {
@@ -209,7 +210,8 @@ body {
     padding: 0 40px 40px 40px;
     /* Замість фіксованої height: calc(100vh - 80px) */
     min-height: 100vh; 
-    height: auto; 
+    height: auto;
+    align-items: start;
 }
 
 .map-area {
