@@ -212,7 +212,97 @@ const translations = {
     "Долар ($)": "Dollar ($)",
     "Євро (€)": "Euro (€)",
     "Ціна:": "Price:",
-    "Безкоштовно": "Free"
+    "Безкоштовно": "Free",
+
+    // Pricing Page additions
+    "Події": "Events",
+    "Тарифи": "Pricing",
+    "Про нас": "About us",
+    "UA - Українська": "UA - Ukrainian",
+    "EN - English": "EN - English",
+    "Оберіть свій план": "Choose your plan",
+    "Прості та прозорі тарифи": "Simple and transparent pricing",
+    "Оберіть план, який найкраще підходить для ваших потреб у створенні та управлінні подіями.": "Choose the plan that best suits your needs for creating and managing events.",
+    "Щомісячно": "Monthly",
+    "Щорічно": "Yearly",
+    "Щорічно -20%": "Yearly -20%",
+    "Стартовий": "Starter",
+    "Для індивідуальних організаторів": "For individual organizers",
+    "/2 міс*": "/2 months*",
+    "*далі за стандартним тарифом": "*then at standard rate",
+    "До 3 активних подій": "Up to 3 active events",
+    "Базова аналітика": "Basic analytics",
+    "Пошук по карті": "Search on map",
+    "Пріоритетне просування": "Priority promotion",
+    "Продаж квитків": "Ticket sales",
+    "Синя галочка довіри": "Blue verification badge",
+    "Обрати Безкоштовно": "Choose Free",
+    "Популярний": "Popular",
+    "Pro Менеджер": "Pro Manager",
+    "Для професійних організаторів": "For professional organizers",
+    "/міс": "/mo",
+    "Безліміт активних подій": "Unlimited active events",
+    "Розширена аналітика": "Advanced analytics",
+    "Продаж квитків (комісія 2%)": "Ticket sales (2% commission)",
+    "Пріоритет у пошуку": "Priority in search",
+    "Персональний менеджер": "Personal manager",
+    "Купити Pro": "Buy Pro",
+    "Бізнес": "Business",
+    "Для великих івент-агенств": "For large event agencies",
+    "Все з Pro тарифу": "Everything from Pro plan",
+    "Продаж квитків (без комісії)": "Ticket sales (no commission)",
+    "Рекламні баннери на головній": "Promo banners on homepage",
+    "API інтеграція": "API integration",
+    "Персональний менеджер 24/7": "Personal manager 24/7",
+    "White-label рішення": "White-label solution",
+    "Зв'язатися з нами": "Contact us",
+
+    // FAQ Section
+    "Часті запитання": "FAQ",
+    "Чи можу я змінити план пізніше?": "Can I change my plan later?",
+    "Так, ви можете змінити свій тарифний план у будь-який час у налаштуваннях профілю.": "Yes, you can change your pricing plan at any time in your profile settings.",
+    "Які методи оплати ви приймаєте?": "What payment methods do you accept?",
+    "Ми приймаємо всі основні кредитні картки, Apple Pay та Google Pay.": "We accept all major credit cards, Apple Pay, and Google Pay.",
+    "Чи є приховані комісії?": "Are there any hidden fees?",
+    "Ні, всі ціни прозорі. У тарифі Pro є лише невелика комісія за продаж квитків.": "No, all prices are transparent. The Pro plan only has a small fee for ticket sales.",
+    "Як працює повернення коштів?": "How does the refund work?",
+    "Якщо вам не сподобався сервіс, ми повернемо кошти протягом перших 14 днів використання.": "If you do not like the service, we will refund your money within the first 14 days of use.",
+
+    // Payment Modal
+    "Оформлення підписки Pro": "Pro Subscription Checkout",
+    "Ви на крок ближче до професійного управління подіями.": "You are one step closer to professional event management.",
+    "Тариф:": "Plan:",
+    "Період:": "Period:",
+    "До оплати:": "Total to pay:",
+    "Номер картки": "Card number",
+    "MM/YY": "MM/YY",
+    "Термін дії": "Expiry date",
+    "CVC": "CVC",
+    "Оплатити зараз": "Pay now",
+    "Ваші дані захищені 256-бітним шифруванням": "Your data is secured with 256-bit encryption",
+
+    // Success Modal
+    "Оплата успішна!": "Payment successful!",
+    "Вітаємо! Ваш статус оновлено до": "Congratulations! Your status has been updated to",
+    "Тепер ви маєте доступ до всіх преміальних можливостей.": "Now you have access to all premium features.",
+    "Почати роботу": "Get started",
+
+    // Starter Modal
+    "Тариф Стартовий": "Starter Plan",
+    "Спробуйте всі базові можливості безкоштовно протягом перших": "Try all basic features for free for the first",
+    "2 місяців": "2 months",
+    "2 місяців.": "2 months.",
+    "Далі ви зможете продовжити використання за стандартною ціною або перейти на Pro.": "Then you can continue using it at the standard price or upgrade to Pro.",
+    "Хочете більше можливостей? Спробуйте": "Want more features? Try",
+    "для безлімітних подій та продажу квитків.": "for unlimited events and ticket sales.",
+    "Зрозуміло": "Got it",
+
+    // Contact Modal
+    "Залиште свої контакти, і наш менеджер зв'яжеться з вами протягом 15 хвилин для обговорення корпоративного тарифу.": "Leave your contact details and our manager will contact you within 15 minutes to discuss the corporate plan.",
+    "Ваше ім'я": "Your name",
+    "Email або Телефон": "Email or Phone",
+    "Повідомлення (опціонально)": "Message (optional)",
+    "Надіслати запит": "Submit request"
   }
 };
 
@@ -367,4 +457,35 @@ function walkAndTranslate(node, targetLang) {
 document.addEventListener('DOMContentLoaded', () => {
   const savedLang = localStorage.getItem('language') || 'ua';
   applyLanguage(savedLang);
+
+  // Language Dropdown Interactivity Logic
+  const languageBtn = document.querySelector('.language-btn');
+  const languageDropdown = document.querySelector('.language-dropdown');
+  const langOptions = document.querySelectorAll('.lang-option');
+
+  if (languageBtn && languageDropdown) {
+    languageBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      languageDropdown.classList.toggle('hidden');
+    });
+
+    window.addEventListener('click', () => {
+      if (!languageDropdown.classList.contains('hidden')) {
+        languageDropdown.classList.add('hidden');
+      }
+    });
+
+    languageDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    langOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        // Extract language code (e.g. "UA" from "UA - Українська")
+        const langCode = option.textContent.split(' - ')[0].trim().toLowerCase();
+        applyLanguage(langCode);
+        languageDropdown.classList.add('hidden');
+      });
+    });
+  }
 });

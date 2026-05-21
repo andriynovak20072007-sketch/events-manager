@@ -74,7 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Pro Plan Action
     buyProBtn.addEventListener('click', () => {
         const isYearly = billingSwitch.checked;
-        selectedPeriodText.textContent = isYearly ? 'Щорічно' : 'Щомісячно';
+        const isEn = localStorage.getItem('language') === 'en';
+        selectedPeriodText.textContent = isYearly ? (isEn ? 'Yearly' : 'Щорічно') : (isEn ? 'Monthly' : 'Щомісячно');
         totalAmountText.textContent = isYearly ? '₴3900' : '₴499';
         
         paymentModal.style.display = 'flex';
@@ -128,7 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 1500);
             } else {
                 const data = await response.json();
-                alert(data.error || 'Помилка при оплаті.');
+                const isEn = localStorage.getItem('language') === 'en';
+                alert(data.error || (isEn ? 'Payment error.' : 'Помилка при оплаті.'));
                 btnText.classList.remove('hidden');
                 loader.classList.add('hidden');
                 submitBtn.disabled = false;
@@ -147,7 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Contact Form Submission
     contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        alert('Дякуємо! Ваш запит надіслано. Менеджер зв’яжеться з вами найближчим часом.');
+        const isEn = localStorage.getItem('language') === 'en';
+        alert(isEn ? 'Thank you! Your request has been sent. A manager will contact you shortly.' : 'Дякуємо! Ваш запит надіслано. Менеджер зв’яжеться з вами найближчим часом.');
         closeModals();
     });
 

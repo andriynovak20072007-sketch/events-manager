@@ -836,42 +836,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Language Dropdown Logic
-document.addEventListener('DOMContentLoaded', () => {
-  const languageBtn = document.querySelector('.language-btn');
-  const languageDropdown = document.querySelector('.language-dropdown');
-  const langOptions = document.querySelectorAll('.lang-option');
-
-  if (languageBtn && languageDropdown) {
-    languageBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      languageDropdown.classList.toggle('hidden');
-    });
-
-    window.addEventListener('click', () => {
-      if (!languageDropdown.classList.contains('hidden')) {
-        languageDropdown.classList.add('hidden');
-      }
-    });
-
-    languageDropdown.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-
-    langOptions.forEach(option => {
-      option.addEventListener('click', () => {
-        // Extract language code (e.g. "UA" from "UA - Українська")
-        const langCode = option.textContent.split(' - ')[0].toLowerCase();
-        
-        if (typeof applyLanguage === 'function') {
-          applyLanguage(langCode);
-        }
-        
-        languageDropdown.classList.add('hidden');
-      });
-    });
-  }
-});
 
 // ==========================================
 // ІНТЕГРАЦІЯ GOOGLE AUTH
