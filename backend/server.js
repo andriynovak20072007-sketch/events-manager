@@ -104,7 +104,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false } // Для локальної розробки HTTP. На продакшені (HTTPS) має бути true
 }));
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(__dirname, '../frontend/css')));
 // ==========================================
 // 3. ПІДКЛЮЧЕННЯ МАРШРУТІВ (РОУТИНГ)
 // ==========================================
