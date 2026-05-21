@@ -361,8 +361,21 @@ function applyCurrency() {
   const priceElements = document.querySelectorAll('.event-info-row span, .ticket-info span, .created-event-details p span, .hotel-price, .event-card span, .buy-ticket-main-btn, .event-info p, .event-info div');
   
   priceElements.forEach(el => {
-    // If element has children that might be prices, we handle them individually or skip
-    // But for simple cases like <p>500 UAH</p> it works.
+    // If we have already saved original price metadata, we can perform the new conversion directly
+    if (el.hasAttribute('data-orig-price')) {
+      const origPrice = parseFloat(el.getAttribute('data-orig-price'));
+      const origFullText = el.getAttribute('data-orig-full-text');
+      const converted = (origPrice * rate).toFixed(0);
+      const newPriceText = `${converted} ${symbol}`;
+      
+      const priceMatch = origFullText.match(/(\d+)\s*(₴|грн|UAH)|(₴|грн|UAH)\s*(\d+)/i);
+      if (priceMatch) {
+        const fullMatch = priceMatch[0];
+        el.textContent = origFullText.replace(fullMatch, newPriceText);
+      }
+      return;
+    }
+
     const text = el.textContent.trim();
     
     // Match "123 ₴" or "123 грн" or "123 UAH" or "UAH 123"
@@ -370,19 +383,16 @@ function applyCurrency() {
     if (priceMatch) {
       // Find which group matched the number and currency
       const num = priceMatch[1] || priceMatch[4];
-      const cur = priceMatch[2] || priceMatch[3];
       const fullMatch = priceMatch[0];
 
-      if (!el.hasAttribute('data-orig-price')) {
-        el.setAttribute('data-orig-price', num);
-        el.setAttribute('data-orig-full-text', text);
-      }
-      const origPrice = parseFloat(el.getAttribute('data-orig-price'));
-      const origFullText = el.getAttribute('data-orig-full-text');
+      el.setAttribute('data-orig-price', num);
+      el.setAttribute('data-orig-full-text', text);
+
+      const origPrice = parseFloat(num);
       const converted = (origPrice * rate).toFixed(0);
       
       const newPriceText = `${converted} ${symbol}`;
-      el.textContent = origFullText.replace(fullMatch, newPriceText);
+      el.textContent = text.replace(fullMatch, newPriceText);
     }
   });
 
@@ -454,38 +464,53 @@ function walkAndTranslate(node, targetLang) {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  const savedLang = localStorage.getItem('language') || 'ua';
-  applyLanguage(savedLang);
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('language') || 'ua';
+    applyLanguage(savedLang);
 
-  // Language Dropdown Interactivity Logic
-  const languageBtn = document.querySelector('.language-btn');
-  const languageDropdown = document.querySelector('.language-dropdown');
-  const langOptions = document.querySelectorAll('.lang-option');
+    // Language Dropdown Interactivity Logic
+    const languageBtn = document.querySelector('.language-btn');
+    const languageDropdown = document.querySelector('.language-dropdown');
+    const langOptions = document.querySelectorAll('.lang-option');
 
-  if (languageBtn && languageDropdown) {
-    languageBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      languageDropdown.classList.toggle('hidden');
-    });
-
-    window.addEventListener('click', () => {
-      if (!languageDropdown.classList.contains('hidden')) {
-        languageDropdown.classList.add('hidden');
-      }
-    });
-
-    languageDropdown.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-
-    langOptions.forEach(option => {
-      option.addEventListener('click', () => {
-        // Extract language code (e.g. "UA" from "UA - Українська")
-        const langCode = option.textContent.split(' - ')[0].trim().toLowerCase();
-        applyLanguage(langCode);
-        languageDropdown.classList.add('hidden');
+    if (languageBtn && languageDropdown) {
+      languageBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        languageDropdown.classList.toggle('hidden');
       });
-    });
-  }
-});
+
+      window.addEventListener('click', () => {
+        if (!languageDropdown.classList.contains('hidden')) {
+          languageDropdown.classList.add('hidden');
+        }
+      });
+
+      languageDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      langOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          // Extract language code (e.g. "UA" from "UA - Українська")
+          const langCode = option.textContent.split(' - ')[0].trim().toLowerCase();
+          applyLanguage(langCode);
+          languageDropdown.classList.add('hidden');
+        });
+      });
+    }
+  });
+}
+
+// Export for unit tests in Node environment
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    translations,
+    currencyRates,
+    currencySymbols,
+    applyLanguage,
+    applyCurrency,
+    setCurrency,
+    walkAndTranslate
+  };
+}
