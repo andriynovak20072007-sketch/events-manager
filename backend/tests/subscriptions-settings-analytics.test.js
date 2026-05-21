@@ -487,3 +487,239 @@ describe('Аналітика — перегляди та статистика', 
         expect(res.body.views).toBe(3);
     });
 });
+
+// =========================================================
+// 5. TRIAL-PERIOD (TrialService — активація, статус, ліміти)
+// =========================================================
+describe('Trial-період — активація та перевірка статусу', () => {
+
+    it('TC-TR-01: activateTrial — успішна активація для нового юзера', async () => {
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.activateTrial(1);
+
+        expect(result.success).toBe(true);
+        expect(result.trial_info).toBeDefined();
+        expect(result.trial_info.duration_days).toBe(60);
+        expect(result.trial_info.limits).toBeDefined();
+        expect(result.trial_info.limits.max_active_events).toBe(3);
+        expect(result.trial_info.limits.has_analytics).toBe(true);
+        expect(result.trial_info.limits.has_map_search).toBe(true);
+        expect(result.trial_info.limits.has_ticket_sales).toBe(false);
+        expect(result.trial_info.limits.has_verified_badge).toBe(false);
+    });
+
+    it('TC-TR-02: activateTrial — юзера не знайдено → success=false', async () => {
+        const TrialService = require('../services/TrialService');
+        // userId=999 → UPDATE повертає rows:[] (не знайдено)
+        const result = await TrialService.activateTrial(999);
+        expect(result.success).toBe(false);
+        expect(result.reason).toContain('не знайдений або trial вже активовано');
+    });
+
+    it('TC-TR-03: activateTrial — trial вже активований (trial_start не null) → success=false', async () => {
+        const pool = require('../db');
+        // Емулюємо: UPDATE WHERE trial_start IS NULL → 0 рядків (вже активовано)
+        pool.query.mockResolvedValueOnce({ rows: [] });
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.activateTrial(1);
+        expect(result.success).toBe(false);
+        expect(result.reason).toContain('не знайдений або trial вже активовано');
+    });
+
+    it('TC-TR-04: trial_info містить коректні дати (ends > starts)', async () => {
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.activateTrial(1);
+        const starts = new Date(result.trial_info.starts);
+        const ends = new Date(result.trial_info.ends);
+        expect(ends.getTime()).toBeGreaterThan(starts.getTime());
+        // Різниця ~60 днів (з похибкою 1 сек)
+        const diffDays = (ends - starts) / (1000 * 60 * 60 * 24);
+        expect(diffDays).toBeCloseTo(60, 0);
+    });
+
+    it('TC-TR-05: checkTrialStatus — юзер не знайдений → error', async () => {
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.checkTrialStatus(999);
+        expect(result.error).toContain('не знайдено');
+    });
+
+    it('TC-TR-06: checkTrialStatus — role=pro → is_trial=false, limits=null', async () => {
+        // user 3 має role='pro'
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.checkTrialStatus(3);
+        expect(result.is_trial).toBe(false);
+        expect(result.plan).toBe('pro');
+        expect(result.limits).toBeNull();
+    });
+
+    it('TC-TR-07: checkTrialStatus — role=pro_plus → is_active=true, is_trial=false', async () => {
+        // user 2 має role='pro_plus'
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.checkTrialStatus(2);
+        // role !== 'pro' і !== 'admin', trial_start відсутній → plan='free', trial_available=true
+        expect(result.is_active).toBe(true);
+    });
+
+    it('TC-TR-08: checkTrialStatus — trial не активований → trial_available=true, plan=free', async () => {
+        // user 1 → trial_start=null
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.checkTrialStatus(1);
+        expect(result.plan).toBe('free');
+        expect(result.trial_available).toBe(true);
+        expect(result.is_trial).toBe(false);
+    });
+
+    it('TC-TR-09: checkTrialStatus — trial активний → days_remaining > 0', async () => {
+        // Перезаписуємо mockUsers[1] з активним trial (ends у майбутньому)
+        const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        mockUsers[1].trial_start = new Date().toISOString();
+        mockUsers[1].trial_end = futureDate.toISOString();
+        mockUsers[1].is_trial_active = true;
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.checkTrialStatus(1);
+        expect(result.is_trial).toBe(true);
+        expect(result.plan).toBe('starter_trial');
+        expect(result.days_remaining).toBeGreaterThan(0);
+        expect(result.limits).toBeDefined();
+
+        // Відновлюємо
+        mockUsers[1].trial_start = null;
+        mockUsers[1].trial_end = null;
+        mockUsers[1].is_trial_active = false;
+    });
+
+    it('TC-TR-10: checkTrialStatus — trial прострочений → plan=free_expired', async () => {
+        // Встановлюємо минулу дату закінчення
+        const pastDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+        mockUsers[1].trial_start = new Date(Date.now() - 65 * 24 * 60 * 60 * 1000).toISOString();
+        mockUsers[1].trial_end = pastDate.toISOString();
+        mockUsers[1].is_trial_active = true;
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.checkTrialStatus(1);
+        expect(result.plan).toBe('free_expired');
+        expect(result.trial_expired).toBe(true);
+        expect(result.message).toContain('Оновіть до Pro');
+
+        // Відновлюємо
+        mockUsers[1].trial_start = null;
+        mockUsers[1].trial_end = null;
+        mockUsers[1].is_trial_active = false;
+    });
+});
+
+// =========================================================
+// 6. TRIAL — ЛІМІТИ (canCreateEvent)
+// =========================================================
+describe('Trial-period — ліміти на створення подій', () => {
+
+    it('TC-TR-11: canCreateEvent — pro юзер завжди може', async () => {
+        // user 3 → role='pro'
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.canCreateEvent(3);
+        expect(result.allowed).toBe(true);
+        // Не перевіряємо count — pro не має лімітів
+    });
+
+    it('TC-TR-12: canCreateEvent — free юзер нижче ліміту → allowed=true', async () => {
+        // pool.query для COUNT повертає active_count=1 (менше 3)
+        const pool = require('../db');
+        pool.query
+            .mockResolvedValueOnce({ rows: [{ user_id: 1, role: 'user', trial_start: null, trial_end: null, is_trial_active: false, username: 'u', created_at: '' }] }) // checkTrialStatus
+            .mockResolvedValueOnce({ rows: [{ active_count: '1' }] }); // COUNT events
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.canCreateEvent(1);
+        expect(result.allowed).toBe(true);
+        expect(result.remaining).toBe(2);
+    });
+
+    it('TC-TR-13: canCreateEvent — free юзер досяг ліміту (3 події) → allowed=false', async () => {
+        const pool = require('../db');
+        pool.query
+            .mockResolvedValueOnce({ rows: [{ user_id: 1, role: 'user', trial_start: null, trial_end: null, is_trial_active: false, username: 'u', created_at: '' }] })
+            .mockResolvedValueOnce({ rows: [{ active_count: '3' }] }); // COUNT = max
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.canCreateEvent(1);
+        expect(result.allowed).toBe(false);
+        expect(result.reason).toContain('Досягнуто ліміт');
+        expect(result.max_count).toBe(3);
+        expect(result.current_count).toBe(3);
+    });
+
+    it('TC-TR-14: canCreateEvent — збій БД → graceful degradation (allowed=true)', async () => {
+        const pool = require('../db');
+        pool.query.mockRejectedValueOnce(new Error('DB crash'));
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.canCreateEvent(1);
+        // Graceful degradation — у разі помилки дозволяємо
+        expect(result.allowed).toBe(true);
+    });
+});
+
+// =========================================================
+// 7. TRIAL — МАСОВА ДЕАКТИВАЦІЯ (expireAllOverdueTrials)
+// =========================================================
+describe('Trial-period — масова деактивація', () => {
+
+    it('TC-TR-15: expireAllOverdueTrials — повертає список деактивованих юзерів', async () => {
+        const pool = require('../db');
+        pool.query.mockResolvedValueOnce({
+            rows: [
+                { user_id: 10, username: 'expired1', email: 'e1@test.com' },
+                { user_id: 11, username: 'expired2', email: 'e2@test.com' }
+            ]
+        });
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.expireAllOverdueTrials();
+        expect(Array.isArray(result)).toBe(true);
+        expect(result.length).toBe(2);
+        expect(result[0].username).toBe('expired1');
+    });
+
+    it('TC-TR-16: expireAllOverdueTrials — немає прострочених → порожній масив', async () => {
+        const pool = require('../db');
+        pool.query.mockResolvedValueOnce({ rows: [] });
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.expireAllOverdueTrials();
+        expect(result).toEqual([]);
+    });
+
+    it('TC-TR-17: expireAllOverdueTrials — збій БД → повертає [] (не кидає)', async () => {
+        const pool = require('../db');
+        pool.query.mockRejectedValueOnce(new Error('Network error'));
+
+        const TrialService = require('../services/TrialService');
+        const result = await TrialService.expireAllOverdueTrials();
+        expect(result).toEqual([]);
+    });
+});
+
+// =========================================================
+// 8. SINGLETON — TrialService instance
+// =========================================================
+describe('TrialService — Singleton патерн', () => {
+
+    it('TC-TR-18: TrialService завжди повертає один інстанс', () => {
+        jest.isolateModules(() => {
+            const ts1 = require('../services/TrialService');
+            const ts2 = require('../services/TrialService');
+            expect(ts1).toBe(ts2);
+        });
+    });
+
+    it('TC-TR-19: STARTER_LIMITS має правильні значення', () => {
+        const TrialService = require('../services/TrialService');
+        expect(TrialService.TRIAL_DURATION_DAYS).toBe(60);
+        expect(TrialService.STARTER_LIMITS.max_active_events).toBe(3);
+        expect(TrialService.STARTER_LIMITS.has_analytics).toBe(true);
+        expect(TrialService.STARTER_LIMITS.has_priority).toBe(false);
+        expect(TrialService.STARTER_LIMITS.has_ticket_sales).toBe(false);
+    });
+});
