@@ -93,9 +93,9 @@ class EventRepository {
             INSERT INTO events (
                 title, description, event_day, start_time, end_time, 
                 latitude, longitude, category_id, creator_id, region, 
-                is_private, price, currency, photo_url
+                is_private, price, currency, photo_url, image_url
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, TRUE, $11, $12, $13) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, TRUE, $11, $12, $13, $13) 
             RETURNING *`;
 
         const values = [
@@ -129,7 +129,7 @@ class EventRepository {
                 photo_url = COALESCE($12, photo_url),
                 banner_url = COALESCE($13, banner_url),
                 button_color = COALESCE($14, button_color),
-                theme = COALESCE($15, theme)
+                theme = COALESCE($15, theme),
                 status = COALESCE($16, status)
             WHERE event_id = $17 AND is_private = TRUE
             RETURNING *`;
@@ -224,7 +224,8 @@ class EventRepository {
      */
     async updateImage(id, imageUrl) {
         const result = await pool.query(
-            'UPDATE events SET image_url = $1 WHERE event_id = $2 RETURNING *',
+            // Зберігаємо в обидві колонки: image_url (для фронтенду) і photo_url (для приватних подій)
+            'UPDATE events SET image_url = $1, photo_url = $1 WHERE event_id = $2 RETURNING *',
             [imageUrl, id]
         );
         return result.rows[0] || null;

@@ -389,6 +389,43 @@ router.get('/:id', asyncHandler(async (req, res) => {
 }));
 
 // ==========================================
+// 8. СТВОРЕННЯ ПРИВАТНОЇ ПОДІЇ (POST)
+// УВАГА: повинен бути ДО /:id, щоб Express не плутав /private з ID
+// ==========================================
+router.post('/private', asyncHandler(async (req, res) => {
+    const { title, creator_id } = req.body;
+
+    if (!title || title.trim().length < 3) throw AppError.badRequest("Назва занадто коротка");
+    if (!creator_id) throw AppError.badRequest("Не вказано creator_id");
+
+    // ПАТЕРН: Repository
+    const newEvent = await eventRepo.createPrivate(req.body);
+    logger.info('EVENTS', `Приватну подію створено: "${title}"`);
+
+    res.status(201).json({
+        msg: "Приватна подія успішно створена",
+        event: newEvent
+    });
+}));
+
+// ==========================================
+// 9. РЕДАГУВАННЯ ПРИВАТНОЇ ПОДІЇ (PUT)
+// УВАГА: повинен бути ДО /:id
+// ==========================================
+router.put('/private/:id', asyncHandler(async (req, res) => {
+    const eventId = req.params.id;
+
+    // ПАТЕРН: Repository
+    const updatedEvent = await eventRepo.updatePrivate(eventId, req.body);
+
+    if (!updatedEvent) {
+        throw AppError.notFound("Приватну подію не знайдено, або ви не можете її змінити (можливо вона публічна)");
+    }
+
+    res.json({ msg: "Приватну подію успішно оновлено", updated_event: updatedEvent });
+}));
+
+// ==========================================
 // 5. Створення нової події
 // ==========================================
 router.post('/', asyncHandler(async (req, res) => {
@@ -503,40 +540,7 @@ router.delete('/:id', asyncHandler(async (req, res) => {
     });
 }));
 
-// ==========================================
-// 8. СТВОРЕННЯ ПРИВАТНОЇ ПОДІЇ ТА ДОДАВАННЯ ФОТО (POST)
-// ==========================================
-router.post('/private', asyncHandler(async (req, res) => {
-    const { title, creator_id } = req.body;
 
-    if (!title || title.trim().length < 3) throw AppError.badRequest("Назва занадто коротка");
-    if (!creator_id) throw AppError.badRequest("Не вказано creator_id");
-
-    // ПАТЕРН: Repository
-    const newEvent = await eventRepo.createPrivate(req.body);
-    logger.info('EVENTS', `Приватну подію створено: "${title}"`);
-
-    res.status(201).json({
-        msg: "Приватна подія успішно створена",
-        event: newEvent
-    });
-}));
-
-// ==========================================
-// 9. РЕДАГУВАННЯ ПРИВАТНОЇ ПОДІЇ (PUT)
-// ==========================================
-router.put('/private/:id', asyncHandler(async (req, res) => {
-    const eventId = req.params.id;
-
-    // ПАТЕРН: Repository
-    const updatedEvent = await eventRepo.updatePrivate(eventId, req.body);
-
-    if (!updatedEvent) {
-        throw AppError.notFound("Приватну подію не знайдено, або ви не можете її змінити (можливо вона публічна)");
-    }
-
-    res.json({ msg: "Приватну подію успішно оновлено", updated_event: updatedEvent });
-}));
 
 // ==========================================
 // 10. ЗАПРОШЕННЯ ДРУЗІВ (POST)
